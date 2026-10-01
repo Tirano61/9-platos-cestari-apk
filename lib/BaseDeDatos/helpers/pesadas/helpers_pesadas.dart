@@ -1,0 +1,137 @@
+
+
+
+
+import 'package:cuatro_platos/BaseDeDatos/connections/db_conexion.dart';
+import 'package:cuatro_platos/BaseDeDatos/services/pesadas/service_pesadas.dart';
+import 'package:cuatro_platos/models/pesaje_model.dart';
+import 'package:cuatro_platos/models/pesadas/pesada_base_model.dart';
+import 'package:cuatro_platos/models/pesadas/pesada_payload_model.dart';
+import 'package:cuatro_platos/Theme/theme.dart';
+import 'package:flutter/material.dart';
+
+class HelpersPesadas{
+
+  /// 
+  /// Guarda en la base de datos, solo devuelve -1 
+  /// si ocurre una excepcion al guardar.
+  /// 
+  static Future<bool> guardarPessada(Pesaje pesaje,BuildContext context) async {
+    
+    final serviceDb = ServicePesadas(DBconeccion.db);
+    final scafold = ScaffoldMessenger.of(context); 
+    final resp = await serviceDb.insertarPesada(pesaje);
+    final success = resp != -1;
+
+    Navigator.pop(context, success);
+
+    if(resp == -1){
+      scafold.showSnackBar(
+        SnackBar(content: const Text('No se pudo guardar.'),backgroundColor: ThemePlatos.errorColor,)
+      );
+    }else{
+      scafold.showSnackBar(
+        SnackBar(content: const Text('Datos guardados correctamente !!!'),backgroundColor:ThemePlatos.positiveColor,),
+      );
+    }
+
+    return success;
+  }
+
+  static Future<bool> guardarPesada4PlatosPayload({
+    required Pesada4PlatosPayload payload,
+    required String identificacion,
+    required BuildContext context,
+  }) async {
+    final serviceDb = ServicePesadas(DBconeccion.db);
+    final scafold = ScaffoldMessenger.of(context);
+
+    final base = PesadaBase(
+      id: payload.base.id,
+      fecha: payload.base.fecha,
+      hora: payload.base.hora,
+      identificacion: identificacion,
+      tipoPesada: payload.base.tipoPesada,
+      total: payload.base.total,
+      createdAt: payload.base.createdAt,
+    );
+
+    final resp = await serviceDb.insertarPesada4Platos(
+      base: base,
+      detalle: payload.detalle,
+    );
+
+    final success = resp != -1;
+    if (!success) {
+      scafold.showSnackBar(
+        SnackBar(
+          content: const Text('No se pudo guardar.'),
+          backgroundColor: ThemePlatos.errorColor,
+        ),
+      );
+    } else {
+      scafold.showSnackBar(
+        SnackBar(
+          content: const Text('Datos guardados correctamente !!!'),
+          backgroundColor: ThemePlatos.positiveColor,
+        ),
+      );
+    }
+
+    return success;
+  }
+
+  static Future<bool> guardarPesadaEjesPayload({
+    required PesadaEjesPayload payload,
+    required String identificacion,
+    required BuildContext context,
+  }) async {
+    final serviceDb = ServicePesadas(DBconeccion.db);
+    final scafold = ScaffoldMessenger.of(context);
+
+    final base = PesadaBase(
+      id: payload.base.id,
+      fecha: payload.base.fecha,
+      hora: payload.base.hora,
+      identificacion: identificacion,
+      tipoPesada: payload.base.tipoPesada,
+      total: payload.base.total,
+      createdAt: payload.base.createdAt,
+    );
+
+    final resp = await serviceDb.insertarPesadaPorEjes(
+      base: base,
+      cabecera: payload.cabecera,
+      detalleEjes: payload.detalleEjes,
+    );
+
+    final success = resp != -1;
+    if (!success) {
+      scafold.showSnackBar(
+        SnackBar(
+          content: const Text('No se pudo guardar.'),
+          backgroundColor: ThemePlatos.errorColor,
+        ),
+      );
+    } else {
+      scafold.showSnackBar(
+        SnackBar(
+          content: const Text('Datos guardados correctamente !!!'),
+          backgroundColor: ThemePlatos.positiveColor,
+        ),
+      );
+    }
+
+    return success;
+  }
+  ///
+  ///Borrar todas las pesadas de la base de daatos
+  ///
+  static borrarTodasPesadas()async {
+    final serviceDB = ServicePesadas(DBconeccion.db);
+    await Future.delayed(Duration.zero).then((value){
+      serviceDB.deletePesadas();
+    }); 
+  }
+
+}
