@@ -1,16 +1,11 @@
-# Cuatro Platos
+# Platos Cestari
 
+App Android de Balanzas Hook para pesar con 9 balanzas ("platos") por WiFi UDP. La usa una tolva grande de 3 ejes que tiene 9 celdas: 4 juegos de celdas izquierda/derecha y 1 celda en el enganche.
 
+## Ramas
 
-## main
-En la rama ```main``` esta la versión de cuatro platos común con la config de puertos 
+`main` es la rama principal (`origin/main`). Los cambios llegan en ramas cortas, cada una con su PR a `main`.
 
-## porEjes
-En la rama ```porEjes```esta la versión que se esta reformando para pesar por ejes
+## Historial
 
-15/11/2024 la rama principal está en ```porEjes``` si les gusta asi quito el main.
-
-22/07/2026 la rama principal está en ```porEjes``` se agrego la seleccion de 3 ejes para 2 platos para Matias
-
-29/07/2026 se pasa a la rama ```conexionBLE``` para conectar los platos por ble ademas de wifi.
-
+01/10/2026: el repo arranca como copia de la app "Cuatro Platos" (4 platos / ejes, WiFi y BLE). El plan para pasarla a 9 platos solo por WiFi UDP está en [docs/plan_9_platos.md](docs/plan_9_platos.md).
