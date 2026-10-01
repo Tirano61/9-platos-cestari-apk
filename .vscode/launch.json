@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "cuatro_platos",
+            "name": "nueve_platos_cestari",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "cuatro_platos (profile mode)",
+            "name": "nueve_platos_cestari (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "cuatro_platos (release mode)",
+            "name": "nueve_platos_cestari (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

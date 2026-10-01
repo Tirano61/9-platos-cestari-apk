@@ -1,8 +1,8 @@
 
-import 'package:cuatro_platos/models/pesaje_model.dart';
-import 'package:cuatro_platos/Pages/pesadas/widgets/plato_pesada.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
+import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/Pages/pesadas/widgets/plato_pesada.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:flutter/material.dart';
 
 class ItemsPesadas extends StatelessWidget {

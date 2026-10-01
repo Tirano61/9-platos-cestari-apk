@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cuatro_platos/BaseDeDatos/helpers/settings/helpers_config.dart';
-import 'package:cuatro_platos/data/ble/ble_scale_parser.dart';
-import 'package:cuatro_platos/domain/entities/scale_reading.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/helpers_config.dart';
+import 'package:nueve_platos_cestari/data/ble/ble_scale_parser.dart';
+import 'package:nueve_platos_cestari/domain/entities/scale_reading.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';

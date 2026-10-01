@@ -1,19 +1,19 @@
-import 'package:cuatro_platos/BaseDeDatos/connections/db_conexion.dart';
-import 'package:cuatro_platos/BaseDeDatos/helpers/settings/first_data.dart';
-import 'package:cuatro_platos/BaseDeDatos/services/settings/service_config.dart';
-import 'package:cuatro_platos/Controllers/config_controller.dart';
-import 'package:cuatro_platos/Controllers/ejes_controller.dart';
-import 'package:cuatro_platos/Controllers/multi_ejes_controller.dart';
-import 'package:cuatro_platos/Controllers/peso1_controller.dart';
-import 'package:cuatro_platos/Pages/Home/homePage.dart';
-import 'package:cuatro_platos/Pages/cuatro_platos/cuatro_platos_page.dart';
-import 'package:cuatro_platos/Pages/pesadas/pesadas_page.dart';
-import 'package:cuatro_platos/Pages/por_ejes/por_multi_ejes_page.dart';
-import 'package:cuatro_platos/Pages/por_ejes/por_ejes_page.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
-import 'package:cuatro_platos/generated/l10n.dart';
-import 'package:cuatro_platos/models/config_model.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/first_data.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/services/settings/service_config.dart';
+import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/ejes_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/multi_ejes_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
+import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
+import 'package:nueve_platos_cestari/Pages/cuatro_platos/cuatro_platos_page.dart';
+import 'package:nueve_platos_cestari/Pages/pesadas/pesadas_page.dart';
+import 'package:nueve_platos_cestari/Pages/por_ejes/por_multi_ejes_page.dart';
+import 'package:nueve_platos_cestari/Pages/por_ejes/por_ejes_page.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
+import 'package:nueve_platos_cestari/generated/l10n.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -141,7 +141,7 @@ class _MyAppState extends State<MyApp> {
           color: ThemeApp.colorTituloPlatos,
         )
       ),
-      title: 'Cuatro Platos',
+      title: 'Platos Cestari',
       home:  const HomePage(),
       routes: {
         'home'    : (context) => const HomePage(),

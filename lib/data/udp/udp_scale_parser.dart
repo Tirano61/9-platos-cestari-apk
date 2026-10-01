@@ -1,4 +1,4 @@
-import 'package:cuatro_platos/domain/entities/scale_reading.dart';
+import 'package:nueve_platos_cestari/domain/entities/scale_reading.dart';
 import 'package:flutter/foundation.dart';
 
 class UdpScaleParser {

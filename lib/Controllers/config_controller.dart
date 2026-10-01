@@ -1,7 +1,7 @@
 
 
 import 'package:get/get.dart';
-import 'package:cuatro_platos/models/config_model.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
 
 class ConfigController extends GetxController{
 

@@ -1,17 +1,17 @@
 
-import 'package:cuatro_platos/Pages/Home/widgets/dialog_config.dart';
-import 'package:cuatro_platos/Pages/Home/widgets/dialog_inicio.dart';
-import 'package:cuatro_platos/Controllers/config_controller.dart';
-import 'package:cuatro_platos/Controllers/peso1_controller.dart';
-import 'package:cuatro_platos/Controllers/peso2_controller.dart';
-import 'package:cuatro_platos/Controllers/peso3_controller.dart';
-import 'package:cuatro_platos/Controllers/peso4_controller.dart';
-import 'package:cuatro_platos/Widgets/botton_bar.dart';
-import 'package:cuatro_platos/Widgets/icon_button_bar_widget.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
-import 'package:cuatro_platos/helpers/exportar_xml.dart';
-import 'package:cuatro_platos/models/config_model.dart';
+import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_config.dart';
+import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_inicio.dart';
+import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso2_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso3_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso4_controller.dart';
+import 'package:nueve_platos_cestari/Widgets/botton_bar.dart';
+import 'package:nueve_platos_cestari/Widgets/icon_button_bar_widget.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
+import 'package:nueve_platos_cestari/helpers/exportar_xml.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

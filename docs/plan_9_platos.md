@@ -44,7 +44,7 @@ Cálculos que se muestran y se guardan en cada pesada:
 
 Cada PR debe dejar la app compilando.
 
-### [ ] PR 1 · `planNuevePlatos`: plan y CLAUDE.md inicial
+### [x] PR 1 · `planNuevePlatos`: plan y CLAUDE.md inicial
 - Este archivo.
 - `CLAUDE.md`: explicar que la app está en transición, actualizar ramas y remotos, y apuntar a este plan.
 - `README.md`: nuevo historial.

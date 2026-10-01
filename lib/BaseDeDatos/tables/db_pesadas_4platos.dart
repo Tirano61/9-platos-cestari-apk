@@ -1,4 +1,4 @@
-import 'package:cuatro_platos/BaseDeDatos/tables/db_pesadas_base.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas_base.dart';
 
 class DBPesadas4Platos {
   static const String tableName = 'tpesadas_4platos';

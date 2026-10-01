@@ -1,6 +1,6 @@
 
 
-import 'package:cuatro_platos/helpers/bateria.dart';
+import 'package:nueve_platos_cestari/helpers/bateria.dart';
 import 'package:get/get.dart';
 
 class RecibirPesoModel {
