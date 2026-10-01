@@ -1,8 +1,28 @@
-# CLAUDE.md — Cuatro Platos (Balanzas Hook)
+# CLAUDE.md — Platos Cestari (Balanzas Hook)
 
 Referencia rápida del proyecto para trabajar con Claude Code. Código, comentarios, commits y esta guía están en español.
 
-## Qué es la app
+## Reforma en curso: 9 platos por WiFi UDP
+
+Este repo arrancó como copia de la app "Cuatro Platos" y se está reformando para Cestari. La app final pesa una tolva de 3 ejes con **9 celdas** y **solo WiFi UDP** (una balanza por puerto, 8001..8009, mismo protocolo UDP de hoy). Las 9 celdas son:
+
+- plato 1: enganche;
+- platos 2..9: 4 juegos de celdas izq/der (J1 = platos 2/3, J2 = 4/5, J3 = 6/7, J4 = 8/9). Los juegos no corresponden a ejes.
+
+Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App nueva:
+
+- package Dart `nueve_platos_cestari`;
+- `applicationId` `com.dramirez.nueveplatoscestari`;
+- label "Platos Cestari";
+- base de datos desde cero.
+
+**El plan paso a paso, con un PR por paso, está en [docs/plan_9_platos.md](docs/plan_9_platos.md).** Seguir ese orden y marcar cada paso al terminarlo.
+
+Lo que sigue en este archivo todavía describe el código heredado (4 platos, ejes y BLE). Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
+
+> Ojo: hoy `pubspec.yaml` dice `name: 9_platos_cestari`, que no es un nombre de paquete válido, mientras los imports usan `package:cuatro_platos/`. El PR 2 del plan lo corrige; hasta entonces `pub get` falla.
+
+## Qué es la app (código heredado)
 
 App Flutter (Android es el único target real) para pesar vehículos con balanzas inalámbricas de plataforma ("platos") de Balanzas Hook. Dos modos de pesaje:
 
@@ -18,12 +38,12 @@ La app no va al Play Store. Se cambió el `applicationId` a `com.dramirez.cuatro
 
 ## Ramas y flujo de trabajo
 
-- `main`: versión vieja de 4 platos con puertos (obsoleta).
-- `porEjes`: rama principal hasta julio 2026 (base de PRs según origin/HEAD).
-- `conexionBLE`: rama actual de trabajo. Contiene la reforma de DB, el cambio de package y toda la conexión BLE. Está 40 commits adelante de `porEjes`.
-- Flujo usado: rama feature corta con nombre camelCase (`scanBLE`, `flujoGuardado`, `limpiezaPesads`...) → PR → merge a `conexionBLE`. Commits en español, una línea.
-- Remotos: `origin` = Balanzas-Hook/CuatroPlatos-apk, `gittirano` = Tirano61/BalanzaCuatroPlatos (espejo).
-- Al terminar el trabajo BLE la idea es que `conexionBLE` pase a ser la principal (ver README.md).
+- `main` es la rama principal (`origin/main`) y la base de todos los PRs.
+- Flujo: rama feature corta con nombre camelCase (los nombres de cada paso están en `docs/plan_9_platos.md`) → PR → merge a `main`. Commits en español, una línea.
+- Remotos:
+  - `origin` = Balanzas-Hook/9-platos-cestari-apk;
+  - `gittirano` = Tirano61/9-platos-cestari-apk (espejo).
+- Las ramas de la app vieja (`porEjes`, `conexionBLE`) no existen en este repo.
 
 ## Toolchain y comandos
 
