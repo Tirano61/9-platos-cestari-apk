@@ -157,7 +157,7 @@ Cada PR debe dejar la app compilando.
   - `pesadas_export.dart` y `pesadas_export_test.dart`, que están vacíos.
 - Adaptar `test/list_pesajes`.
 
-### [ ] PR 10 · `claudeMdNuevePlatos`: documentación final
+### [x] PR 10 · `claudeMdNuevePlatos`: documentación final
 - Reescribir `CLAUDE.md` completo según la app final:
   - qué es la app;
   - ramas;
@@ -168,7 +168,7 @@ Cada PR debe dejar la app compilando.
   - guardado, historial y exportación;
   - pendientes;
   - estado actual de `flutter analyze`.
-- Borrar o resumir `docs/cambios_db.md`, que corresponde a la app vieja.
+- Borrar o resumir `docs/cambios_db.md`, que corresponde a la app vieja. Se borró; queda en el historial de git.
 - Marcar todos los pasos de este plan como hechos.
 
 ---
