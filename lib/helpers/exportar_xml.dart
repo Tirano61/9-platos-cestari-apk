@@ -71,7 +71,7 @@ class Exportar{
         libro.delete(defaultSheet);
       }
 
-      _buildSheet4Platos(libro, rows);
+      _buildSheet9Platos(libro, rows);
 
       if ((libro.tables.keys).isEmpty) {
         return -1;
@@ -96,56 +96,15 @@ class Exportar{
 
   String _v(Map<String, dynamic> row, String key) => (row[key] ?? '').toString();
 
-  void _buildSheet4Platos(Excel libro, List<Map<String, dynamic>> rows) {
-    final sheet = libro['4_platos'];
-    _appendRow(sheet, [
-      'id',
-      'fecha',
-      'hora',
-      'identificacion',
-      'total',
-      'del_izq',
-      'del_der',
-      'tras_izq',
-      'tras_der',
-      'eje_del',
-      'eje_tras',
-      'lado_izq',
-      'lado_der',
-      'por_del_izq',
-      'por_del_der',
-      'por_tras_izq',
-      'por_tras_der',
-      'por_eje_del',
-      'por_eje_tras',
-      'por_lado_izq',
-      'por_lado_der',
-    ]);
+  /// Hoja '9_platos': el encabezado son las claves de la fila
+  /// (Pesada9PlatosPayload.toExportRow), que salen todas con el mismo orden.
+  void _buildSheet9Platos(Excel libro, List<Map<String, dynamic>> rows) {
+    final sheet = libro['9_platos'];
+    final columnas = rows.first.keys.toList();
+    _appendRow(sheet, columnas);
 
     for (final row in rows) {
-      _appendRow(sheet, [
-        _v(row, 'id'),
-        _v(row, 'fecha'),
-        _v(row, 'hora'),
-        _v(row, 'identificacion'),
-        _v(row, 'total'),
-        _v(row, 'delIzq'),
-        _v(row, 'delDer'),
-        _v(row, 'trasIzq'),
-        _v(row, 'trasDer'),
-        _v(row, 'ejeDel'),
-        _v(row, 'ejeTras'),
-        _v(row, 'ladoIzq'),
-        _v(row, 'ladoDer'),
-        _v(row, 'porDelIzq'),
-        _v(row, 'porDelDer'),
-        _v(row, 'porTrasIzq'),
-        _v(row, 'porTrasDer'),
-        _v(row, 'porEjeDel'),
-        _v(row, 'porEjeTras'),
-        _v(row, 'porLadoIzq'),
-        _v(row, 'porLadoDer'),
-      ]);
+      _appendRow(sheet, columnas.map((c) => _v(row, c)).toList());
     }
   }
 
@@ -169,7 +128,7 @@ class Exportar{
       await Share.shareXFiles(
         [XFile(filePath)],
         text: 'Compartir Pesadas',
-        subject: 'Balanzas Hook, 4 platos ',
+        subject: 'Balanzas Hook, 9 platos',
       );
     } catch (e) {
       scaffold.showSnackBar(

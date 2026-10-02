@@ -2,14 +2,14 @@
 
 import 'dart:async';
 
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
 abstract class StateInterface{
 
   
 
   getPesadas();
-  Stream<List<Pesaje>> get pesadasStream;
+  Stream<List<Pesada9PlatosPayload>> get pesadasStream;
   dispose();
 
 }
