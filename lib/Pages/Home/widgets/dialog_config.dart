@@ -30,10 +30,10 @@ class _DialogConfigState extends State<DialogConfig> {
   @override
   void initState() {
     super.initState();
-    _plato1controller.text = puertoGetxController.getPuerto1.value;
-    _plato2controller.text = puertoGetxController.getPuerto2.value;
-    _plato3controller.text = puertoGetxController.getPuerto3.value;
-    _plato4controller.text = puertoGetxController.getPuerto4.value;
+    _plato1controller.text = puertoGetxController.puerto(1).value;
+    _plato2controller.text = puertoGetxController.puerto(2).value;
+    _plato3controller.text = puertoGetxController.puerto(3).value;
+    _plato4controller.text = puertoGetxController.puerto(4).value;
   }
 
   @override
