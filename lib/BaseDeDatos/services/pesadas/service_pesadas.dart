@@ -2,9 +2,9 @@
 
 
 import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_9platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
 class ServicePesadas{
 
@@ -12,17 +12,14 @@ class ServicePesadas{
   ServicePesadas(PesadasInterface pesadasInterface){
     _pesadasInterface = pesadasInterface;
   }
-  Future<int> insertarPesada(Pesaje pesaje){
-    return _pesadasInterface.insertPesada(pesaje);
-  }
-  Future<int> insertarPesada4Platos({
+  Future<int> insertarPesada9Platos({
     required PesadaBase base,
-    required Pesada4PlatosDetalle detalle,
+    required Pesada9PlatosDetalle detalle,
   }){
-    return _pesadasInterface.insertPesada4Platos(base: base, detalle: detalle);
+    return _pesadasInterface.insertPesada9Platos(base: base, detalle: detalle);
   }
-  Future<List<Pesaje>> getPesadas4Platos(){
-    return _pesadasInterface.getPesadas4Platos();
+  Future<List<Pesada9PlatosPayload>> getPesadas9Platos(){
+    return _pesadasInterface.getPesadas9Platos();
   }
   Future<int> deletePesadas(){
     return _pesadasInterface.deletePesadas();

@@ -4,7 +4,6 @@
 
 import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
@@ -12,34 +11,12 @@ import 'package:flutter/material.dart';
 
 class HelpersPesadas{
 
-  /// 
-  /// Guarda en la base de datos, solo devuelve -1 
+  ///
+  /// Guarda en la base de datos, solo devuelve -1
   /// si ocurre una excepcion al guardar.
-  /// 
-  static Future<bool> guardarPessada(Pesaje pesaje,BuildContext context) async {
-    
-    final serviceDb = ServicePesadas(DBconeccion.db);
-    final scafold = ScaffoldMessenger.of(context); 
-    final resp = await serviceDb.insertarPesada(pesaje);
-    final success = resp != -1;
-
-    Navigator.pop(context, success);
-
-    if(resp == -1){
-      scafold.showSnackBar(
-        SnackBar(content: const Text('No se pudo guardar.'),backgroundColor: ThemePlatos.errorColor,)
-      );
-    }else{
-      scafold.showSnackBar(
-        SnackBar(content: const Text('Datos guardados correctamente !!!'),backgroundColor:ThemePlatos.positiveColor,),
-      );
-    }
-
-    return success;
-  }
-
-  static Future<bool> guardarPesada4PlatosPayload({
-    required Pesada4PlatosPayload payload,
+  ///
+  static Future<bool> guardarPesada9PlatosPayload({
+    required Pesada9PlatosPayload payload,
     required String identificacion,
     required BuildContext context,
   }) async {
@@ -56,7 +33,7 @@ class HelpersPesadas{
       createdAt: payload.base.createdAt,
     );
 
-    final resp = await serviceDb.insertarPesada4Platos(
+    final resp = await serviceDb.insertarPesada9Platos(
       base: base,
       detalle: payload.detalle,
     );
