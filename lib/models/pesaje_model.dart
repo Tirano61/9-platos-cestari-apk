@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_eje_detalle_model.dart';
-export 'package:nueve_platos_cestari/models/pesadas/pesada_eje_detalle_model.dart';
 
 class Pesaje {
     final int? id;
@@ -19,20 +17,12 @@ class Pesaje {
     final String porEjeDel;
     final String ejeTras;
     final String porEjeTras;
-    final String eje3Izq;
-    final String porEje3Izq;
-    final String eje3Der;
-    final String porEje3Der;
-    final String ejeTer;
-    final String porEjeTer;
     final String ladoDer;
     final String porLadoDer;
     final String ladoIzq;
     final String porLadoIzq;
     final String total;
-    final List<EjeDetalle> detalleEjes;
     final String tipoPesada;
-    final int cantidadEjes;
 
     Pesaje({
         this.id,
@@ -51,20 +41,12 @@ class Pesaje {
         required this.porEjeDel,
         required this.ejeTras,
         required this.porEjeTras,
-        this.eje3Izq = '',
-        this.porEje3Izq = '',
-        this.eje3Der = '',
-        this.porEje3Der = '',
-        this.ejeTer = '',
-        this.porEjeTer = '',
         required this.ladoDer,
         required this.porLadoDer,
         required this.ladoIzq,
         required this.porLadoIzq,
         required this.total,
-        this.detalleEjes = const [],
         this.tipoPesada = '',
-        this.cantidadEjes = 0,
     });
 
     factory Pesaje.fromRawJson(String str) => Pesaje.fromJson(json.decode(str));
@@ -88,24 +70,12 @@ class Pesaje {
         porEjeDel     : json["porEjeDel"],
         ejeTras       : json["ejeTras"],
         porEjeTras    : json["porEjeTras"],
-        eje3Izq       : json["eje3Izq"] ?? '',
-        porEje3Izq    : json["porEje3Izq"] ?? '',
-        eje3Der       : json["eje3Der"] ?? '',
-        porEje3Der    : json["porEje3Der"] ?? '',
-        ejeTer        : json["ejeTer"] ?? '',
-        porEjeTer     : json["porEjeTer"] ?? '',
         ladoDer       : json["ladoDer"],
         porLadoDer    : json["porLadoDer"],
         ladoIzq       : json["ladoIzq"],
         porLadoIzq    : json["porLadoIzq"],
         total         : json["total"],
-        detalleEjes   : (json["detalleEjes"] as List<dynamic>? ?? [])
-          .map((e) => EjeDetalle.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList(),
         tipoPesada    : (json["tipoPesada"] ?? '').toString(),
-        cantidadEjes  : (json["cantidadEjes"] ?? 0) is int
-            ? (json["cantidadEjes"] ?? 0) as int
-            : int.tryParse((json["cantidadEjes"] ?? '0').toString()) ?? 0,
     );
 
     Map<String, dynamic> toJson() => {
@@ -125,20 +95,12 @@ class Pesaje {
         "porEjeDel"     : porEjeDel,
         "ejeTras"       : ejeTras,
         "porEjeTras"    : porEjeTras,
-        "eje3Izq"       : eje3Izq,
-        "porEje3Izq"    : porEje3Izq,
-        "eje3Der"       : eje3Der,
-        "porEje3Der"    : porEje3Der,
-        "ejeTer"        : ejeTer,
-        "porEjeTer"     : porEjeTer,
         "ladoDer"       : ladoDer,
         "porLadoDer"    : porLadoDer,
         "ladoIzq"       : ladoIzq,
         "porLadoIzq"    : porLadoIzq,
         "total"         : total,
-        "detalleEjes"   : detalleEjes.map((e) => e.toJson()).toList(),
         "tipoPesada"    : tipoPesada,
-        "cantidadEjes"  : cantidadEjes,
     };
 
     List<String> listaEncabezado = [
@@ -158,12 +120,6 @@ class Pesaje {
       "porEjeDel",
       "ejeTras",
       "porEjeTras",
-      "eje3Izq",
-      "porEje3Izq",
-      "eje3Der",
-      "porEje3Der",
-      "ejeTer",
-      "porEjeTer",
       "ladoDer",
       "porLadoDer",
       "ladoIzq",
@@ -189,12 +145,6 @@ class Pesaje {
         "porEjeDel",
         "ejeTras",
         "porEjeTras",
-        "eje3Izq",
-        "porEje3Izq",
-        "eje3Der",
-        "porEje3Der",
-        "ejeTer",
-        "porEjeTer",
         "ladoDer",
         "porLadoDer",
         "ladoIzq",

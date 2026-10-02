@@ -1,6 +1,5 @@
 
 import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_config.dart';
-import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_inicio.dart';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso2_controller.dart';
@@ -68,7 +67,7 @@ class HomePage extends StatelessWidget {
                       SizedBox(height: verticalSpacing),
                       ElevatedButton(
                         onPressed: () {
-                          showDialogInicioPesaje(context);
+                          Navigator.pushNamed(context, 'platos');
                         },
                         child: const Text('Iniciar Pesaje'),
                       ),
@@ -110,14 +109,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  showDialogInicioPesaje(BuildContext context ){
-    showDialog( 
-      context: context, 
-      builder: (_){
-        return DialogInicio();
-      }
-    );
-  }
   showDialogPlatosConfig(BuildContext context ){
     showDialog( 
       context: context, 

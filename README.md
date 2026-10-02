@@ -10,4 +10,4 @@ App Android de Balanzas Hook para pesar con 9 balanzas ("platos") por WiFi UDP. 
 
 01/10/2026: el repo arranca como copia de la app "Cuatro Platos" (4 platos / ejes, WiFi y BLE). El plan para pasarla a 9 platos solo por WiFi UDP está en [docs/plan_9_platos.md](docs/plan_9_platos.md).
 
-02/10/2026: paquete `nueve_platos_cestari`, applicationId `com.dramirez.nueveplatoscestari` y nombre "Platos Cestari" (PR 2). Se quita Bluetooth LE: queda solo WiFi UDP (PR 3).
+02/10/2026: paquete `nueve_platos_cestari`, applicationId `com.dramirez.nueveplatoscestari` y nombre "Platos Cestari" (PR 2). Se quita Bluetooth LE: queda solo WiFi UDP (PR 3). Se quita el pesaje por ejes (PR 4).

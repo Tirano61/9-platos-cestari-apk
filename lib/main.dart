@@ -2,14 +2,10 @@ import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/first_data.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/settings/service_config.dart';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/ejes_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/multi_ejes_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
 import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
 import 'package:nueve_platos_cestari/Pages/cuatro_platos/cuatro_platos_page.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/pesadas_page.dart';
-import 'package:nueve_platos_cestari/Pages/por_ejes/por_multi_ejes_page.dart';
-import 'package:nueve_platos_cestari/Pages/por_ejes/por_ejes_page.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/generated/l10n.dart';
@@ -47,12 +43,6 @@ class _MyAppState extends State<MyApp> {
   final peso2 =  Get.put(Peso2Controller());
   final peso3 =  Get.put(Peso3Controller());
   final peso4 =  Get.put(Peso4Controller());
-  final ejes  =  Get.put(EjesController());
-  final multiEjes2 = Get.put(MultiEjesController(numEjes: 2), tag: '2ejes');
-  final multiEjes3 = Get.put(MultiEjesController(numEjes: 3), tag: '3ejes');
-  final multiEjes4 = Get.put(MultiEjesController(numEjes: 4), tag: '4ejes');
-  final multiEjes5 = Get.put(MultiEjesController(numEjes: 5), tag: '5ejes');
-  final multiEjes6 = Get.put(MultiEjesController(numEjes: 6), tag: '6ejes');
 
   @override
   void initState() {
@@ -141,12 +131,6 @@ class _MyAppState extends State<MyApp> {
         'home'    : (context) => const HomePage(),
         'pesadas' : (context) => PesadasPage(),
         'platos'  : (context) => CuatroPlatosPage(),
-        'ejes'    : (context) => PorEjesPage(),
-        'ejes2'   : (context) => PorMultiEjesPage(numEjes: 2, title: 'Pesaje Por Ejes', controllerTag: '2ejes'),
-        'ejes3'   : (context) => PorMultiEjesPage(numEjes: 3, title: 'Pesaje Por 3 Ejes', controllerTag: '3ejes'),
-        'ejes4'   : (context) => PorMultiEjesPage(numEjes: 4, title: 'Pesaje Por 4 Ejes', controllerTag: '4ejes'),
-        'ejes5'   : (context) => PorMultiEjesPage(numEjes: 5, title: 'Pesaje Por 5 Ejes', controllerTag: '5ejes'),
-        'ejes6'   : (context) => PorMultiEjesPage(numEjes: 6, title: 'Pesaje Por 6 Ejes', controllerTag: '6ejes'),
       }
     );
   }
