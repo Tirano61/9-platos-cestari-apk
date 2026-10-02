@@ -8,7 +8,7 @@
 
 
 
-import 'package:cuatro_platos/Pages/cuatro_platos/widgets/batery_widget.dart';
+import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/batery_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cuatro_platos/domain/entities/scale_reading.dart';
+import 'package:nueve_platos_cestari/domain/entities/scale_reading.dart';
 
 class BleScaleParser {
   const BleScaleParser();

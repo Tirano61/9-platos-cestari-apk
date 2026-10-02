@@ -1,6 +1,6 @@
 
 
-import 'package:cuatro_platos/models/config_model.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
 
 abstract class ConfigInterface{
 

@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:cuatro_platos/Pages/cuatro_platos/widgets/eje_widget.dart';
-import 'package:cuatro_platos/Pages/cuatro_platos/widgets/plato_widget.dart';
+import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/eje_widget.dart';
+import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/plato_widget.dart';
 
 
 class FilaPlatos extends StatelessWidget {

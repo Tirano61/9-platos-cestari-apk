@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:cuatro_platos/models/pesadas/pesada_eje_detalle_model.dart';
-export 'package:cuatro_platos/models/pesadas/pesada_eje_detalle_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_eje_detalle_model.dart';
+export 'package:nueve_platos_cestari/models/pesadas/pesada_eje_detalle_model.dart';
 
 class Pesaje {
     final int? id;

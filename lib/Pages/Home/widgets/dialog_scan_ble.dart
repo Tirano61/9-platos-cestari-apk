@@ -1,6 +1,6 @@
 
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/data/ble/ble_scale_service.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/data/ble/ble_scale_service.dart';
 import 'package:flutter/material.dart';
 
 /// Escanea dispositivos BLE y devuelve con Navigator.pop el nombre elegido.

@@ -2,9 +2,9 @@
 
 import 'dart:async';
 
-import 'package:cuatro_platos/models/pesaje_model.dart';
-import 'package:cuatro_platos/Providers/pesadas/interfaces/state_interface.dart';
-import 'package:cuatro_platos/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
+import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/Providers/pesadas/interfaces/state_interface.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
 
 class PesadasProvider extends StateInterface{
 

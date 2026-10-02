@@ -1,7 +1,7 @@
 
 
 
-import 'package:cuatro_platos/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/models/pesaje_model.dart';
 
 final listPesaje = [{
   "id": 15, 

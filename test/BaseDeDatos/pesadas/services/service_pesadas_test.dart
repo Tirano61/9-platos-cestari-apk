@@ -1,6 +1,6 @@
 
 
-import 'package:cuatro_platos/BaseDeDatos/services/pesadas/service_pesadas.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../../list_pesajes/list_pesaje.dart';
 import '../../../moks/db_connection_mock.dart';

@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
-import 'package:cuatro_platos/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_payload_model.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
-import 'package:cuatro_platos/Pages/cuatro_platos/widgets/export_home_wigets.dart';
-import 'package:cuatro_platos/Controllers/controllers_export.dart';
+import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/export_home_wigets.dart';
+import 'package:nueve_platos_cestari/Controllers/controllers_export.dart';
 
 
 

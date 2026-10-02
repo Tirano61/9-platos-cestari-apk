@@ -2,7 +2,7 @@
 
 
 
-import 'package:cuatro_platos/BaseDeDatos/tables/db_pesadas.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

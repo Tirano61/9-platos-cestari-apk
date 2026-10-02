@@ -55,9 +55,9 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `Cuatro Platos`
+  /// `Platos Cestari`
   String get titulo {
-    return Intl.message('Cuatro Platos', name: 'titulo', desc: '', args: []);
+    return Intl.message('Platos Cestari', name: 'titulo', desc: '', args: []);
   }
 }
 

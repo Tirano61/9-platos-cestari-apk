@@ -1,8 +1,8 @@
 
 
 
-import 'package:cuatro_platos/helpers/bateria.dart';
-import 'package:cuatro_platos/Models/recibir_peso_model.dart';
+import 'package:nueve_platos_cestari/helpers/bateria.dart';
+import 'package:nueve_platos_cestari/models/recibir_peso_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
