@@ -1,7 +1,6 @@
 
 
 import 'package:get/get.dart';
-import 'package:nueve_platos_cestari/models/config_model.dart';
 
 class ConfigController extends GetxController{
 
@@ -9,11 +8,6 @@ class ConfigController extends GetxController{
   final _puerto2 = '8002'.obs;
   final _puerto3 = '8003'.obs;
   final _puerto4 = '8004'.obs;
-  final _connectionType = ConnectionType.udp.obs;
-  final _plato1BleName = ''.obs;
-  final _plato2BleName = ''.obs;
-  final _plato3BleName = ''.obs;
-  final _plato4BleName = ''.obs;
 
   get getPuerto1{
     return _puerto1;
@@ -42,62 +36,5 @@ class ConfigController extends GetxController{
   setPuerto4(String puerto){
     _puerto4.value = puerto;
   }
-
-  get getConnectionType {
-    return _connectionType;
-  }
-  setConnectionType(String type) {
-    _connectionType.value = type;
-  }
-
-  get getPlato1BleName {
-    return _plato1BleName;
-  }
-  setPlato1BleName(String value) {
-    _plato1BleName.value = value;
-  }
-
-  get getPlato2BleName {
-    return _plato2BleName;
-  }
-  setPlato2BleName(String value) {
-    _plato2BleName.value = value;
-  }
-
-  get getPlato3BleName {
-    return _plato3BleName;
-  }
-  setPlato3BleName(String value) {
-    _plato3BleName.value = value;
-  }
-
-  get getPlato4BleName {
-    return _plato4BleName;
-  }
-  setPlato4BleName(String value) {
-    _plato4BleName.value = value;
-  }
-
-  void setBleNameByPlato(int plato, String bleName) {
-    switch (plato) {
-      case 1:
-        setPlato1BleName(bleName);
-        break;
-      case 2:
-        setPlato2BleName(bleName);
-        break;
-      case 3:
-        setPlato3BleName(bleName);
-        break;
-      case 4:
-        setPlato4BleName(bleName);
-        break;
-      default:
-        break;
-    }
-  }
-
-
-
 
 }

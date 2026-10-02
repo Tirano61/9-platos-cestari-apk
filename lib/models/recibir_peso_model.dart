@@ -27,10 +27,6 @@ class RecibirPesoModel {
   bool get conexion => rx.conexion.value;
   set setConexion(bool conexion) => rx.conexion.value = conexion;
 
-  /// true mientras hay un intento de conexion BLE en curso (turno, busqueda, conexion).
-  bool get conectando => rx.conectando.value;
-  set setConectando(bool conectando) => rx.conectando.value = conectando;
-
   int get tension => rx.tension.value;
   set setTension(String tension) {
     final parsed = double.tryParse(tension);
@@ -61,5 +57,4 @@ class RxRecibiendoPeso{
   final tension  =  0.obs;
   final adreess  = '0'.obs;
   final conexion = false.obs;
-  final conectando = false.obs;
 }

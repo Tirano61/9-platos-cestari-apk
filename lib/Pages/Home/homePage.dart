@@ -11,7 +11,6 @@ import 'package:nueve_platos_cestari/Widgets/icon_button_bar_widget.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/helpers/exportar_xml.dart';
-import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -133,27 +132,15 @@ class HomePage extends StatelessWidget {
     final cardWidth = width * (SizeScreen.sc().isMinWidth ? 0.72 : 0.9);
 
     return Obx(() {
-      final connectionType = _configController.getConnectionType.value;
-      final isBle = connectionType == ConnectionType.ble;
-
       final puerto1 = _configController.getPuerto1.value;
       final puerto2 = _configController.getPuerto2.value;
       final puerto3 = _configController.getPuerto3.value;
       final puerto4 = _configController.getPuerto4.value;
 
-      final ble1 = _configController.getPlato1BleName.value;
-      final ble2 = _configController.getPlato2BleName.value;
-      final ble3 = _configController.getPlato3BleName.value;
-      final ble4 = _configController.getPlato4BleName.value;
-
       final conectado1 = _peso1Controller.getPesoModel1.conexion;
-      final conectando1 = _peso1Controller.getPesoModel1.conectando;
       final conectado2 = _peso2Controller.getPesoModel2.conexion;
-      final conectando2 = _peso2Controller.getPesoModel2.conectando;
       final conectado3 = _peso3Controller.getPesoModel3.conexion;
-      final conectando3 = _peso3Controller.getPesoModel3.conectando;
       final conectado4 = _peso4Controller.getPesoModel4.conexion;
-      final conectando4 = _peso4Controller.getPesoModel4.conectando;
 
       return Container(
         width: cardWidth,
@@ -181,7 +168,7 @@ class HomePage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  isBle ? 'Platos y BLE Configurados' : 'Platos y Puertos Configurados',
+                  'Platos y Puertos Configurados',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -195,18 +182,14 @@ class HomePage extends StatelessWidget {
                   children: [
                     _itemConfiguracion(
                       'Del Izq',
-                      isBle ? ble1 : puerto1,
-                      isBle: isBle,
+                      puerto1,
                       conectado: conectado1,
-                      conectando: conectando1,
                     ),
                     SizedBox(width: compact ? 8 : 16),
                     _itemConfiguracion(
                       'Del Der',
-                      isBle ? ble2 : puerto2,
-                      isBle: isBle,
+                      puerto2,
                       conectado: conectado2,
-                      conectando: conectando2,
                     ),
                   ],
                 ),
@@ -215,18 +198,14 @@ class HomePage extends StatelessWidget {
                   children: [
                     _itemConfiguracion(
                       'Tras Izq',
-                      isBle ? ble3 : puerto3,
-                      isBle: isBle,
+                      puerto3,
                       conectado: conectado3,
-                      conectando: conectando3,
                     ),
                     SizedBox(width: compact ? 8 : 16),
                     _itemConfiguracion(
                       'Tras Der',
-                      isBle ? ble4 : puerto4,
-                      isBle: isBle,
+                      puerto4,
                       conectado: conectado4,
-                      conectando: conectando4,
                     ),
                   ],
                 ),
@@ -241,22 +220,14 @@ class HomePage extends StatelessWidget {
   Widget _itemConfiguracion(
     String posicion,
     String valor, {
-    required bool isBle,
     required bool conectado,
-    required bool conectando,
   }) {
     final valorNormalizado = valor.trim();
     final textoValor = valorNormalizado.isEmpty
-        ? (isBle ? 'Sin BLE asignado' : 'Sin puerto asignado')
+        ? 'Sin puerto asignado'
         : valorNormalizado;
-    // "Conectando..." solo en BLE: en WiFi no hay intento de conexion, se escucha el puerto.
-    final buscando = !conectado && isBle && conectando;
-    final estadoTexto = conectado
-        ? 'Conectado'
-        : buscando ? 'Conectando...' : 'Desconectado';
-    final estadoColor = conectado
-        ? Colors.green
-        : buscando ? Colors.orange : Colors.red;
+    final estadoTexto = conectado ? 'Conectado' : 'Desconectado';
+    final estadoColor = conectado ? Colors.green : Colors.red;
 
     return Expanded(
       child: Container(
@@ -276,7 +247,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              isBle ? 'BLE: $textoValor' : 'Puerto: $textoValor',
+              'Puerto: $textoValor',
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -285,7 +256,7 @@ class HomePage extends StatelessWidget {
                 color: Colors.black87,
               ),
             ),
-            // En BLE y en WiFi: conexion es true mientras llegan datos del plato.
+            // conexion es true mientras llegan datos del plato.
             const SizedBox(height: 4),
             Row(
               children: [

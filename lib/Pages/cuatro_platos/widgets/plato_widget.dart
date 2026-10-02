@@ -31,8 +31,7 @@ class PlatoWidget extends StatelessWidget {
   final String estable;
   final bool showPorcentaje;
 
-  /// Envia cero o reset de hold al plato por la conexion configurada
-  /// (BLE o WiFi) y avisa si no se pudo enviar.
+  /// Envia cero o reset de hold al plato por TCP y avisa si no se pudo enviar.
   Future<void> _enviarComando(BuildContext context, {required bool cero}) async {
     final plato = int.tryParse(buttonKeyPlato.value.toString());
     if (plato == null) return;
