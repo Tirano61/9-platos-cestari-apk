@@ -5,7 +5,6 @@ import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_inte
 import 'package:nueve_platos_cestari/models/pesaje_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_ejes_model.dart';
 
 class ServicePesadas{
 
@@ -22,22 +21,8 @@ class ServicePesadas{
   }){
     return _pesadasInterface.insertPesada4Platos(base: base, detalle: detalle);
   }
-  Future<int> insertarPesadaPorEjes({
-    required PesadaBase base,
-    required PesadaEjesCabecera cabecera,
-    required List<EjeDetalle> detalleEjes,
-  }){
-    return _pesadasInterface.insertPesadaPorEjes(
-      base: base,
-      cabecera: cabecera,
-      detalleEjes: detalleEjes,
-    );
-  }
   Future<List<Pesaje>> getPesadas4Platos(){
     return _pesadasInterface.getPesadas4Platos();
-  }
-  Future<List<Pesaje>> getPesadasPorEjes(){
-    return _pesadasInterface.getPesadasPorEjes();
   }
   Future<int> deletePesadas(){
     return _pesadasInterface.deletePesadas();

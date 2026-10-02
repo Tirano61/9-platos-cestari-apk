@@ -81,49 +81,6 @@ class HelpersPesadas{
     return success;
   }
 
-  static Future<bool> guardarPesadaEjesPayload({
-    required PesadaEjesPayload payload,
-    required String identificacion,
-    required BuildContext context,
-  }) async {
-    final serviceDb = ServicePesadas(DBconeccion.db);
-    final scafold = ScaffoldMessenger.of(context);
-
-    final base = PesadaBase(
-      id: payload.base.id,
-      fecha: payload.base.fecha,
-      hora: payload.base.hora,
-      identificacion: identificacion,
-      tipoPesada: payload.base.tipoPesada,
-      total: payload.base.total,
-      createdAt: payload.base.createdAt,
-    );
-
-    final resp = await serviceDb.insertarPesadaPorEjes(
-      base: base,
-      cabecera: payload.cabecera,
-      detalleEjes: payload.detalleEjes,
-    );
-
-    final success = resp != -1;
-    if (!success) {
-      scafold.showSnackBar(
-        SnackBar(
-          content: const Text('No se pudo guardar.'),
-          backgroundColor: ThemePlatos.errorColor,
-        ),
-      );
-    } else {
-      scafold.showSnackBar(
-        SnackBar(
-          content: const Text('Datos guardados correctamente !!!'),
-          backgroundColor: ThemePlatos.positiveColor,
-        ),
-      );
-    }
-
-    return success;
-  }
   ///
   ///Borrar todas las pesadas de la base de daatos
   ///

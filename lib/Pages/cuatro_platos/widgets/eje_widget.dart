@@ -13,7 +13,6 @@ class EjeWidget extends StatelessWidget {
   String peso2;
   String eje;
   final String? label;
-  final bool showPorcentaje;
   
   EjeWidget({
     super.key,
@@ -21,7 +20,6 @@ class EjeWidget extends StatelessWidget {
     required this.peso2,
     required this.eje,
     this.label,
-    this.showPorcentaje = true,
   });
 
   @override
@@ -59,12 +57,9 @@ class EjeWidget extends StatelessWidget {
                   style: ThemePlatos.cn.textoPesoPlatos(context),
                 )
               ),
-              if (showPorcentaje)
-                Text( 
-                  '${CalculosController.cn.calculoPorcentajePorEje(eje, peso1, peso2)} %',
-                )
-              else
-                const SizedBox(height: 18),
+              Text( 
+                '${CalculosController.cn.calculoPorcentajePorEje(eje, peso1, peso2)} %',
+              ),
             ],
           ),
         ),

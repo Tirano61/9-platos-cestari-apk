@@ -20,7 +20,6 @@ class PlatoWidget extends StatelessWidget {
     required this.conexionPlato,
     required this.batery,
     required this.estable,
-    this.showPorcentaje = true,
   });
 
   final String numPlato;
@@ -29,7 +28,6 @@ class PlatoWidget extends StatelessWidget {
   final ValueKey buttonKeyPlato;
   final bool conexionPlato;
   final String estable;
-  final bool showPorcentaje;
 
   /// Envia cero o reset de hold al plato por TCP y avisa si no se pudo enviar.
   Future<void> _enviarComando(BuildContext context, {required bool cero}) async {
@@ -139,17 +137,14 @@ class PlatoWidget extends StatelessWidget {
                 ),
               ),
               // Muestra el porcentaje del plato
-              if (showPorcentaje)
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    ('${CalculosController.cn.calculoPorcentajePlatos(pesoPlato)} %'),
-                    maxLines: 1,
-                    style: estiloPorcentaje,
-                  ),
-                )
-              else
-                SizedBox(height: isSmallPhone ? 12 : 18),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  ('${CalculosController.cn.calculoPorcentajePlatos(pesoPlato)} %'),
+                  maxLines: 1,
+                  style: estiloPorcentaje,
+                ),
+              ),
               // Estado del estable
               Container(
                 width: SizeScreen.sc().screenWidth * 0.15,

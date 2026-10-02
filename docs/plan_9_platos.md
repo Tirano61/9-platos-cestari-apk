@@ -80,7 +80,7 @@ Cada PR debe dejar la app compilando.
 - `AndroidManifest.xml`: quitar los permisos BLUETOOTH* y ACCESS_FINE_LOCATION y el `uses-feature` `bluetooth_le`.
 - Limpiar los comentarios que mencionan BLE y las secciones BLE de `CLAUDE.md`.
 
-### [ ] PR 4 · `quitarEjes`: quitar el pesaje por ejes
+### [x] PR 4 · `quitarEjes`: quitar el pesaje por ejes
 - Borrar:
   - `ejes_controller.dart` y `multi_ejes_controller.dart`;
   - `lib/Pages/por_ejes/`;

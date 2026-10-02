@@ -51,20 +51,6 @@ class PesadasPage extends StatelessWidget {
                 itemCount: pesadas!.length,
                 itemBuilder: (context, index){
                   final pesada = pesadas[index];
-                  final tipo = pesada.tipoPesada.trim();
-                  final isPorEjes = tipo.isNotEmpty
-                    ? tipo == '2_platos_ejes'
-                    : pesada.detalleEjes.isNotEmpty || pesada.ejeTer.isNotEmpty;
-                  final cantidadEjes = pesada.cantidadEjes > 0
-                    ? pesada.cantidadEjes
-                    : (pesada.detalleEjes.isNotEmpty
-                        ? pesada.detalleEjes.length
-                        : (pesada.ejeTer.isNotEmpty ? 3 : 2));
-                  final altoCard = _altoTarjetaPesada(
-                    isPorEjes: isPorEjes,
-                    cantidadEjes: cantidadEjes,
-                  );
-
                   return Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: Dismissible(
@@ -103,7 +89,7 @@ class PesadasPage extends StatelessWidget {
                         width: double.infinity,
                         // Alto minimo: si el contenido necesita mas (pantallas angostas,
                         // letra grande del sistema) ItemsPesadas hace crecer la tarjeta.
-                        constraints: BoxConstraints(minHeight: altoCard),
+                        constraints: BoxConstraints(minHeight: _altoTarjetaPesada()),
                         child: ItemsPesadas(pesaje: pesada),
                       ),
                     ),
@@ -157,23 +143,8 @@ class PesadasPage extends StatelessWidget {
     );
   }
 
-  double _altoTarjetaPesada({
-    required bool isPorEjes,
-    required int cantidadEjes,
-  }) {
-    final ancho = SizeScreen.sc().screenWidth;
-    final isTablet = SizeScreen.sc().isMinWidth;
-
-    if (!isPorEjes) {
-      return ancho * (isTablet ? 0.24 : 0.35);
-    }
-
-    final ejesExtra = (cantidadEjes - 2).clamp(0, 8);
-    final factor = isTablet
-        ? (0.21 + (ejesExtra * 0.028)).clamp(0.21, 0.34)
-        : (0.30 + (ejesExtra * 0.045)).clamp(0.30, 0.52);
-
-    return ancho * factor;
+  double _altoTarjetaPesada() {
+    return SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.24 : 0.35);
   }
 
   dimissiblePesada(DismissDirection direction, BuildContext context, ServiceProvider pesadasProvider, String id){
