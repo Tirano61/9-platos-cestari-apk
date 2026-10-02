@@ -14,20 +14,9 @@ class ItemsPesadas extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final tipo = pesaje.tipoPesada.trim();
-    final isPorEjes = tipo.isNotEmpty
-      ? tipo == '2_platos_ejes'
-      : pesaje.detalleEjes.isNotEmpty || pesaje.ejeTer.isNotEmpty;
-    final cantidadEjes = pesaje.cantidadEjes > 0
-      ? pesaje.cantidadEjes
-      : (pesaje.detalleEjes.isNotEmpty
-        ? pesaje.detalleEjes.length
-        : (pesaje.ejeTer.isNotEmpty ? 3 : 2));
-    final tipoPesada = isPorEjes ? '$cantidadEjes ejes' : '4 platos';
-
     // La tarjeta toma el alto de su contenido: la columna de datos tiene un alto
     // fijo en pixeles y con alturas proporcionales al ancho de pantalla se cortaba
-    // el Total (sobre todo en pesadas de 2 ejes, que tienen la tarjeta mas baja).
+    // el Total.
     return IntrinsicHeight(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -67,13 +56,6 @@ class ItemsPesadas extends StatelessWidget {
                         SizedBox(height: SizeScreen.sc().screenWidth * 0.003),
                         Row(
                           children: [
-                            Text('Tipo  : ', style: ThemeApp.fontStandard),
-                            _valorAjustado(tipoPesada),
-                          ],
-                        ),
-                        SizedBox(height: SizeScreen.sc().screenWidth * 0.003),
-                        Row(
-                          children: [
                             Text('Total. : ', style: ThemeApp.fontStandard),
                             _valorAjustado(pesaje.total),
                           ],
@@ -91,7 +73,7 @@ class ItemsPesadas extends StatelessWidget {
           /// 
           Expanded(
             flex: 2,
-            child: isPorEjes ? _buildEjesDinamicos(context) : _buildCuatroPlatos(),
+            child: _buildCuatroPlatos(),
           )
         ],
       ),
@@ -182,121 +164,4 @@ class ItemsPesadas extends StatelessWidget {
       ],
     );
   }
-
-  Widget _buildEjesDinamicos(BuildContext context) {
-    final ejes = pesaje.detalleEjes.isNotEmpty ? pesaje.detalleEjes : _legacyEjes();
-    final filas = ejes.map(_buildFilaEje).toList();
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildEncabezadoEjes(),
-        const SizedBox(height: 4),
-        for (int i = 0; i < filas.length; i++) ...[
-          filas[i],
-          if (i < filas.length - 1) const SizedBox(height: 4),
-        ],
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            PlatoPesadas(title: 'Lado Izq.' , peso: pesaje.ladoIzq, porcentaje: ''),
-            PlatoPesadas(title: 'Lado Der.' , peso: pesaje.ladoDer, porcentaje: ''),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEncabezadoEjes() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ThemeApp.colorTituloPlatos,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: Row(
-        children: [
-          Expanded(flex: 2, child: Text('Eje', style: ThemeApp.fontWithtitlePlatosPesadas, textAlign: TextAlign.center)),
-          Expanded(flex: 3, child: Text('Izq', style: ThemeApp.fontWithtitlePlatosPesadas, textAlign: TextAlign.center)),
-          Expanded(flex: 3, child: Text('Total', style: ThemeApp.fontWithtitlePlatosPesadas, textAlign: TextAlign.center)),
-          Expanded(flex: 3, child: Text('Der', style: ThemeApp.fontWithtitlePlatosPesadas, textAlign: TextAlign.center)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilaEje(EjeDetalle eje) {
-    return Container(
-      decoration: BoxDecoration(
-        color: ThemeApp.colorPesoPlatos,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${eje.nroEje}',
-              textAlign: TextAlign.center,
-              style: ThemeApp.fontStandard,
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              eje.pesoIzq,
-              textAlign: TextAlign.center,
-              style: ThemeApp.fontPlatosPesadas,
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              eje.pesoTotal,
-              textAlign: TextAlign.center,
-              style: ThemeApp.fontPlatosPesadas,
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              eje.pesoDer,
-              textAlign: TextAlign.center,
-              style: ThemeApp.fontPlatosPesadas,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<EjeDetalle> _legacyEjes() {
-    final ejes = <EjeDetalle>[];
-
-    void add(int nroEje, String izq, String der, String total) {
-      if (izq.isEmpty && der.isEmpty && total.isEmpty) return;
-      ejes.add(
-        EjeDetalle(
-          nroEje: nroEje,
-          pesoIzq: izq,
-          pesoDer: der,
-          pesoTotal: total,
-        ),
-      );
-    }
-
-    add(1, pesaje.delIzq, pesaje.delDer, pesaje.ejeDel);
-    add(2, pesaje.trasIzq, pesaje.trasDer, pesaje.ejeTras);
-    add(3, pesaje.eje3Izq, pesaje.eje3Der, pesaje.ejeTer);
-
-    return ejes;
-  }
 }
-
-
-
-
-
-

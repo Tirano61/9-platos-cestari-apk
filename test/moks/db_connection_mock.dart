@@ -5,7 +5,6 @@ import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_inte
 import 'package:nueve_platos_cestari/models/pesaje_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_ejes_model.dart';
 
 import '../list_pesajes/list_pesaje.dart';
 
@@ -40,11 +39,6 @@ class DbConnectionMock extends PesadasInterface{
   }
 
   @override
-  Future<List<Pesaje>> getPesadasPorEjes() async {
-    return getPesadas();
-  }
-
-  @override
   Future<int> insertPesada(Pesaje pesaje)async {
     return 1;
   }
@@ -53,15 +47,6 @@ class DbConnectionMock extends PesadasInterface{
   Future<int> insertPesada4Platos({
     required PesadaBase base,
     required Pesada4PlatosDetalle detalle,
-  }) async {
-    return 1;
-  }
-
-  @override
-  Future<int> insertPesadaPorEjes({
-    required PesadaBase base,
-    required PesadaEjesCabecera cabecera,
-    required List<EjeDetalle> detalleEjes,
   }) async {
     return 1;
   }

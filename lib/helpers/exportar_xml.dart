@@ -71,25 +71,7 @@ class Exportar{
         libro.delete(defaultSheet);
       }
 
-      final rows4Platos = rows.where((row) => _tipoPesada(row) == '4_platos').toList();
-      if (rows4Platos.isNotEmpty) {
-        _buildSheet4Platos(libro, rows4Platos);
-      }
-
-      final Map<int, List<Map<String, dynamic>>> rowsPorEjes = {};
-      for (final row in rows) {
-        if (_tipoPesada(row) != '2_platos_ejes') continue;
-        final cantidad = _cantidadEjes(row);
-        if (cantidad <= 0) continue;
-        rowsPorEjes.putIfAbsent(cantidad, () => []).add(row);
-      }
-
-      final cantidadesOrdenadas = rowsPorEjes.keys.toList()..sort();
-      for (final cantidad in cantidadesOrdenadas) {
-        final bucket = rowsPorEjes[cantidad] ?? const [];
-        if (bucket.isEmpty) continue;
-        _buildSheetEjes(libro, cantidad, bucket);
-      }
+      _buildSheet4Platos(libro, rows);
 
       if ((libro.tables.keys).isEmpty) {
         return -1;
@@ -106,21 +88,6 @@ class Exportar{
     } catch (e) {
       return -1;
     }
-  }
-
-  String _tipoPesada(Map<String, dynamic> row) {
-    return (row['tipoPesada'] ?? '').toString().trim();
-  }
-
-  int _cantidadEjes(Map<String, dynamic> row) {
-    final fromCount = row['cantidadEjes'];
-    if (fromCount is int && fromCount > 0) return fromCount;
-    final parsed = int.tryParse((fromCount ?? '').toString());
-    if (parsed != null && parsed > 0) return parsed;
-
-    final detalle = row['detalleEjes'];
-    if (detalle is List) return detalle.length;
-    return 0;
   }
 
   void _appendRow(Sheet sheet, List<dynamic> values) {
@@ -179,60 +146,6 @@ class Exportar{
         _v(row, 'porLadoIzq'),
         _v(row, 'porLadoDer'),
       ]);
-    }
-  }
-
-  void _buildSheetEjes(
-    Excel libro,
-    int cantidadEjes,
-    List<Map<String, dynamic>> rows,
-  ) {
-    final sheet = libro['ejes_$cantidadEjes'];
-    final header = <dynamic>['id', 'fecha', 'hora', 'identificacion', 'total', 'lado_izq', 'lado_der'];
-    for (int eje = 1; eje <= cantidadEjes; eje++) {
-      header.add('eje_${eje}_izq');
-      header.add('eje_${eje}_der');
-      header.add('eje_${eje}_total');
-    }
-    _appendRow(sheet, header);
-
-    for (final row in rows) {
-      final detalleRaw = row['detalleEjes'];
-      final detalle = <Map<String, dynamic>>[];
-      if (detalleRaw is List) {
-        for (final item in detalleRaw) {
-          if (item is Map) {
-            detalle.add(Map<String, dynamic>.from(item));
-          }
-        }
-      }
-
-      final byEje = <int, Map<String, dynamic>>{};
-      for (final eje in detalle) {
-        final nro = (eje['nroEje'] is int)
-            ? eje['nroEje'] as int
-            : int.tryParse((eje['nroEje'] ?? '').toString()) ?? 0;
-        if (nro > 0) byEje[nro] = eje;
-      }
-
-      final values = <dynamic>[
-        _v(row, 'id'),
-        _v(row, 'fecha'),
-        _v(row, 'hora'),
-        _v(row, 'identificacion'),
-        _v(row, 'total'),
-        _v(row, 'ladoIzq'),
-        _v(row, 'ladoDer'),
-      ];
-
-      for (int eje = 1; eje <= cantidadEjes; eje++) {
-        final data = byEje[eje];
-        values.add((data?['pesoIzq'] ?? '').toString());
-        values.add((data?['pesoDer'] ?? '').toString());
-        values.add((data?['pesoTotal'] ?? '').toString());
-      }
-
-      _appendRow(sheet, values);
     }
   }
 
