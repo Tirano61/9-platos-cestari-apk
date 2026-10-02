@@ -110,7 +110,7 @@ Cada PR debe dejar la app compilando.
   - `homePage`, `cuatro_platos_page` y `controllers_export.dart`.
 - Es solo un refactor: el comportamiento queda idéntico.
 
-### [ ] PR 6 · `configNuevePlatos`: 9 platos en configuración y conexión
+### [x] PR 6 · `configNuevePlatos`: 9 platos en configuración y conexión
 - Nuevo `lib/config/platos.dart` con `cantidadPlatos = 9` y el nombre de cada plato (`ENGANCHE`, `J1 IZQ` … `J4 DER`).
 - `tconfig` y `ConfigModel`: `plato1..plato9`.
 - `first_data.dart`: valores por defecto 8001..8009.

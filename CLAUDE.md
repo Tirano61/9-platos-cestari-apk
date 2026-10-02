@@ -18,7 +18,7 @@ Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App 
 
 **El plan paso a paso, con un PR por paso, está en [docs/plan_9_platos.md](docs/plan_9_platos.md).** Seguir ese orden y marcar cada paso al terminarlo.
 
-Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4 y los 4 controllers de peso se unificaron en el PR 5. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
+Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos (la pantalla de pesaje sigue mostrando los platos 1..4 hasta el PR 8). Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
 
 ## Qué es la app (código heredado)
 
@@ -64,11 +64,11 @@ Las carpetas viejas usan mayúscula inicial (`Controllers`, `Pages`, `BaseDeDato
 
 ```
 lib/main.dart                      Bootstrap: Get.put de todos los controllers, carga config de DB,
-                                   registra un PesoController por plato (tag 'plato1'..'plato4'),
+                                   registra un PesoController por plato (tag 'plato1'..'plato9'),
                                    arranca recibirPeso() de cada uno, define rutas.
 lib/Controllers/
-  config_controller.dart           Lista de RxString con los puertos: puerto(n) / setPuerto(n, v),
-                                   cantidadPlatos (hoy 4).
+  config_controller.dart           Lista de RxString con los puertos: puerto(n) / setPuerto(n, v) /
+                                   setPuertos(lista), cantidadPlatos (9).
   peso_controller.dart             PesoController(plato: n), uno por plato. Escucha UDP, actualiza
                                    pesoModel (RecibirPesoModel), timer de 1 s que marca
                                    desconexion a los 5 s sin datos y reabre el socket si hace falta.
@@ -91,15 +91,17 @@ lib/BaseDeDatos/
   interfaces/ services/ helpers/   Cadena: DBconeccion -> ServicePesadas/ServiceConfig -> HelpersPesadas/
                                    HelpersConfig (los helpers muestran SnackBar y actualizan GetX).
 lib/models/
-  config_model.dart                ConfigModel: puertos plato1..plato4. Claves JSON = columnas tconfig.
+  config_model.dart                ConfigModel: List<String> puertos (indice 0 = plato 1), puerto(n).
+                                   Claves JSON = columnas tconfig plato1..plato9.
   recibir_peso_model.dart          Estado Rx de un plato: peso, estable, tension (nivel 1..5), adreess, conexion.
   pesaje_model.dart                Pesaje: modelo MIXTO legacy que todavia usan historial y exportacion.
   pesadas/                         Modelos nuevos: PesadaBase, Pesada4PlatosDetalle, payload.
 lib/Pages/
-  Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato, boton
+  Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato (fila del
+                                   enganche + 4 filas izq/der), boton
                                    "Iniciar Pesaje" (ruta 'platos'), barra inferior (ver pesadas /
                                    compartir XLSX).
-  Home/widgets/dialog_config.dart  Configuracion: un puerto por plato. Solo OK -> HelpersConfig.upDateConfig
+  Home/widgets/dialog_config.dart  Configuracion: un puerto por plato (9 campos con scroll). Solo OK -> HelpersConfig.upDateConfig
                                    los guarda y reconecta.
   cuatro_platos/                   CuatroPlatosPage + widgets compartidos (PlatoWidget, EjeWidget,
                                    FilaPlatos, SumaLados con chasis.png, RecuadroPesoTotal, BateryWidget,
@@ -107,6 +109,8 @@ lib/Pages/
   pesadas/                         Historial: lista con Dismissible para borrar, exportar XLSX, borrar todo.
 lib/helpers/exportar_xml.dart      A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte con share_plus.
 lib/helpers/comandos_plato.dart    ComandosPlato.enviarCero / enviarResetHold(plato): TCP a la IP del plato.
+lib/config/platos.dart             cantidadPlatos = 9 y nombre de cada plato: nombrePlato(n) ->
+                                   'ENGANCHE', 'J1 IZQ' .. 'J4 DER'.
 lib/config/ + lib/Theme/           Dos clases de tema (ThemeApp y ThemePlatos) y SizeScreen (singleton,
                                    isMinWidth = pantalla >= 420 px, se usa como "tablet vs telefono").
 lib/generated/ + lib/l10n/         intl configurado pero casi sin uso (solo la clave "titulo").
@@ -137,7 +141,7 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 
 | Tabla | Contenido |
 |---|---|
-| `tconfig` | Una sola fila (`id = 1`): `plato1..plato4` (puertos). |
+| `tconfig` | Una sola fila (`id = 1`): `plato1..plato9` (puertos; por defecto 8001..8009, de `first_data.dart`). |
 | `tpesadas_base` | Cabecera común: fecha, hora, identificacion, `tipo_pesada`, total, created_at. Índices por fecha y tipo. |
 | `tpesadas_4platos` | Detalle 1:1 de 4 platos (pesos, ejes, lados y porcentajes). FK `ON DELETE CASCADE`. |
 
@@ -162,7 +166,7 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 ## Legacy y trampas
 
 - `Pesaje` (`lib/models/pesaje_model.dart`) sigue siendo el modelo de lectura del historial y de la exportación (se quita en el PR 9).
-- `HelpersConfig.upDateConfig` hace `Navigator.pop` antes de guardar y luego `_refreshScaleConnections()` reconecta los 4 platos.
+- `HelpersConfig.upDateConfig` hace `Navigator.pop` antes de guardar y luego `_refreshScaleConnections()` reconecta todos los platos.
 - `lib/BaseDeDatos/pesadas_export.dart` está vacío.
 - Tests que fallan desde antes (se resuelven en el PR 9 del plan): `test/BaseDeDatos/pesadas_export_test.dart` está vacío (sin `main`, y al compilarlo tira abajo también `service_pesadas_test` si se corren juntos) y `db_pesadas_test` espera largo 481 de la tabla legacy y hoy mide 607.
 - `test/BaseDeDatos/pesadas/tables/db_pesadas_test.dart` testea la tabla legacy `tpesadas`.
