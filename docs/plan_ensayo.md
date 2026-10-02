@@ -18,13 +18,16 @@ se ven los picos.
 
 - Se quitan el botón `< H >` y el comando `resethold`. Queda el `> 0 <` de cada plato y se agrega un **Cero general**.
 - Se quitan el FAB **Guardar** y las **pesadas** (modelo, tablas, historial). Los reemplazan los **ensayos**.
-- La **identificación de la tolva** se pide al iniciar el ensayo.
+- **Inicio del ensayo**: una pantalla pide la **identificación de la tolva** y la **capacidad nominal de cada celda**.
+  Para cargar las capacidades se usa el dibujo `assets/tolva.png` (vista desde arriba, vertical), con un campo junto a
+  cada celda. En la misma pantalla está el **umbral de alarma en %**, común a las 9.
+- Las capacidades y el umbral se guardan en **SharedPreferences** (no en la base). En el próximo inicio de ensayo
+  aparecen precargados, y el usuario los puede modificar.
 - **Estático**: con la tolva parada, un botón toma los 9 pesos como referencia. Vale para todas las maniobras
   siguientes hasta que se vuelva a tomar. Cualquier cero lo borra, porque deja de ser válido.
 - **Maniobra**: se habilita solo con un estático tomado. Mientras dura, cada peso que llega de cada plato se compara
   con el máximo y el mínimo anteriores. **No se guarda cada lectura.** Al terminar se guardan, por plato: estático,
-  máximo, mínimo y cantidad de lecturas.
-- **Capacidad nominal por celda** (9 valores en la configuración) y un **umbral de alarma en %** común.
+  máximo, mínimo, cantidad de lecturas y la capacidad usada.
 - Las maniobras se numeran solas dentro del ensayo (1, 2, 3…) y guardan su hora de inicio y fin.
 
 ### Cálculos por plato y maniobra
@@ -32,10 +35,27 @@ se ven los picos.
 | Dato | Fórmula |
 |---|---|
 | Factor de cresta | máx ÷ estático (`-` si el estático es ≤ 0) |
-| % cap. nominal | máx × 100 ÷ capacidad (`-` si la capacidad es 0, o sea no configurada) |
+| % cap. nominal | máx × 100 ÷ capacidad (`-` si la capacidad es 0 o está vacía) |
 | Estado | `EXCEDE` si % > 100; `AL LÍMITE` si % ≥ umbral; `NORMAL` si no; `-` sin capacidad |
 
 Ejemplo del documento: C2 con estático 2.410, máx. 5.980 y capacidad 5.000 da FC 2,48, 119,6 % y `EXCEDE`.
+
+### Dibujo de la tolva (`assets/tolva.png`)
+
+La imagen mide 1000 × 2868 px (proporción 0,349) y es una vista superior con la lanza y el enganche arriba. Las celdas
+se ubican con **fracciones del ancho y del alto** de la imagen, para que el campo quede en su lugar con cualquier
+tamaño de pantalla. Valores iniciales, medidos sobre el dibujo y a ajustar en el teléfono:
+
+| Plato | Dónde está en el dibujo | x | y |
+|---|---|---|---|
+| 1 ENGANCHE | recuadro chico sobre la lanza | 0,46 | 0,12 |
+| 2 / 3 J1 IZQ / DER | 1ª línea transversal del bastidor, sobre el larguero izq / der | 0,20 / 0,80 | 0,43 |
+| 4 / 5 J2 | 2ª línea transversal | 0,20 / 0,80 | 0,57 |
+| 6 / 7 J3 | 3ª línea transversal | 0,20 / 0,80 | 0,70 |
+| 8 / 9 J4 | 4ª línea transversal | 0,20 / 0,80 | 0,84 |
+
+Las fracciones van como constantes en `lib/config/platos.dart`, junto a `nombrePlato(n)`, así hay un solo lugar donde
+corregirlas.
 
 ### Limitación conocida
 
@@ -62,25 +82,36 @@ duración de la maniobra dan la tasa real que hubo.
   `nombrePlato(n)`).
 - Test: no aplica (es TCP). Se prueba con las balanzas.
 
-### [ ] Paso 3 · `capacidadCeldasDb`: capacidad nominal y umbral en la configuración (sin UI)
-- `tconfig`: columnas `cap1..cap9` (TEXT, por defecto `'0'`) y `umbral` (TEXT, por defecto `'90'`). En `DBconfig`,
-  helper `fconCapacidad(n)` como `fconPlato(n)`.
-- `DBconeccion`: `dbVersion = 2`. `onCreate` crea la tabla con las columnas nuevas. `onUpgrade`, si `oldVersion < 2`,
-  hace un `ALTER TABLE tconfig ADD COLUMN ...` por columna. **No** se desinstala la app: los puertos tienen que
-  sobrevivir.
-- `ConfigModel`: `List<String> capacidades` (índice 0 = plato 1), `String umbral` y `capacidad(n)`. `fromJson` usa los
-  valores por defecto si falta la columna.
-- `ConfigController`: `capacidad(n)` / `setCapacidades(lista)` y `umbral` / `setUmbral`, con el mismo patrón que los puertos.
-- `main.dart`: cargar capacidades y umbral junto con los puertos. `first_data.dart`: valores por defecto.
-- Test nuevo `test/Models/config_model_test.dart`: ida y vuelta `toJson`/`fromJson` y valores por defecto.
+### [ ] Paso 3 · `preferenciasEnsayo`: capacidades y umbral en SharedPreferences (sin UI)
+- Dependencia nueva `shared_preferences`.
+- Nuevo `lib/helpers/preferencias_ensayo.dart`, clase `PreferenciasEnsayo` con:
+  - `Future<List<String>> leerCapacidades()`: 9 valores, índice 0 = plato 1, `''` si nunca se cargó;
+  - `Future<String> leerUmbral()`: `'90'` por defecto;
+  - `Future<void> guardar({required List<String> capacidades, required String umbral})`.
+  - Claves: `capacidad_plato1` .. `capacidad_plato9` y `umbral_alarma`.
+- Nada de esto va a la base ni a `tconfig`: la configuración de puertos no se toca.
+- Test nuevo `test/helpers/preferencias_ensayo_test.dart` con `SharedPreferences.setMockInitialValues`: valores por
+  defecto, guardar y volver a leer.
 
-### [ ] Paso 4 · `capacidadCeldasUi`: cargar capacidad y umbral en el diálogo de configuración
-- `DialogConfig`: para cada plato, puerto y capacidad (kg) en la misma fila o una debajo de la otra. Se reutiliza
-  `InputTextConfig` (si hace falta, con un parámetro para el teclado numérico). Al final, el campo
-  "Umbral de alarma (%)".
-- Validación simple: vacío o inválido → `'0'` en la capacidad y `'90'` en el umbral.
-- `HelpersConfig.upDateConfig` guarda todo. La reconexión de los puertos no cambia.
-- Cambiar el título del diálogo a "Configuración" y explicar que la capacidad 0 significa "sin alarma".
+### [ ] Paso 4 · `inicioEnsayo`: pantalla de inicio con tolva y capacidades sobre el dibujo
+- Constantes de posición de cada celda en `lib/config/platos.dart` (ver la tabla "Dibujo de la tolva").
+- Nuevo `lib/Controllers/ensayo_controller.dart` (GetxController, `Get.put` en `main.dart`). Por ahora solo:
+  `tolva`, `capacidades` (9 String), `umbral` e `iniciarEnsayo(tolva, capacidades, umbral)`. Se completa en los pasos
+  siguientes.
+- Nueva `lib/Pages/inicio_ensayo/inicio_ensayo_page.dart` (ruta `'inicioEnsayo'`), con scroll:
+  - arriba, el campo **Identificación de la tolva** (obligatorio);
+  - el dibujo `tolva.png` en un `AspectRatio(1000 / 2868)` con `LayoutBuilder` + `Stack`. Cada celda lleva un campo
+    numérico chico (kg) en `Positioned`, según sus fracciones x/y: los izq a la izquierda del larguero y los der a la
+    derecha, sin tapar el dibujo, y el enganche junto a la lanza. Cada campo lleva arriba la etiqueta `nombrePlato(n)`.
+    Como la imagen es muy alta, se dibuja al ancho disponible y la pantalla se desplaza;
+  - abajo, **Umbral de alarma (%)** y el botón **Comenzar ensayo**.
+- Al abrir la pantalla, los 9 campos y el umbral se precargan con `PreferenciasEnsayo`. La tolva arranca vacía.
+- **Comenzar ensayo**: valida la tolva no vacía y que las capacidades sean números ≥ 0 (vacío = sin alarma para esa
+  celda; si hay alguna vacía, se avisa pero se deja seguir). Después guarda en `PreferenciasEnsayo`, llama
+  `EnsayoController.iniciarEnsayo(...)` y reemplaza la ruta por `'platos'` (así "atrás" vuelve al Home).
+- Home: "Iniciar Pesaje" pasa a **"Iniciar ensayo"** y navega a `'inicioEnsayo'`.
+- `NuevePlatosPage`: AppBar con el nombre de la tolva.
+- `assets/tolva.png` ya está en `assets/` (lo cubre `pubspec.yaml`); se agrega al repo en este paso.
 
 ### [ ] Paso 5 · `registroMaxMin`: máximo y mínimo por plato (sin UI)
 - Nueva clase pura `lib/domain/entities/registro_max_min.dart`: `registrar(double peso)`, `maximo`, `minimo`,
@@ -94,14 +125,10 @@ duración de la maniobra dan la tasa real que hubo.
 - Test nuevo `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura (máx = mín), negativos,
   reinicio.
 
-### [ ] Paso 6 · `iniciarEnsayo`: identificación de la tolva y estático
-- Nuevo `lib/Controllers/ensayo_controller.dart` (GetxController, `Get.put` en `main.dart`). Campos: `tolva`,
-  `estaticos` (RxList<String>, vacía = sin estático), `estado` (`sinEstatico` / `listo` / `registrando`).
-  Métodos: `iniciarEnsayo(tolva)`, `tomarEstatico()` y `borrarEstatico()`.
-- Home: "Iniciar Pesaje" pasa a **"Iniciar ensayo"**. Abre `DialogWidget` con el label "Identificación de la tolva"
-  (parametrizar título y label) y después navega a `'platos'`. Con la tolva vacía no avanza.
+### [ ] Paso 6 · `tomarEstatico`: referencia estática
+- `EnsayoController`: `estaticos` (RxList<String>, vacía = sin estático), `estado` (`sinEstatico` / `listo` /
+  `registrando`), `tomarEstatico()` y `borrarEstatico()`.
 - `NuevePlatosPage`:
-  - AppBar con el nombre de la tolva;
   - **quitar el FAB Guardar** y `showDialogGuardarPesada`;
   - en `BarraEnsayo`, botón **Tomar estático**. Si hay platos desconectados, pide confirmación antes.
 - `PlatoWidget`: nueva línea `E: <estático>` (vacía si no hay estático).
@@ -112,7 +139,7 @@ duración de la maniobra dan la tasa real que hubo.
 - `BarraEnsayo`: botón **Registrar maniobra**, habilitado solo en estado `listo`. Mientras corre cambia a
   **Terminar maniobra** y muestra el número de maniobra y el tiempo transcurrido.
 - `EnsayoController.iniciarManiobra()`: llama `iniciarRegistro()` en los 9 `PesoController` y guarda la hora de inicio.
-  `terminarManiobra()`: los detiene y arma el resultado.
+  `terminarManiobra()`: los detiene y arma el resultado con las capacidades del ensayo.
 - Modelo `lib/models/ensayos/maniobra_plato.dart`: `plato`, `estatico`, `maximo`, `minimo`, `lecturas`, `capacidad` y
   los getters `factorCresta`, `porCapacidad` y `estado(umbral)` (fórmulas de la tabla de arriba). Pesos con 2
   decimales y % con 1, como el resto de la app.
@@ -121,13 +148,13 @@ duración de la maniobra dan la tasa real que hubo.
 - Al terminar: diálogo con la tabla de resultados. Widget nuevo `TablaManiobra` con plato, estático, máx, mín, FC,
   % cap y estado con color, igual que la tabla del punto 06 del documento.
 - `PopScope`: si se sale con una maniobra en curso, pide confirmación y la descarta.
-- Test nuevo `test/Models/maniobra_plato_test.dart`: los casos de borde (= umbral, = 100 %, > 100 %, capacidad 0,
-  estático 0) y los valores de ejemplo del documento.
+- Test nuevo `test/Models/maniobra_plato_test.dart`: los casos de borde (= umbral, = 100 %, > 100 %, capacidad 0 o
+  vacía, estático 0) y los valores de ejemplo del documento.
 
 ### [ ] Paso 8 · `alarmaUmbral`: resaltar el plato que se pasa
 - `PlatoWidget` recibe un `nivelAlarma` (normal / alLimite / excede), calculado con el **máximo** de la maniobra (o el
-  peso actual si no hay maniobra) contra `capacidad(n)` y `umbral`.
-- Se dibuja con el borde y el título en ámbar (al límite) o rojo (excede). Sin capacidad configurada no hay alarma.
+  peso actual si no hay maniobra) contra `EnsayoController.capacidades[n - 1]` y `umbral`.
+- Se dibuja con el borde y el título en ámbar (al límite) o rojo (excede). Sin capacidad cargada no hay alarma.
 - Reutilizar `ManiobraPlato.estado` u otra función pura compartida, para no duplicar la fórmula.
 
 ### [ ] Paso 9 · `pantallaEncendida`: que no se apague la pantalla en la maniobra
@@ -136,7 +163,7 @@ duración de la maniobra dan la tasa real que hubo.
 - Probar en el teléfono que una maniobra de varios minutos con la pantalla sin tocar sigue recibiendo datos.
 
 ### [ ] Paso 10 · `guardarManiobras`: ensayos y maniobras en la base
-- Tablas nuevas (`dbVersion = 3`; `onUpgrade` con `oldVersion < 3` las crea y `onCreate` también):
+- Tablas nuevas (`dbVersion = 2`; `onUpgrade` con `oldVersion < 2` las crea y `onCreate` también):
 
   | Tabla | Columnas |
   |---|---|
@@ -144,8 +171,8 @@ duración de la maniobra dan la tasa real que hubo.
   | `tmaniobras` | `id`, `ensayo_id` FK → `tensayos` `ON DELETE CASCADE`, `numero`, `hora_inicio`, `hora_fin`, `duracion_ms`, `umbral` |
   | `tmaniobras_platos` | `maniobra_id` FK → `tmaniobras` `ON DELETE CASCADE`, `plato`, `estatico`, `maximo`, `minimo`, `lecturas`, `capacidad`; PK (`maniobra_id`, `plato`) |
 
-  La capacidad y el umbral se **copian** en cada maniobra, para que el estado no cambie si después se toca la
-  configuración.
+  La capacidad y el umbral se **copian** en cada maniobra, porque en SharedPreferences cambian en el próximo ensayo y
+  la maniobra guardada tiene que seguir mostrando el mismo estado.
 - Modelos `EnsayoModel` y `ManiobraModel` (cabecera + `List<ManiobraPlato>`), con `toDb` / `fromDb`.
 - Cadena como la de pesadas: `tables/db_ensayos.dart`, `db_maniobras.dart` y `db_maniobras_platos.dart`; interfaz,
   `ServiceEnsayos` y `HelpersEnsayos` (SnackBar). En `DBconeccion`:
@@ -176,15 +203,16 @@ duración de la maniobra dan la tasa real que hubo.
   - `models/pesadas/*` y `tables/db_pesadas_*`;
   - interfaces, services y helpers de pesadas;
   - `Providers/pesadas/*` y `Pages/pesadas/*` (lo que no se haya reutilizado);
+  - `DialogWidget` si ya no lo usa nadie;
   - `CalculosController.calcularPayload9Platos`. Quedan el total y los % en vivo.
-- `dbVersion = 4`: `onUpgrade` con `oldVersion < 4` hace `DROP TABLE` de `tpesadas_9platos` y `tpesadas_base`.
+- `dbVersion = 3`: `onUpgrade` con `oldVersion < 3` hace `DROP TABLE` de `tpesadas_9platos` y `tpesadas_base`.
   `onCreate` deja de crearlas.
 - Tests: quitar los de pesadas (`pesada_9platos_payload_test`, `service_pesadas_test`, `list_pesaje`) y la parte del
   payload en `calculos_9platos_test`.
 
 ### [ ] Paso 14 · `claudeMdEnsayo`: documentación final
-- Actualizar `CLAUDE.md`: qué es la app (modo ensayo), flujo estático → maniobra, esquema de la base v4, exportación,
-  tests y estado de `flutter analyze`.
+- Actualizar `CLAUDE.md`: qué es la app (modo ensayo), pantalla de inicio con el dibujo de la tolva, SharedPreferences,
+  flujo estático → maniobra, esquema de la base v3, exportación, tests y estado de `flutter analyze`.
 - `README.md`: historial.
 - Marcar todos los pasos de este plan.
 
@@ -198,13 +226,19 @@ duración de la maniobra dan la tasa real que hubo.
   "SE DESCARGA" si el mín. queda cerca de 0)? Hoy no está previsto.
 - **Nombre de la maniobra**: por ahora es solo un número. Si después se quiere elegir el paso del protocolo (02 Reparto
   estático … 08 Arranque y frenada), se agrega en el paso 7 o 10.
+- **Tolva**: hoy arranca vacía en cada ensayo. ¿Conviene precargar la última, también desde SharedPreferences?
+  (paso 4).
+- **Posición de los campos sobre el dibujo**: las fracciones de la tabla son una primera medida; se ajustan viendo la
+  pantalla en el teléfono y en la tablet (paso 4).
 
 ## Verificación en cada paso
 
 1. `fvm flutter analyze` (sin warnings nuevos; siguen los 3 info previos) y `fvm flutter test`.
 2. `fvm flutter build apk --debug`.
 3. Con las balanzas, según el paso:
-   - instalar **sobre** la versión anterior y comprobar que la migración conserva los puertos (pasos 3, 10 y 13);
+   - instalar **sobre** la versión anterior y comprobar que la migración conserva los puertos (pasos 10 y 13);
+   - inicio de ensayo: cargar capacidades, salir, volver a entrar y comprobar que siguen ahí y se pueden cambiar
+     (paso 4);
    - Cero general;
    - Tomar estático;
    - maniobra cargando y descargando un plato a mano (máx/mín lo siguen y la alarma se enciende);
