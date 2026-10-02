@@ -134,7 +134,7 @@ Cada PR debe dejar la app compilando.
 - Mover `PRAGMA foreign_keys = ON` a `onConfigure`.
 - Test nuevo `test/controllers/calculos_9platos_test.dart`: totales, juegos, lados y porcentajes.
 
-### [ ] PR 8 · `pantallaNuevePlatos`: pantalla de pesaje
+### [x] PR 8 · `pantallaNuevePlatos`: pantalla de pesaje
 - Renombrar `lib/Pages/cuatro_platos/` a `lib/Pages/nueve_platos/` y `CuatroPlatosPage` a `NuevePlatosPage`. La ruta sigue siendo `'platos'`.
 - Contenido, en este orden:
   - `RecuadroPesoTotal`;
