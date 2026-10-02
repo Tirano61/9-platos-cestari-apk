@@ -16,19 +16,18 @@ import 'package:nueve_platos_cestari/Controllers/controllers_export.dart';
 class CuatroPlatosPage extends StatelessWidget {
   CuatroPlatosPage({super.key});
 
-  final peso1GetxController = Get.find<Peso1Controller>(); 
-  final peso2GetxController = Get.find<Peso2Controller>(); 
-  final peso3GetxController = Get.find<Peso3Controller>(); 
-  final peso4GetxController = Get.find<Peso4Controller>(); 
+  final pesoControllers = [
+    for (var n = 1; n <= 4; n++) Get.find<PesoController>(tag: 'plato$n'),
+  ];
 
   @override
   Widget build(BuildContext context) {
 
     return Obx((){
-      final plato1 = peso1GetxController.getPesoModel1;
-      final plato2 = peso2GetxController.getPesoModel2;
-      final plato3 = peso3GetxController.getPesoModel3;
-      final plato4 = peso4GetxController.getPesoModel4;
+      final plato1 = pesoControllers[0].pesoModel;
+      final plato2 = pesoControllers[1].pesoModel;
+      final plato3 = pesoControllers[2].pesoModel;
+      final plato4 = pesoControllers[3].pesoModel;
       CalculosController.cn.setPesoTotal(plato1.peso, plato2.peso, plato3.peso, plato4.peso);
       return Scaffold(
         appBar: AppBar(

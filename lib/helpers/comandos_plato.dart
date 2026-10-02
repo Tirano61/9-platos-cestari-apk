@@ -1,12 +1,8 @@
-import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso2_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso3_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso4_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Providers/tcp_conexion.dart';
-import 'package:nueve_platos_cestari/models/recibir_peso_model.dart';
 import 'package:get/get.dart';
 
-/// Envia los comandos de cero y reset de hold a un plato (1..4) por TCP,
+/// Envia los comandos de cero y reset de hold a un plato (1..N) por TCP,
 /// a la IP desde la que llegan los datagramas UDP del plato.
 ///
 /// Devuelve false si el comando no se pudo enviar.
@@ -39,13 +35,8 @@ class ComandosPlato {
   }
 
   static String? _ipPlato(int plato) {
-    final RecibirPesoModel? modelo = switch (plato) {
-      1 => Get.find<Peso1Controller>().getPesoModel1,
-      2 => Get.find<Peso2Controller>().getPesoModel2,
-      3 => Get.find<Peso3Controller>().getPesoModel3,
-      4 => Get.find<Peso4Controller>().getPesoModel4,
-      _ => null,
-    };
-    return modelo?.adreess;
+    final tag = 'plato$plato';
+    if (!Get.isRegistered<PesoController>(tag: tag)) return null;
+    return Get.find<PesoController>(tag: tag).pesoModel.adreess;
   }
 }

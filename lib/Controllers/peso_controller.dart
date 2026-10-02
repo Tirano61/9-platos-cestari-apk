@@ -7,20 +7,24 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:udp/udp.dart';
 
-class Peso2Controller extends GetxController{
 
-  final _recibirPesoModel = RecibirPesoModel();
+/// Recibe por UDP el peso de un plato (1..N) en el puerto configurado.
+///
+/// Se registra con `Get.put(PesoController(plato: n), tag: 'plato$n')`
+/// y se busca con `Get.find<PesoController>(tag: 'plato$n')`.
+class PesoController extends GetxController{
+
+  PesoController({required this.plato});
+
+  final int plato;
+  final RecibirPesoModel pesoModel = RecibirPesoModel();
   final configGetx = Get.find<ConfigController>();
   final UdpScaleParser _parser = const UdpScaleParser();
   UDP? _receiver;
   StreamSubscription? _udpSubscription;
 
-  get getPesoModel2{
-    return _recibirPesoModel;
-  }
-
-  Future<void> recibirPeso2() async {
-    final puertoGuardado = int.tryParse(configGetx.getPuerto2.value);
+  Future<void> recibirPeso() async {
+    final puertoGuardado = int.tryParse(configGetx.puerto(plato).value);
     if (puertoGuardado == null) {
       return;
     }
@@ -31,7 +35,7 @@ class Peso2Controller extends GetxController{
     try {
       receiver = await UDP.bind(Endpoint.any(port: Port(puertoGuardado)));
     } catch (e) {
-      debugPrint('UDP plato 2: no se pudo abrir el puerto $puertoGuardado: $e');
+      debugPrint('UDP plato $plato: no se pudo abrir el puerto $puertoGuardado: $e');
       // El timer vuelve a intentar mientras _receiver siga en null.
       return;
     }
@@ -51,11 +55,12 @@ class Peso2Controller extends GetxController{
       );
       if (reading == null) return;
 
-      _recibirPesoModel.setPeso = reading.peso;
-      _recibirPesoModel.setEstable = reading.estable;
-      _recibirPesoModel.setTension = reading.tension;
-      _recibirPesoModel.setAdreess = reading.sourceId;
-      _recibirPesoModel.setConexion = true;
+      pesoModel.setPeso = reading.peso;
+      pesoModel.setEstable = reading.estable;
+      pesoModel.setTension = reading.tension;
+      pesoModel.setAdreess = reading.sourceId;
+      pesoModel.setConexion = true;
+
       estadoConexion = true;
       contador = 0;
     });
@@ -74,7 +79,7 @@ class Peso2Controller extends GetxController{
 
     _isReconnecting = true;
     try {
-      await recibirPeso2();
+      await recibirPeso();
     } finally {
       _isReconnecting = false;
       // Los 5 s sin datos se cuentan desde que termina el intento.
@@ -85,20 +90,20 @@ class Peso2Controller extends GetxController{
   void startTimerDatoRecibido() {
     const oneSecPeso = Duration(milliseconds: 1000);
     timerDato?.cancel();
-    timerDato = Timer.periodic(oneSecPeso, (timerPeso) async{ 
+    timerDato = Timer.periodic(oneSecPeso, (timerPeso) async{
       if( contador < 5 ){
         contador ++;
       }
       if( contador == 5 ){
         if(estadoConexion){
           estadoConexion = false;
-          _recibirPesoModel.setConexion = false;
+          pesoModel.setConexion = false;
           contador = 0;
         } else {
           contador = 0;
           await _tryReconnect();
         }
-      }     
+      }
     });
   }
 
@@ -121,4 +126,5 @@ class Peso2Controller extends GetxController{
     _closeUdpListener();
     super.onClose();
   }
+
 }
