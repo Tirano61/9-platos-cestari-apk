@@ -3,8 +3,9 @@
 
 import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
 import 'package:nueve_platos_cestari/models/pesaje_model.dart';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_9platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
 import '../list_pesajes/list_pesaje.dart';
 
@@ -34,19 +35,14 @@ class DbConnectionMock extends PesadasInterface{
   }
 
   @override
-  Future<List<Pesaje>> getPesadas4Platos() async {
-    return getPesadas();
+  Future<List<Pesada9PlatosPayload>> getPesadas9Platos() async {
+    return [];
   }
 
   @override
-  Future<int> insertPesada(Pesaje pesaje)async {
-    return 1;
-  }
-
-  @override
-  Future<int> insertPesada4Platos({
+  Future<int> insertPesada9Platos({
     required PesadaBase base,
-    required Pesada4PlatosDetalle detalle,
+    required Pesada9PlatosDetalle detalle,
   }) async {
     return 1;
   }

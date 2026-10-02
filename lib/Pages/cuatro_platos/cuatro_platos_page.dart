@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:nueve_platos_cestari/config/platos.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
@@ -17,18 +18,21 @@ class CuatroPlatosPage extends StatelessWidget {
   CuatroPlatosPage({super.key});
 
   final pesoControllers = [
-    for (var n = 1; n <= 4; n++) Get.find<PesoController>(tag: 'plato$n'),
+    for (var n = 1; n <= cantidadPlatos; n++) Get.find<PesoController>(tag: 'plato$n'),
   ];
 
   @override
   Widget build(BuildContext context) {
 
     return Obx((){
+      // El total y el guardado usan los 9 platos; hasta el PR 8 la pantalla
+      // solo dibuja los platos 1..4.
+      final pesos = [for (final c in pesoControllers) c.pesoModel.peso];
       final plato1 = pesoControllers[0].pesoModel;
       final plato2 = pesoControllers[1].pesoModel;
       final plato3 = pesoControllers[2].pesoModel;
       final plato4 = pesoControllers[3].pesoModel;
-      CalculosController.cn.setPesoTotal(plato1.peso, plato2.peso, plato3.peso, plato4.peso);
+      CalculosController.cn.setPesoTotalByList(pesos);
       return Scaffold(
         appBar: AppBar(
           //backgroundColor: ThemePlatos.backgroundTitulos,
@@ -43,11 +47,7 @@ class CuatroPlatosPage extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: SizeScreen.sc().screenWidth * 0.02, bottom: SizeScreen.sc().screenWidth * 0.035),
                 child: RecuadroPesoTotal(
-                  suma: (double.parse(plato1.peso.toString()) + 
-                      double.parse(plato2.peso.toString()) +
-                      double.parse(plato3.peso.toString()) +
-                      double.parse(plato4.peso.toString())
-                    ).toStringAsFixed(2) 
+                  suma: CalculosController.cn.pesoTotal
                 ),
               ),
               /// Fila de platos eje delantero
@@ -117,11 +117,8 @@ class CuatroPlatosPage extends StatelessWidget {
               /// Antes de abrir el dialogo debe verificar la conexión
               /// Se quito la verificación de conexion por que querian 
               /// usar una cantidad indeterminada de platos
-                final payload = await CalculosController.cn.calcularPayload4Platos(
-                  peso1: plato1.peso,
-                  peso2: plato2.peso,
-                  peso3: plato3.peso,
-                  peso4: plato4.peso,
+                final payload = await CalculosController.cn.calcularPayload9Platos(
+                  pesos: pesos,
                 );
                 if (!context.mounted) return;
                 showDialogGuardarPesada(payload, context);
@@ -138,14 +135,14 @@ class CuatroPlatosPage extends StatelessWidget {
     });
   }
 
-  showDialogGuardarPesada(Pesada4PlatosPayload payload, BuildContext context){
-    showDialog( 
-      context: context, 
+  showDialogGuardarPesada(Pesada9PlatosPayload payload, BuildContext context){
+    showDialog(
+      context: context,
       builder: (_){
-      
+
         return DialogWidget(
           onConfirm: (identificacion) {
-            return HelpersPesadas.guardarPesada4PlatosPayload(
+            return HelpersPesadas.guardarPesada9PlatosPayload(
               payload: payload,
               identificacion: identificacion,
               context: context,
