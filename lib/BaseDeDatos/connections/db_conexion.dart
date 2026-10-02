@@ -5,11 +5,12 @@ import 'dart:io';
 
 import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/settings/config_interfaces.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_config.dart';
-import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas_4platos.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas_9platos.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas_base.dart';
 import 'package:nueve_platos_cestari/models/pesaje_model.dart';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_9platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
 import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,13 +38,17 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
     return await openDatabase(
       path,
       version: dbVersion,
+      // foreign_keys es por conexion: se activa en cada apertura para que
+      // el ON DELETE CASCADE de tpesadas_9platos funcione siempre.
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onOpen: (db){},
       onCreate: ( Database db, int version )async{
-        await db.execute('PRAGMA foreign_keys = ON');
         await db.execute(DBPesadasBase.createTable);
         await db.execute(DBPesadasBase.createIndexFecha);
         await db.execute(DBPesadasBase.createIndexTipo);
-        await db.execute(DBPesadas4Platos.createTable);
+        await db.execute(DBPesadas9Platos.createTable);
         await db.execute(DBconfig.createTableConfig);
       },
       onUpgrade: (db, oldVersion, newVersion) async {},
@@ -51,86 +56,60 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
   }
 
   @override
-  Future<int> insertPesada(Pesaje pesaje)async{
+  Future<int> insertPesada9Platos({
+    required PesadaBase base,
+    required Pesada9PlatosDetalle detalle,
+  }) async {
     try {
-      final createdAt = DateTime.now().toIso8601String();
-      final base = PesadaBase(
-        fecha: pesaje.fecha,
-        hora: pesaje.hora,
-        identificacion: pesaje.identificacion,
-        tipoPesada: '4_platos',
-        total: pesaje.total,
-        createdAt: createdAt,
-      );
+      final db = await getDataBase;
+      return await db.transaction<int>((txn) async {
+        final basePayload = base.toDb();
+        if ((basePayload['created_at'] ?? '').toString().trim().isEmpty) {
+          basePayload['created_at'] = DateTime.now().toIso8601String();
+        }
 
-      final detalle4Platos = Pesada4PlatosDetalle(
-        pesadaId: 0,
-        delIzq: pesaje.delIzq,
-        delDer: pesaje.delDer,
-        trasIzq: pesaje.trasIzq,
-        trasDer: pesaje.trasDer,
-        ejeDel: pesaje.ejeDel,
-        ejeTras: pesaje.ejeTras,
-        ladoIzq: pesaje.ladoIzq,
-        ladoDer: pesaje.ladoDer,
-        porDelIzq: pesaje.porDelIzq,
-        porDelDer: pesaje.porDelDer,
-        porTrasIzq: pesaje.porTrasIzq,
-        porTrasDer: pesaje.porTrasDer,
-        porEjeDel: pesaje.porEjeDel,
-        porEjeTras: pesaje.porEjeTras,
-        porLadoIzq: pesaje.porLadoIzq,
-        porLadoDer: pesaje.porLadoDer,
-      );
-      return insertPesada4Platos(base: base, detalle: detalle4Platos);
+        final baseId = await txn.insert(DBPesadasBase.tableName, basePayload);
+        final detallePayload = detalle.toDb();
+        detallePayload['pesada_id'] = baseId;
+        await txn.insert(DBPesadas9Platos.tableName, detallePayload);
+        return baseId;
+      });
     } catch (e) {
-      return -1; 
+      return -1;
     }
   }
 
+  /// Historial legacy: mapea las pesadas de 9 platos a [Pesaje] hasta que el
+  /// historial y la exportacion lean el modelo nuevo (PR 9).
   @override
-  Future<int> insertPesada4Platos({
-    required PesadaBase base,
-    required Pesada4PlatosDetalle detalle,
-  }) async {
-    final db = await getDataBase;
-    return db.transaction<int>((txn) async {
-      final basePayload = base.toDb();
-      if ((basePayload['created_at'] ?? '').toString().trim().isEmpty) {
-        basePayload['created_at'] = DateTime.now().toIso8601String();
-      }
-
-      final baseId = await txn.insert(DBPesadasBase.tableName, basePayload);
-      final detallePayload = detalle.toDb();
-      detallePayload['pesada_id'] = baseId;
-      await txn.insert(DBPesadas4Platos.tableName, detallePayload);
-      return baseId;
-    });
+  Future<List<Pesaje>> getPesadas() async {
+    final pesadas = await getPesadas9Platos();
+    return pesadas.map(_map9PlatosToPesaje).toList();
   }
 
   @override
-  Future<List<Pesaje>> getPesadas() => getPesadas4Platos();
-
-  @override
-  Future<List<Pesaje>> getPesadas4Platos() async {
+  Future<List<Pesada9PlatosPayload>> getPesadas9Platos() async {
     final db = await getDataBase;
     final baseRows = await db.query(
       DBPesadasBase.tableName,
       where: 'tipo_pesada = ?',
-      whereArgs: ['4_platos'],
+      whereArgs: ['9_platos'],
       orderBy: 'id DESC',
     );
 
-    final result = <Pesaje>[];
+    final result = <Pesada9PlatosPayload>[];
     for (final row in baseRows) {
       final detalle = await db.query(
-        DBPesadas4Platos.tableName,
+        DBPesadas9Platos.tableName,
         where: 'pesada_id = ?',
         whereArgs: [row['id']],
         limit: 1,
       );
       if (detalle.isEmpty) continue;
-      result.add(_map4PlatosToPesaje(row, detalle.first));
+      result.add(Pesada9PlatosPayload(
+        base: PesadaBase.fromDb(row),
+        detalle: Pesada9PlatosDetalle.fromDb(detalle.first),
+      ));
     }
     return result;
   }
@@ -160,33 +139,35 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
     return resp;
   }
 
-  Pesaje _map4PlatosToPesaje(Map<String, dynamic> baseRow, Map<String, dynamic> detalleRow) {
-    final base = PesadaBase.fromDb(baseRow);
-    final detalle = Pesada4PlatosDetalle.fromDb(detalleRow);
+  /// Temporal (se quita en el PR 9): [Pesaje] solo tiene lugar para 4 platos,
+  /// asi que DEL/TRAS reciben los juegos J1/J2. Lados y total son exactos.
+  Pesaje _map9PlatosToPesaje(Pesada9PlatosPayload pesada) {
+    final base = pesada.base;
+    final detalle = pesada.detalle;
 
     return Pesaje(
       id: base.id,
       fecha: base.fecha,
       hora: base.hora,
       identificacion: base.identificacion,
-      delDer: detalle.delDer,
-      porDelDer: detalle.porDelDer,
-      delIzq: detalle.delIzq,
-      porDelIzq: detalle.porDelIzq,
-      trasDer: detalle.trasDer,
-      porTrasDer: detalle.porTrasDer,
-      trasIzq: detalle.trasIzq,
-      porTrasIzq: detalle.porTrasIzq,
-      ejeDel: detalle.ejeDel,
-      porEjeDel: detalle.porEjeDel,
-      ejeTras: detalle.ejeTras,
-      porEjeTras: detalle.porEjeTras,
+      delDer: detalle.j1Der,
+      porDelDer: detalle.porJ1Der,
+      delIzq: detalle.j1Izq,
+      porDelIzq: detalle.porJ1Izq,
+      trasDer: detalle.j2Der,
+      porTrasDer: detalle.porJ2Der,
+      trasIzq: detalle.j2Izq,
+      porTrasIzq: detalle.porJ2Izq,
+      ejeDel: detalle.juego1,
+      porEjeDel: detalle.porJuego1,
+      ejeTras: detalle.juego2,
+      porEjeTras: detalle.porJuego2,
       ladoDer: detalle.ladoDer,
       porLadoDer: detalle.porLadoDer,
       ladoIzq: detalle.ladoIzq,
       porLadoIzq: detalle.porLadoIzq,
       total: base.total,
-      tipoPesada: '4_platos',
+      tipoPesada: base.tipoPesada,
     );
   }
 

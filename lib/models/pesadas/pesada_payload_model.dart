@@ -1,11 +1,11 @@
-import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_9platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
 
-class Pesada4PlatosPayload {
+class Pesada9PlatosPayload {
   final PesadaBase base;
-  final Pesada4PlatosDetalle detalle;
+  final Pesada9PlatosDetalle detalle;
 
-  const Pesada4PlatosPayload({
+  const Pesada9PlatosPayload({
     required this.base,
     required this.detalle,
   });

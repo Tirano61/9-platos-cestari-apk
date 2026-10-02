@@ -18,7 +18,7 @@ Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App 
 
 **El plan paso a paso, con un PR por paso, está en [docs/plan_9_platos.md](docs/plan_9_platos.md).** Seguir ese orden y marcar cada paso al terminarlo.
 
-Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos (la pantalla de pesaje sigue mostrando los platos 1..4 hasta el PR 8). Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
+Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos. Desde el PR 7 el modelo, los cálculos y la base son de 9 platos: la pantalla de pesaje suma y guarda los 9, pero hasta el PR 8 solo dibuja los platos 1..4. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
 
 ## Qué es la app (código heredado)
 
@@ -56,7 +56,7 @@ fvm dart run flutter_native_splash:create   # regenerar splash (assets/splash*.p
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 6 `info` preexistentes (`use_build_context_synchronously` en helpers_pesadas, `file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en cuatro_platos_page, 2 × `prefer_typing_uninitialized_variables` en fila_platos). No introducir nuevos; no hace falta corregir estos salvo que se pida.
+Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 5 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en cuatro_platos_page, 2 × `prefer_typing_uninitialized_variables` en fila_platos). No introducir nuevos; no hace falta corregir estos salvo que se pida.
 
 ## Mapa del código (`lib/`)
 
@@ -73,8 +73,9 @@ lib/Controllers/
                                    pesoModel (RecibirPesoModel), timer de 1 s que marca
                                    desconexion a los 5 s sin datos y reabre el socket si hace falta.
                                    Get.find<PesoController>(tag: 'plato$n').
-  calculos_controllers.dart        Singleton CalculosController.cn: totales, porcentajes, fecha/hora y
-                                   armado del payload tipado (Pesada4PlatosPayload).
+  calculos_controllers.dart        Singleton CalculosController.cn: totales (setPesoTotalByList),
+                                   porcentajes, fecha/hora y armado del payload tipado:
+                                   calcularPayload9Platos(pesos: 9 pesos en orden de plato).
 lib/data/
   udp/udp_scale_parser.dart        Parsea datagrama "ADC = peso,estable,x,tension" -> ScaleReading.
 lib/domain/
@@ -95,7 +96,8 @@ lib/models/
                                    Claves JSON = columnas tconfig plato1..plato9.
   recibir_peso_model.dart          Estado Rx de un plato: peso, estable, tension (nivel 1..5), adreess, conexion.
   pesaje_model.dart                Pesaje: modelo MIXTO legacy que todavia usan historial y exportacion.
-  pesadas/                         Modelos nuevos: PesadaBase, Pesada4PlatosDetalle, payload.
+  pesadas/                         Modelos nuevos: PesadaBase, Pesada9PlatosDetalle (enganche, j1Izq..j4Der,
+                                   juego1..4, ladoIzq/Der y un por* por cada uno), Pesada9PlatosPayload.
 lib/Pages/
   Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato (fila del
                                    enganche + 4 filas izq/der), boton
@@ -123,7 +125,7 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`.
 - Estado con **GetX**: `Get.put` en `main.dart`, `Get.find` en widgets, `Obx` para reactividad. No hay otro gestor de estado.
 - Singletons con constructor privado: `CalculosController.cn`, `Conexion.cn`, `ThemePlatos.cn`, `SizeScreen.sc()`, `DBconeccion.db`.
 - Los pesos viajan como `String` con 2 decimales (`"0.00"`); se parsean con `double.tryParse` para calcular. Porcentajes también como `String`.
-- `tipoPesada` es siempre `'4_platos'` (pasa a `'9_platos'` en el PR 7).
+- `tipoPesada` es siempre `'9_platos'`.
 - Feedback al usuario con `SnackBar` desde los helpers; colores en `ThemePlatos.errorColor` / `positiveColor`.
 - Layout responsive a mano con `SizeScreen.sc().screenWidth * factor` y `isMinWidth`.
 
@@ -143,18 +145,18 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 |---|---|
 | `tconfig` | Una sola fila (`id = 1`): `plato1..plato9` (puertos; por defecto 8001..8009, de `first_data.dart`). |
 | `tpesadas_base` | Cabecera común: fecha, hora, identificacion, `tipo_pesada`, total, created_at. Índices por fecha y tipo. |
-| `tpesadas_4platos` | Detalle 1:1 de 4 platos (pesos, ejes, lados y porcentajes). FK `ON DELETE CASCADE`. |
+| `tpesadas_9platos` | Detalle 1:1 de 9 platos (`db_pesadas_9platos.dart`): pesos de los 9 platos, juegos, lados y un `por_*` por cada uno. FK `ON DELETE CASCADE`. |
 
-- Inserción en transacción (`insertPesada4Platos`). `getPesadas` delega en `getPesadas4Platos`. El borrado se hace solo sobre `tpesadas_base` y confía en el CASCADE.
-- `PRAGMA foreign_keys = ON` se ejecuta solo dentro de `onCreate`. En sqflite ese pragma es por conexión, así que en aperturas posteriores puede no estar activo: si se ven filas huérfanas, moverlo a `onConfigure`.
+- Inserción en transacción (`insertPesada9Platos`, devuelve -1 si falla). `getPesadas9Platos` devuelve `List<Pesada9PlatosPayload>`. `getPesadas` (historial y exportación, legacy hasta el PR 9) los mapea a `Pesaje`: como `Pesaje` solo tiene lugar para 4 platos, DEL/TRAS reciben J1/J2; lados y total son exactos. El borrado se hace solo sobre `tpesadas_base` y confía en el CASCADE.
+- `PRAGMA foreign_keys = ON` se ejecuta en `onConfigure`, o sea en cada apertura (en sqflite el pragma es por conexión).
 - `lib/BaseDeDatos/tables/db_pesadas.dart` (tabla `tpesadas`) es legacy: ya no se crea, solo lo referencia un test.
 - Si hace falta cambiar el esquema: subir `dbVersion` y escribir `onUpgrade`, o desinstalar la app en el dispositivo de prueba.
 - Plan y bitácora completa de la reforma: `docs/cambios_db.md` (todas las fases marcadas como hechas el 24/08/2026).
 
 ## Flujo de guardado de una pesada
 
-1. La pantalla llama `CalculosController.cn.calcularPayload4Platos(...)`.
-2. Abre `DialogWidget` pidiendo identificación; `onConfirm` llama `HelpersPesadas.guardarPesada4PlatosPayload`.
+1. La pantalla llama `CalculosController.cn.calcularPayload9Platos(pesos: ...)` con los pesos de los 9 controllers.
+2. Abre `DialogWidget` pidiendo identificación; `onConfirm` llama `HelpersPesadas.guardarPesada9PlatosPayload`.
 3. El helper inserta vía `ServicePesadas` y muestra SnackBar.
 4. El historial (`PesadasPage`) lee con `getPesadas()`, que devuelve `Pesaje` legacy.
 5. Exportación: `Exportar.writeFile` genera `pesadas.xlsx` con una sola hoja `4_platos`. `compartirArchivo` lo comparte con share_plus.

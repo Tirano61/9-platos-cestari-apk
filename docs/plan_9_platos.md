@@ -119,7 +119,7 @@ Cada PR debe dejar la app compilando.
 - Card del Home: una fila para el enganche y 4 filas izq/der, con el estado de conexión de cada plato.
 - Estado intermedio aceptado: la pantalla de pesaje sigue mostrando los platos 1..4 hasta el PR 8.
 
-### [ ] PR 7 · `pesadaNuevePlatos`: modelo, cálculos y base de datos
+### [x] PR 7 · `pesadaNuevePlatos`: modelo, cálculos y base de datos
 - `Pesada9PlatosDetalle` reemplaza a `pesada_4platos_model.dart`. Campos:
   - `enganche`, `j1Izq`..`j4Der`;
   - `juego1..4`, `ladoIzq`, `ladoDer`;
