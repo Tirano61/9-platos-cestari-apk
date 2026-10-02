@@ -18,7 +18,7 @@ Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App 
 
 **El plan paso a paso, con un PR por paso, está en [docs/plan_9_platos.md](docs/plan_9_platos.md).** Seguir ese orden y marcar cada paso al terminarlo.
 
-Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3 y el pesaje por ejes en el PR 4. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
+Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4 y los 4 controllers de peso se unificaron en el PR 5. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
 
 ## Qué es la app (código heredado)
 
@@ -64,12 +64,15 @@ Las carpetas viejas usan mayúscula inicial (`Controllers`, `Pages`, `BaseDeDato
 
 ```
 lib/main.dart                      Bootstrap: Get.put de todos los controllers, carga config de DB,
-                                   arranca recibirPesoN() de los 4 platos, define rutas.
+                                   registra un PesoController por plato (tag 'plato1'..'plato4'),
+                                   arranca recibirPeso() de cada uno, define rutas.
 lib/Controllers/
-  config_controller.dart           Rx: puertos 1..4.
-  peso1..peso4_controller.dart     Uno por plato, CASI IDENTICOS (copy-paste). Escuchan UDP,
-                                   actualizan RecibirPesoModel, timer de 1 s que marca
+  config_controller.dart           Lista de RxString con los puertos: puerto(n) / setPuerto(n, v),
+                                   cantidadPlatos (hoy 4).
+  peso_controller.dart             PesoController(plato: n), uno por plato. Escucha UDP, actualiza
+                                   pesoModel (RecibirPesoModel), timer de 1 s que marca
                                    desconexion a los 5 s sin datos y reabre el socket si hace falta.
+                                   Get.find<PesoController>(tag: 'plato$n').
   calculos_controllers.dart        Singleton CalculosController.cn: totales, porcentajes, fecha/hora y
                                    armado del payload tipado (Pesada4PlatosPayload).
 lib/data/
@@ -122,7 +125,7 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`.
 
 ## Flujo de datos de los platos (WiFi / UDP)
 
-1. `PesoNController.recibirPesoN()` hace `UDP.bind(Endpoint.any(port: puertoN))`. Un contador `_udpGeneracion` descarta binds viejos (OK repetido mientras se abría el socket). Si el bind falla, el timer lo reintenta a los 5 s mientras `_receiver` siga en null.
+1. `PesoController.recibirPeso()` hace `UDP.bind(Endpoint.any(port: puerto(plato)))`. Un contador `_udpGeneracion` descarta binds viejos (OK repetido mientras se abría el socket). Si el bind falla, el timer lo reintenta a los 5 s mientras `_receiver` siga en null.
 2. Cada datagrama pasa por `UdpScaleParser` (`ADC = peso,estable,?,tension` + terminador; se toma lo que sigue al `=`).
 3. Se actualiza `RecibirPesoModel`: `adreess` = IP de origen del datagrama, `conexion = true`, `contador = 0`.
 4. Reconexión: el timer de cada controller (arranca en `onInit`, se cancela en `onClose`, corre también en el Home) marca desconexión a los 5 s sin datos. Si ya estaba desconectado, llama `_tryReconnect`, que solo reabre si no hay socket (`_receiver == null`). Los 5 s se cuentan desde que termina el intento.
@@ -155,7 +158,6 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 ## Pendientes conocidos
 
 - `ConnectionWidget` muestra siempre un ícono de WiFi (solo visual).
-- Los 4 `PesoNController` son copias: cualquier cambio hay que replicarlo en los cuatro (se unifican en el PR 5 del plan).
 
 ## Legacy y trampas
 

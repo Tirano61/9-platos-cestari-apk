@@ -1,10 +1,7 @@
 
 import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_config.dart';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso2_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso3_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso4_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Widgets/botton_bar.dart';
 import 'package:nueve_platos_cestari/Widgets/icon_button_bar_widget.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
@@ -18,10 +15,7 @@ class HomePage extends StatelessWidget {
    const HomePage({super.key});
 
   ConfigController get _configController => Get.find<ConfigController>();
-  Peso1Controller get _peso1Controller => Get.find<Peso1Controller>();
-  Peso2Controller get _peso2Controller => Get.find<Peso2Controller>();
-  Peso3Controller get _peso3Controller => Get.find<Peso3Controller>();
-  Peso4Controller get _peso4Controller => Get.find<Peso4Controller>();
+  PesoController _pesoController(int plato) => Get.find<PesoController>(tag: 'plato$plato');
 
   @override
   Widget build(BuildContext context) {
@@ -123,15 +117,15 @@ class HomePage extends StatelessWidget {
     final cardWidth = width * (SizeScreen.sc().isMinWidth ? 0.72 : 0.9);
 
     return Obx(() {
-      final puerto1 = _configController.getPuerto1.value;
-      final puerto2 = _configController.getPuerto2.value;
-      final puerto3 = _configController.getPuerto3.value;
-      final puerto4 = _configController.getPuerto4.value;
+      final puerto1 = _configController.puerto(1).value;
+      final puerto2 = _configController.puerto(2).value;
+      final puerto3 = _configController.puerto(3).value;
+      final puerto4 = _configController.puerto(4).value;
 
-      final conectado1 = _peso1Controller.getPesoModel1.conexion;
-      final conectado2 = _peso2Controller.getPesoModel2.conexion;
-      final conectado3 = _peso3Controller.getPesoModel3.conexion;
-      final conectado4 = _peso4Controller.getPesoModel4.conexion;
+      final conectado1 = _pesoController(1).pesoModel.conexion;
+      final conectado2 = _pesoController(2).pesoModel.conexion;
+      final conectado3 = _pesoController(3).pesoModel.conexion;
+      final conectado4 = _pesoController(4).pesoModel.conexion;
 
       return Container(
         width: cardWidth,

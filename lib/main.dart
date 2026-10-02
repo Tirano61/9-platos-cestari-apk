@@ -2,7 +2,7 @@ import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/first_data.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/settings/service_config.dart';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
-import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
 import 'package:nueve_platos_cestari/Pages/cuatro_platos/cuatro_platos_page.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/pesadas_page.dart';
@@ -15,9 +15,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
-import 'Controllers/peso2_controller.dart';
-import 'Controllers/peso3_controller.dart';
-import 'Controllers/peso4_controller.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -39,14 +36,15 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final puertos =  Get.put(ConfigController());
-  final peso1 =  Get.put(Peso1Controller());
-  final peso2 =  Get.put(Peso2Controller());
-  final peso3 =  Get.put(Peso3Controller());
-  final peso4 =  Get.put(Peso4Controller());
+  late final List<PesoController> platos;
 
   @override
   void initState() {
     super.initState();
+    platos = [
+      for (var n = 1; n <= puertos.cantidadPlatos; n++)
+        Get.put(PesoController(plato: n), tag: 'plato$n'),
+    ];
     getConfig();
     
     FlutterNativeSplash.remove();
@@ -72,16 +70,15 @@ class _MyAppState extends State<MyApp> {
       final service = ServiceConfig(DBconeccion.db);
       await service.insertarConfig(config);
     }else{
-      puertos.setPuerto1(resp[0].plato1);
-      puertos.setPuerto2(resp[0].plato2);
-      puertos.setPuerto3(resp[0].plato3);
-      puertos.setPuerto4(resp[0].plato4);
+      puertos.setPuerto(1, resp[0].plato1);
+      puertos.setPuerto(2, resp[0].plato2);
+      puertos.setPuerto(3, resp[0].plato3);
+      puertos.setPuerto(4, resp[0].plato4);
     }
 
-    peso1.recibirPeso1();
-    peso2.recibirPeso2();
-    peso3.recibirPeso3();
-    peso4.recibirPeso4();
+    for (final plato in platos) {
+      plato.recibirPeso();
+    }
   }
 
   @override

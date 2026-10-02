@@ -98,7 +98,7 @@ Cada PR debe dejar la app compilando.
 - `PlatoWidget` y `EjeWidget`: quitar `showPorcentaje`. El `label` de `EjeWidget` queda para "JUEGO N".
 - Actualizar `test/moks/db_connection_mock.dart` y `CLAUDE.md`.
 
-### [ ] PR 5 · `unificarPesoController`: un solo controller por plato (todavía con 4)
+### [x] PR 5 · `unificarPesoController`: un solo controller por plato (todavía con 4)
 - Reemplazar `peso1..4_controller.dart` por `lib/Controllers/peso_controller.dart`:
   - `PesoController({required this.plato})` con un `RecibirPesoModel pesoModel` tipado;
   - el mismo cuerpo UDP: `_udpGeneracion`, timer de 1 s, desconexión a los 5 s y `_tryReconnect`.
