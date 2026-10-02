@@ -78,7 +78,6 @@ class _MyAppState extends State<MyApp> {
         plato2: puerto.puerto2,
         plato3: puerto.puerto3,
         plato4: puerto.puerto4,
-        connectionType: ConnectionType.udp,
       );
       final service = ServiceConfig(DBconeccion.db);
       await service.insertarConfig(config);
@@ -87,11 +86,6 @@ class _MyAppState extends State<MyApp> {
       puertos.setPuerto2(resp[0].plato2);
       puertos.setPuerto3(resp[0].plato3);
       puertos.setPuerto4(resp[0].plato4);
-      puertos.setConnectionType(resp[0].connectionType);
-      puertos.setPlato1BleName(resp[0].plato1BleName);
-      puertos.setPlato2BleName(resp[0].plato2BleName);
-      puertos.setPlato3BleName(resp[0].plato3BleName);
-      puertos.setPlato4BleName(resp[0].plato4BleName);
     }
 
     peso1.recibirPeso1();
