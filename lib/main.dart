@@ -60,20 +60,11 @@ class _MyAppState extends State<MyApp> {
     final resp = await service.getConfig();
    
     if(resp.isEmpty){ 
-      const puerto = Puertos.puerto;
-      final config = ConfigModel(
-        plato1: puerto.puerto1,
-        plato2: puerto.puerto2,
-        plato3: puerto.puerto3,
-        plato4: puerto.puerto4,
-      );
+      final config = ConfigModel(puertos: puertosPorDefecto);
       final service = ServiceConfig(DBconeccion.db);
       await service.insertarConfig(config);
     }else{
-      puertos.setPuerto(1, resp[0].plato1);
-      puertos.setPuerto(2, resp[0].plato2);
-      puertos.setPuerto(3, resp[0].plato3);
-      puertos.setPuerto(4, resp[0].plato4);
+      puertos.setPuertos(resp[0].puertos);
     }
 
     for (final plato in platos) {
