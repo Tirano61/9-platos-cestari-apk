@@ -49,7 +49,7 @@ Cada PR debe dejar la app compilando.
 - `CLAUDE.md`: explicar que la app está en transición, actualizar ramas y remotos, y apuntar a este plan.
 - `README.md`: nuevo historial.
 
-### [ ] PR 2 · `renombrarPaquete`: paquete, applicationId y nombre
+### [x] PR 2 · `renombrarPaquete`: paquete, applicationId y nombre
 - `pubspec.yaml`: `name: nueve_platos_cestari` y `description` nueva.
 - Reemplazar `package:cuatro_platos/` por `package:nueve_platos_cestari/` en `lib/` y `test/`.
 - `test/Models/recibir_peso_model_test.dart`: corregir el import `Models` → `models`.
@@ -59,7 +59,7 @@ Cada PR debe dejar la app compilando.
   - `android:label="Platos Cestari"`.
 - Título "Platos Cestari" en `main.dart`, en la clave `titulo` de `lib/l10n/*.arb` y en `lib/generated/intl/messages_*.dart`.
 
-### [ ] PR 3 · `quitarBle`: quitar Bluetooth LE
+### [x] PR 3 · `quitarBle`: quitar Bluetooth LE
 - Borrar:
   - `lib/data/ble/`;
   - `dialog_scan_ble.dart` y `dialog_ble_bindings.dart`;

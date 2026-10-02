@@ -1,38 +1,25 @@
-import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso1_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso2_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso3_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso4_controller.dart';
 import 'package:nueve_platos_cestari/Providers/tcp_conexion.dart';
-import 'package:nueve_platos_cestari/data/ble/ble_scale_service.dart';
-import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:nueve_platos_cestari/models/recibir_peso_model.dart';
 import 'package:get/get.dart';
 
-/// Envia los comandos de cero y reset de hold a un plato (1..4) por la
-/// conexion configurada.
-///
-/// - BLE: se escribe el comando AT en la caracteristica de escritura del
-///   plato. Nunca se usa WiFi, aunque la escritura falle.
-/// - WiFi: se abre un socket TCP a la IP desde la que llegan los datagramas
-///   UDP del plato.
+/// Envia los comandos de cero y reset de hold a un plato (1..4) por TCP,
+/// a la IP desde la que llegan los datagramas UDP del plato.
 ///
 /// Devuelve false si el comando no se pudo enviar.
 class ComandosPlato {
   const ComandosPlato._();
 
   static Future<bool> enviarCero(int plato) {
-    if (_esBle) return BleScaleService.instance.enviarCero(plato);
     return _enviarTcp(plato, (conexion) => conexion.enviarCero());
   }
 
   static Future<bool> enviarResetHold(int plato) {
-    if (_esBle) return BleScaleService.instance.enviarResetHold(plato);
     return _enviarTcp(plato, (conexion) => conexion.enviarHold());
   }
-
-  static bool get _esBle =>
-      Get.find<ConfigController>().getConnectionType.value == ConnectionType.ble;
 
   static Future<bool> _enviarTcp(
     int plato,

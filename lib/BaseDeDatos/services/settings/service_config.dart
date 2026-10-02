@@ -33,17 +33,5 @@ class ServiceConfig{
     return _configInterface.getConfig();
   }
 
-  Future<int> updateBleNameForPlato({
-    required int plato,
-    required String bleName,
-    bool overwrite = false,
-  }) {
-    return _configInterface.updateBleNameForPlato(
-      plato: plato,
-      bleName: bleName,
-      overwrite: overwrite,
-    );
-  }
-
 
 }

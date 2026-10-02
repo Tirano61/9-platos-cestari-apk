@@ -53,11 +53,6 @@ class HelpersConfig{
       configGetx.setPuerto2(config.plato2);
       configGetx.setPuerto3(config.plato3);
       configGetx.setPuerto4(config.plato4);
-      configGetx.setConnectionType(config.connectionType);
-      configGetx.setPlato1BleName(config.plato1BleName);
-      configGetx.setPlato2BleName(config.plato2BleName);
-      configGetx.setPlato3BleName(config.plato3BleName);
-      configGetx.setPlato4BleName(config.plato4BleName);
       _refreshScaleConnections();
       scafold.showSnackBar(
         SnackBar(content: const Text('Datos guardados correctamente !!!'),backgroundColor:ThemePlatos.positiveColor,),
@@ -83,40 +78,11 @@ class HelpersConfig{
       configGetx.setPuerto2(config.plato2);
       configGetx.setPuerto3(config.plato3);
       configGetx.setPuerto4(config.plato4);
-      configGetx.setConnectionType(config.connectionType);
-      configGetx.setPlato1BleName(config.plato1BleName);
-      configGetx.setPlato2BleName(config.plato2BleName);
-      configGetx.setPlato3BleName(config.plato3BleName);
-      configGetx.setPlato4BleName(config.plato4BleName);
       _refreshScaleConnections();
       scafold.showSnackBar(
         SnackBar(content: const Text('Datos guardados correctamente !!!'),backgroundColor:ThemePlatos.positiveColor,),
       );
     }
-  }
-
-  static Future<int> guardarNombreBlePrimerVinculo({
-    required int plato,
-    required String bleName,
-  }) async {
-    final nombreNormalizado = bleName.trim();
-    if (nombreNormalizado.isEmpty) return -1;
-
-    final serviceDb = ServiceConfig(DBconeccion.db);
-    final resp = await serviceDb.updateBleNameForPlato(
-      plato: plato,
-      bleName: nombreNormalizado,
-      overwrite: false,
-    );
-
-    // No se toca connectionType: solo se llega aca conectando por BLE, y si el
-    // usuario paso a WiFi mientras tanto, forzar BLE pisaria su eleccion.
-    if (resp >= 0) {
-      final configGetx = Get.find<ConfigController>();
-      configGetx.setBleNameByPlato(plato, nombreNormalizado);
-    }
-
-    return resp;
   }
 
 

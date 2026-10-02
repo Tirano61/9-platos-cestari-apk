@@ -3,9 +3,7 @@
 import 'dart:async';
 
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
-import 'package:nueve_platos_cestari/data/ble/ble_scale_service.dart';
 import 'package:nueve_platos_cestari/data/udp/udp_scale_parser.dart';
-import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:nueve_platos_cestari/models/recibir_peso_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -25,44 +23,6 @@ class Peso4Controller extends GetxController{
   }
 
   Future<void> recibirPeso4() async {
-    if (configGetx.getConnectionType.value == ConnectionType.ble) {
-      _udpGeneracion++;
-      await _closeUdpListener();
-      final preferred = configGetx.getPlato4BleName.value.trim();
-      if (preferred.isEmpty) {
-        await BleScaleService.instance.stopListening(4);
-        estadoConexion = false;
-        _pesoModel4.setConexion = false;
-        return;
-      }
-      _intentosBle++;
-      _pesoModel4.setConectando = true;
-      try {
-        await BleScaleService.instance.startListening(
-          plato: 4,
-          preferredName: preferred,
-          onReading: (reading) {
-            _pesoModel4.setPeso = reading.peso;
-            _pesoModel4.setEstable = reading.estable;
-            _pesoModel4.setTension = reading.tension;
-            _pesoModel4.setAdreess = reading.sourceId;
-            _pesoModel4.setConexion = true;
-            estadoConexion = true;
-            contador = 0;
-          },
-        );
-      } finally {
-        _intentosBle--;
-        _pesoModel4.setConectando = _intentosBle > 0;
-      }
-      return;
-    }
-
-    // Sin await: disconnect() de flutter_blue_plus espera turno en un mutex
-    // global y demora segundos; el UDP no tiene que quedar detras. La sesion BLE
-    // se invalida igual en el momento.
-    unawaited(BleScaleService.instance.stopListening(4));
-
     final puertoGuardado = int.tryParse(configGetx.getPuerto4.value);
     if (puertoGuardado == null) {
       return;
@@ -78,8 +38,8 @@ class Peso4Controller extends GetxController{
       // El timer vuelve a intentar mientras _receiver siga en null.
       return;
     }
-    // Otra llamada (OK de nuevo, paso a BLE) empezo mientras se abria el socket.
-    if (generacion != _udpGeneracion || configGetx.getConnectionType.value != ConnectionType.udp) {
+    // Otra llamada (OK de nuevo) empezo mientras se abria el socket.
+    if (generacion != _udpGeneracion) {
       receiver.close();
       return;
     }
@@ -108,25 +68,19 @@ class Peso4Controller extends GetxController{
   bool estadoConexion = false;
   bool _isReconnecting = false;
   int _udpGeneracion = 0;
-  int _intentosBle = 0;
   Timer? timerDato;
 
   Future<void> _tryReconnect() async {
     if (_isReconnecting) return;
-    if (configGetx.getConnectionType.value == ConnectionType.ble) {
-      if (configGetx.getPlato4BleName.value.trim().isEmpty) return;
-    } else if (_receiver != null) {
-      // En UDP el socket sigue abierto: el plato esta apagado, no hay que reabrir.
-      return;
-    }
+    // El socket sigue abierto: el plato esta apagado, no hay que reabrir.
+    if (_receiver != null) return;
 
     _isReconnecting = true;
     try {
       await recibirPeso4();
     } finally {
       _isReconnecting = false;
-      // Los 5 s sin datos se cuentan desde que termina el intento; contados desde
-      // que empezo, una conexion lenta se cortaria antes de recibir el primer dato.
+      // Los 5 s sin datos se cuentan desde que termina el intento.
       contador = 0;
     }
   }
@@ -170,7 +124,6 @@ class Peso4Controller extends GetxController{
   void onClose() {
     timerDato?.cancel();
     _closeUdpListener();
-    BleScaleService.instance.stopListening(4);
     super.onClose();
   }
 

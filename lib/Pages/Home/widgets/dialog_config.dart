@@ -1,7 +1,6 @@
 
 import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/helpers_config.dart';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
-import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_scan_ble.dart';
 import 'package:nueve_platos_cestari/Pages/Home/widgets/input_text_config.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
@@ -24,15 +23,6 @@ class _DialogConfigState extends State<DialogConfig> {
   final TextEditingController _plato2controller = TextEditingController();
   final TextEditingController _plato3controller = TextEditingController();
   final TextEditingController _plato4controller = TextEditingController();
-  final TextEditingController _blePlato1Controller = TextEditingController();
-  final TextEditingController _blePlato2Controller = TextEditingController();
-  final TextEditingController _blePlato3Controller = TextEditingController();
-  final TextEditingController _blePlato4Controller = TextEditingController();
-
-  /// Tipo de conexion elegido en el dialogo. Solo se aplica a la app al
-  /// presionar OK, para que Cancel no deje la configuracion a medias
-  /// (por ejemplo, la app en WiFi mientras los platos siguen por BLE).
-  late String _connectionType;
 
   final anchoBoton = SizeScreen.sc().screenWidth * 0.27;
   final puertoGetxController = Get.find<ConfigController>();
@@ -44,11 +34,6 @@ class _DialogConfigState extends State<DialogConfig> {
     _plato2controller.text = puertoGetxController.getPuerto2.value;
     _plato3controller.text = puertoGetxController.getPuerto3.value;
     _plato4controller.text = puertoGetxController.getPuerto4.value;
-    _blePlato1Controller.text = puertoGetxController.getPlato1BleName.value;
-    _blePlato2Controller.text = puertoGetxController.getPlato2BleName.value;
-    _blePlato3Controller.text = puertoGetxController.getPlato3BleName.value;
-    _blePlato4Controller.text = puertoGetxController.getPlato4BleName.value;
-    _connectionType = puertoGetxController.getConnectionType.value;
   }
 
   @override
@@ -58,55 +43,11 @@ class _DialogConfigState extends State<DialogConfig> {
     _plato2controller.dispose();
     _plato3controller.dispose();
     _plato4controller.dispose();
-    _blePlato1Controller.dispose();
-    _blePlato2Controller.dispose();
-    _blePlato3Controller.dispose();
-    _blePlato4Controller.dispose();
   }
 
   String _sanitizePort(String value, String fallback) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
-  }
-
-  Future<void> _pickBleNameForPlato(
-    BuildContext context,
-    TextEditingController controller,
-  ) async {
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (_) => const DialogScanBle(),
-    );
-
-    if (selected == null || selected.trim().isEmpty || !context.mounted) {
-      return;
-    }
-
-    // Solo se completa el campo: se guarda y se reconecta al presionar OK.
-    controller.text = selected.trim();
-  }
-
-  Widget _bleNameField({
-    required BuildContext context,
-    required String label,
-    required TextEditingController controller,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: TextInputType.text,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        hintText: label,
-        labelText: label,
-        suffixIcon: IconButton(
-          tooltip: 'Escanear BLE',
-          icon: const Icon(Icons.bluetooth_searching),
-          onPressed: () => _pickBleNameForPlato(context, controller),
-        ),
-      ),
-    );
   }
 
   @override
@@ -116,9 +57,6 @@ class _DialogConfigState extends State<DialogConfig> {
     final screenWidth = media.size.width;
     final dialogHeight = screenHeight * (screenHeight < 700 ? 0.9 : 0.8);
     final dialogWidth = screenWidth * (SizeScreen.sc().isMinWidth ? 0.6 : 0.9);
-
-    final connectionType = _connectionType;
-    final isBle = connectionType == ConnectionType.ble;
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -145,9 +83,7 @@ class _DialogConfigState extends State<DialogConfig> {
                 horizontal: SizeScreen.sc().screenWidth * 0.08,
               ),
               child: Text(
-                isBle
-                  ? 'Seleccione BLE y defina el nombre asociado para cada plato. Si un nombre queda vacio, se guardara al vincular por primera vez.'
-                  : 'Importante: el puerto configurado para cada plato debe coincidir con el puerto configurado en la antena de ese plato.',
+                'Importante: el puerto configurado para cada plato debe coincidir con el puerto configurado en la antena de ese plato.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: SizeScreen.sc().isMinWidth ? 13 : 11,
@@ -155,29 +91,6 @@ class _DialogConfigState extends State<DialogConfig> {
               ),
             ),
             const Divider(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: SizeScreen.sc().screenWidth * 0.08),
-              child: Center(
-                child: SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment<String>(
-                      value: ConnectionType.udp,
-                      label: Text('WiFi (UDP)'),
-                    ),
-                    ButtonSegment<String>(
-                      value: ConnectionType.ble,
-                      label: Text('Bluetooth LE'),
-                    ),
-                  ],
-                  selected: {connectionType},
-                  onSelectionChanged: (selection) {
-                    if (selection.isNotEmpty) {
-                      setState(() => _connectionType = selection.first);
-                    }
-                  },
-                ),
-              ),
-            ),
             Expanded(
               flex: 3,
               child: Padding(
@@ -186,39 +99,13 @@ class _DialogConfigState extends State<DialogConfig> {
                   physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   children: [
-                    if (!isBle) ...[
-                      InputTextConfig(label: 'Puerto Plato 1-DEL IZQ', controller: _plato1controller),
-                      const SizedBox(height: 12),
-                      InputTextConfig(label: 'Puerto Plato 2-DEL DER', controller: _plato2controller),
-                      const SizedBox(height: 12),
-                      InputTextConfig(label: 'Puerto Plato 3-TRAS IZQ', controller: _plato3controller),
-                      const SizedBox(height: 12),
-                      InputTextConfig(label: 'Puerto Plato 4-TRAS DER', controller: _plato4controller),
-                    ] else ...[
-                      _bleNameField(
-                        context: context,
-                        label: 'Nombre BLE Plato 1-DEL IZQ',
-                        controller: _blePlato1Controller,
-                      ),
-                      const SizedBox(height: 12),
-                      _bleNameField(
-                        context: context,
-                        label: 'Nombre BLE Plato 2-DEL DER',
-                        controller: _blePlato2Controller,
-                      ),
-                      const SizedBox(height: 12),
-                      _bleNameField(
-                        context: context,
-                        label: 'Nombre BLE Plato 3-TRAS IZQ',
-                        controller: _blePlato3Controller,
-                      ),
-                      const SizedBox(height: 12),
-                      _bleNameField(
-                        context: context,
-                        label: 'Nombre BLE Plato 4-TRAS DER',
-                        controller: _blePlato4Controller,
-                      ),
-                    ],
+                    InputTextConfig(label: 'Puerto Plato 1-DEL IZQ', controller: _plato1controller),
+                    const SizedBox(height: 12),
+                    InputTextConfig(label: 'Puerto Plato 2-DEL DER', controller: _plato2controller),
+                    const SizedBox(height: 12),
+                    InputTextConfig(label: 'Puerto Plato 3-TRAS IZQ', controller: _plato3controller),
+                    const SizedBox(height: 12),
+                    InputTextConfig(label: 'Puerto Plato 4-TRAS DER', controller: _plato4controller),
                   ],
                 ),
               ),
@@ -240,11 +127,6 @@ class _DialogConfigState extends State<DialogConfig> {
                           plato2: _sanitizePort(_plato2controller.text, '8002'),
                           plato3: _sanitizePort(_plato3controller.text, '8003'),
                           plato4: _sanitizePort(_plato4controller.text, '8004'),
-                          connectionType: _connectionType,
-                          plato1BleName: _blePlato1Controller.text.trim(),
-                          plato2BleName: _blePlato2Controller.text.trim(),
-                          plato3BleName: _blePlato3Controller.text.trim(),
-                          plato4BleName: _blePlato4Controller.text.trim(),
                         );
 
                         HelpersConfig.upDateConfig( configModel, context );

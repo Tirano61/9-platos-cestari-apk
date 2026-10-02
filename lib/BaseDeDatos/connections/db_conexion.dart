@@ -463,53 +463,6 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
 
     return resp;
   }
-
-  @override
-  Future<int> updateBleNameForPlato({
-    required int plato,
-    required String bleName,
-    bool overwrite = false,
-  }) async {
-    final db = await getDataBase;
-    final rows = await db.query(
-      DBconfig.tableNameConfig,
-      where: 'id=?',
-      whereArgs: [1],
-      limit: 1,
-    );
-
-    if (rows.isEmpty) return -1;
-
-    final targetColumn = switch (plato) {
-      1 => DBconfig.fconplato1BleName,
-      2 => DBconfig.fconplato2BleName,
-      3 => DBconfig.fconplato3BleName,
-      4 => DBconfig.fconplato4BleName,
-      _ => '',
-    };
-
-    if (targetColumn.isEmpty) return -1;
-
-    final normalized = bleName.trim();
-    if (normalized.isEmpty) return -1;
-
-    final current = (rows.first[targetColumn] ?? '').toString().trim();
-    if (current.isNotEmpty && !overwrite) {
-      return 1;
-    }
-
-    final resp = await db.update(
-      DBconfig.tableNameConfig,
-      {
-        targetColumn: normalized,
-        DBconfig.fconConnectionType: ConnectionType.ble,
-      },
-      where: 'id=?',
-      whereArgs: [1],
-    );
-
-    return resp;
-  }
   
 
   

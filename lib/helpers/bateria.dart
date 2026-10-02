@@ -11,8 +11,8 @@ abstract class Bateria{
   ///
   ///  `Porcentaje de bateria`
   ///
-  /// Devuelve un número entre 0 y 100 según el voltaje recibido del plato
-  /// (WiFi y BLE usan el mismo cálculo). Por encima de [max] queda en 100
+  /// Devuelve un número entre 0 y 100 según el voltaje recibido del plato.
+  /// Por encima de [max] queda en 100
   /// y por debajo de [min] queda en 0.
   ///
   static int porcentaje(double voltaje) {

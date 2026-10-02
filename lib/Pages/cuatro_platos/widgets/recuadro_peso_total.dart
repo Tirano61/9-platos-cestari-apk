@@ -14,8 +14,7 @@ class RecuadroPesoTotal extends StatefulWidget {
 class _RecuadroPesoTotalState extends State<RecuadroPesoTotal> {
 
   // Los timers de desconexion/reconexion de cada plato los maneja su controller
-  // (onInit/onClose). Antes se cancelaban al salir de la pantalla de pesaje y en
-  // el Home ningun plato BLE volvia a reconectarse.
+  // (onInit/onClose), asi siguen corriendo tambien en el Home.
 
   @override
   Widget build(BuildContext context) {
