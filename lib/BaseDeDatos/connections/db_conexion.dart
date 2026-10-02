@@ -7,7 +7,6 @@ import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/settings/config_inte
 import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_config.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas_9platos.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/tables/db_pesadas_base.dart';
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_9platos_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
@@ -79,14 +78,6 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
     }
   }
 
-  /// Historial legacy: mapea las pesadas de 9 platos a [Pesaje] hasta que el
-  /// historial y la exportacion lean el modelo nuevo (PR 9).
-  @override
-  Future<List<Pesaje>> getPesadas() async {
-    final pesadas = await getPesadas9Platos();
-    return pesadas.map(_map9PlatosToPesaje).toList();
-  }
-
   @override
   Future<List<Pesada9PlatosPayload>> getPesadas9Platos() async {
     final db = await getDataBase;
@@ -116,13 +107,8 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
 
   @override
   Future<List<Map<String, dynamic>>> getPesadasExportacion()async{
-    final pesadas = await getPesadas();
-    return pesadas
-        .map((e) => {
-              'id': e.id,
-              ...e.toJson(),
-            })
-        .toList();
+    final pesadas = await getPesadas9Platos();
+    return pesadas.map((e) => e.toExportRow()).toList();
   }
   @override
   Future<int> deletePesadas()async{
@@ -137,38 +123,6 @@ class DBconeccion extends PesadasInterface implements ConfigInterface {
     final resp = await db.delete(DBPesadasBase.tableName,where:'id=?' ,whereArgs: [id]);
 
     return resp;
-  }
-
-  /// Temporal (se quita en el PR 9): [Pesaje] solo tiene lugar para 4 platos,
-  /// asi que DEL/TRAS reciben los juegos J1/J2. Lados y total son exactos.
-  Pesaje _map9PlatosToPesaje(Pesada9PlatosPayload pesada) {
-    final base = pesada.base;
-    final detalle = pesada.detalle;
-
-    return Pesaje(
-      id: base.id,
-      fecha: base.fecha,
-      hora: base.hora,
-      identificacion: base.identificacion,
-      delDer: detalle.j1Der,
-      porDelDer: detalle.porJ1Der,
-      delIzq: detalle.j1Izq,
-      porDelIzq: detalle.porJ1Izq,
-      trasDer: detalle.j2Der,
-      porTrasDer: detalle.porJ2Der,
-      trasIzq: detalle.j2Izq,
-      porTrasIzq: detalle.porJ2Izq,
-      ejeDel: detalle.juego1,
-      porEjeDel: detalle.porJuego1,
-      ejeTras: detalle.juego2,
-      porEjeTras: detalle.porJuego2,
-      ladoDer: detalle.ladoDer,
-      porLadoDer: detalle.porLadoDer,
-      ladoIzq: detalle.ladoIzq,
-      porLadoIzq: detalle.porLadoIzq,
-      total: base.total,
-      tipoPesada: base.tipoPesada,
-    );
   }
 
   @override

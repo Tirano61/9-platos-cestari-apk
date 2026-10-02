@@ -11,11 +11,15 @@ void main() {
   group('Prueba la clase ServicePesada', () {
     
     final service = ServicePesadas(DbConnectionMock());
-    test('Para exportar debe retornar una lista de Pesaje', ()async {
-      //final interface = 
+    test('Para exportar debe retornar las filas de la hoja 9_platos', ()async {
       final resp = await service.getPesadasExportacion();
 
       expect(resp, listPesaje);
+    });
+    test('El historial debe retornar las pesadas de 9 platos', ()async {
+      final resp = await service.getPesadas9Platos();
+
+      expect(resp, [pesada9PlatosEjemplo]);
     });
     test('Al insertar debe retornar el id', ()async {
       final payload = await CalculosController.cn.calcularPayload9Platos(

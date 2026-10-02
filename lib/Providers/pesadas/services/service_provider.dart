@@ -3,7 +3,7 @@
 
 import 'dart:async';
 
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 import 'package:nueve_platos_cestari/Providers/pesadas/interfaces/state_interface.dart';
 
 class ServiceProvider {
@@ -18,7 +18,7 @@ class ServiceProvider {
   getPesadas(){
     _stateInterface.getPesadas();
   }
-  Stream<List<Pesaje>> get pesadasStream => _stateInterface.pesadasStream;
+  Stream<List<Pesada9PlatosPayload>> get pesadasStream => _stateInterface.pesadasStream;
   dispose(){
     _stateInterface.dispose();
   }

@@ -2,7 +2,7 @@
 
 import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/widgets/dialog_borrar.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/widgets/items_pesadas.dart';
 import 'package:nueve_platos_cestari/Providers/pesadas/connections/pesadas_provider.dart';
@@ -38,7 +38,7 @@ class PesadasPage extends StatelessWidget {
             pesadasProvider.dispose();
           }
         },
-        child: StreamBuilder<List<Pesaje>>(
+        child: StreamBuilder<List<Pesada9PlatosPayload>>(
           stream: pesadasProvider.pesadasStream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -71,7 +71,7 @@ class PesadasPage extends StatelessWidget {
                           ///
                           /// snackbar para eliminacion
                           /// 
-                          dimissiblePesada(direction, context, pesadasProvider, pesadas[index].id.toString());
+                          dimissiblePesada(direction, context, pesadasProvider, pesadas[index].base.id.toString());
                         },
                       child: Container(
                         decoration: BoxDecoration(
@@ -90,7 +90,7 @@ class PesadasPage extends StatelessWidget {
                         // Alto minimo: si el contenido necesita mas (pantallas angostas,
                         // letra grande del sistema) ItemsPesadas hace crecer la tarjeta.
                         constraints: BoxConstraints(minHeight: _altoTarjetaPesada()),
-                        child: ItemsPesadas(pesaje: pesada),
+                        child: ItemsPesadas(pesada: pesada),
                       ),
                     ),
                   );

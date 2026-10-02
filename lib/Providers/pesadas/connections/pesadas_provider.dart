@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 import 'package:nueve_platos_cestari/Providers/pesadas/interfaces/state_interface.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
 
@@ -15,15 +15,15 @@ class PesadasProvider extends StateInterface{
   }
 
 
-  StreamController<List<Pesaje>> pesadasStreamController = StreamController<List<Pesaje>>.broadcast();
+  StreamController<List<Pesada9PlatosPayload>> pesadasStreamController = StreamController<List<Pesada9PlatosPayload>>.broadcast();
    
 
   @override
-  Stream<List<Pesaje>> get pesadasStream => pesadasStreamController.stream;
+  Stream<List<Pesada9PlatosPayload>> get pesadasStream => pesadasStreamController.stream;
 
   @override
   getPesadas()async {
-    pesadasStreamController.sink.add( await _pesadasInterface.getPesadas() );
+    pesadasStreamController.sink.add( await _pesadasInterface.getPesadas9Platos() );
   }
   @override
   dispose(){

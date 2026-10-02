@@ -18,7 +18,7 @@ Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App 
 
 **El plan paso a paso, con un PR por paso, está en [docs/plan_9_platos.md](docs/plan_9_platos.md).** Seguir ese orden y marcar cada paso al terminarlo.
 
-Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos. Desde el PR 7 el modelo, los cálculos y la base son de 9 platos, y desde el PR 8 la pantalla de pesaje (`NuevePlatosPage`) muestra los 9. El historial y la exportación siguen con el `Pesaje` legacy hasta el PR 9. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
+Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos. Desde el PR 7 el modelo, los cálculos y la base son de 9 platos, desde el PR 8 la pantalla de pesaje (`NuevePlatosPage`) muestra los 9 y desde el PR 9 el historial y la exportación leen el modelo nuevo (se quitó `Pesaje`). Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
 
 ## Qué es la app (código heredado)
 
@@ -84,7 +84,7 @@ lib/Providers/
   tcp_conexion.dart                Conexion.cn: socket TCP puerto 80 a la IP del plato para enviar
                                    cero / reset hold / calibracion por HTTP GET. No usarlo directo
                                    desde la UI: pasar por ComandosPlato.
-  pesadas/                         PesadasProvider: stream de List<Pesaje> para el historial.
+  pesadas/                         PesadasProvider: stream de List<Pesada9PlatosPayload> para el historial.
 lib/BaseDeDatos/
   connections/db_conexion.dart     DBconeccion.db (sqflite, archivo platos.db, dbVersion 1). Implementa
                                    PesadasInterface y ConfigInterface.
@@ -95,9 +95,9 @@ lib/models/
   config_model.dart                ConfigModel: List<String> puertos (indice 0 = plato 1), puerto(n).
                                    Claves JSON = columnas tconfig plato1..plato9.
   recibir_peso_model.dart          Estado Rx de un plato: peso, estable, tension (nivel 1..5), adreess, conexion.
-  pesaje_model.dart                Pesaje: modelo MIXTO legacy que todavia usan historial y exportacion.
   pesadas/                         Modelos nuevos: PesadaBase, Pesada9PlatosDetalle (enganche, j1Izq..j4Der,
-                                   juego1..4, ladoIzq/Der y un por* por cada uno), Pesada9PlatosPayload.
+                                   juego1..4, ladoIzq/Der y un por* por cada uno), Pesada9PlatosPayload
+                                   (base + detalle; toExportRow arma la fila del XLSX).
 lib/Pages/
   Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato (fila del
                                    enganche + 4 filas izq/der), boton
@@ -111,6 +111,8 @@ lib/Pages/
                                    FilaPlatos, SumaLados, RecuadroPesoTotal, BateryWidget, DialogWidget
                                    para pedir identificacion al guardar.
   pesadas/                         Historial: lista con Dismissible para borrar, exportar XLSX, borrar todo.
+                                   ItemsPesadas: datos de la pesada | enganche, 4 filas (J izq | Juego N |
+                                   J der) y lados, cada uno con PlatoPesadas (peso y %).
 lib/helpers/exportar_xml.dart      A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte con share_plus.
 lib/helpers/comandos_plato.dart    ComandosPlato.enviarCero / enviarResetHold(plato): TCP a la IP del plato.
 lib/config/platos.dart             cantidadPlatos = 9 y nombre de cada plato: nombrePlato(n) ->
@@ -149,9 +151,8 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 | `tpesadas_base` | Cabecera común: fecha, hora, identificacion, `tipo_pesada`, total, created_at. Índices por fecha y tipo. |
 | `tpesadas_9platos` | Detalle 1:1 de 9 platos (`db_pesadas_9platos.dart`): pesos de los 9 platos, juegos, lados y un `por_*` por cada uno. FK `ON DELETE CASCADE`. |
 
-- Inserción en transacción (`insertPesada9Platos`, devuelve -1 si falla). `getPesadas9Platos` devuelve `List<Pesada9PlatosPayload>`. `getPesadas` (historial y exportación, legacy hasta el PR 9) los mapea a `Pesaje`: como `Pesaje` solo tiene lugar para 4 platos, DEL/TRAS reciben J1/J2; lados y total son exactos. El borrado se hace solo sobre `tpesadas_base` y confía en el CASCADE.
+- Inserción en transacción (`insertPesada9Platos`, devuelve -1 si falla). `getPesadas9Platos` devuelve `List<Pesada9PlatosPayload>` (historial). `getPesadasExportacion` devuelve las mismas pesadas como filas de `toExportRow`. El borrado se hace solo sobre `tpesadas_base` y confía en el CASCADE.
 - `PRAGMA foreign_keys = ON` se ejecuta en `onConfigure`, o sea en cada apertura (en sqflite el pragma es por conexión).
-- `lib/BaseDeDatos/tables/db_pesadas.dart` (tabla `tpesadas`) es legacy: ya no se crea, solo lo referencia un test.
 - Si hace falta cambiar el esquema: subir `dbVersion` y escribir `onUpgrade`, o desinstalar la app en el dispositivo de prueba.
 - Plan y bitácora completa de la reforma: `docs/cambios_db.md` (todas las fases marcadas como hechas el 24/08/2026).
 
@@ -160,8 +161,8 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 1. La pantalla llama `CalculosController.cn.calcularPayload9Platos(pesos: ...)` con los pesos de los 9 controllers.
 2. Abre `DialogWidget` pidiendo identificación; `onConfirm` llama `HelpersPesadas.guardarPesada9PlatosPayload`.
 3. El helper inserta vía `ServicePesadas` y muestra SnackBar.
-4. El historial (`PesadasPage`) lee con `getPesadas()`, que devuelve `Pesaje` legacy.
-5. Exportación: `Exportar.writeFile` genera `pesadas.xlsx` con una sola hoja `4_platos`. `compartirArchivo` lo comparte con share_plus.
+4. El historial (`PesadasPage`) lee `getPesadas9Platos()` a través de `PesadasProvider`.
+5. Exportación: `Exportar.writeFile` genera `pesadas.xlsx` con una sola hoja `9_platos`: `id`, `fecha`, `hora`, `identificacion`, `total` y las columnas de `tpesadas_9platos` (sin `pesada_id`). El encabezado sale de las claves de `toExportRow`. `compartirArchivo` lo comparte con share_plus (asunto "Balanzas Hook, 9 platos").
 
 ## Pendientes conocidos
 
@@ -169,12 +170,9 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 
 ## Legacy y trampas
 
-- `Pesaje` (`lib/models/pesaje_model.dart`) sigue siendo el modelo de lectura del historial y de la exportación (se quita en el PR 9).
 - `HelpersConfig.upDateConfig` hace `Navigator.pop` antes de guardar y luego `_refreshScaleConnections()` reconecta todos los platos.
-- `lib/BaseDeDatos/pesadas_export.dart` está vacío.
-- Tests que fallan desde antes (se resuelven en el PR 9 del plan): `test/BaseDeDatos/pesadas_export_test.dart` está vacío (sin `main`, y al compilarlo tira abajo también `service_pesadas_test` si se corren juntos) y `db_pesadas_test` espera largo 481 de la tabla legacy y hoy mide 607.
-- `test/BaseDeDatos/pesadas/tables/db_pesadas_test.dart` testea la tabla legacy `tpesadas`.
-- `integration_test/app_test.dart` y `test/BaseDeDatos/pesadas_export_test.dart` están vacíos.
+- `integration_test/app_test.dart` está vacío.
+- `test/list_pesajes/list_pesaje.dart` tiene una pesada de 9 platos de ejemplo (`pesada9PlatosEjemplo`) y su fila de exportación esperada (`listPesaje`); la usan el mock y los tests de servicio y de `toExportRow`.
 - `RecibirPesoModel.setTension` convierte voltios de batería en nivel 1..5 (`Bateria.min = 2.5`, rango 1.7 V); `BateryWidget` dibuja el ícono según ese nivel.
 - Hay dos temas (`ThemeApp` en `config/theme.dart` y `ThemePlatos` en `Theme/theme.dart`); se usan mezclados.
 - `.github/modernize/` es basura de una extensión de VS Code (Java upgrade), no CI del proyecto.

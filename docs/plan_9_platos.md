@@ -145,7 +145,7 @@ Cada PR debe dejar la app compilando.
 - `PlatoWidget` se reutiliza con los botones `> 0 <` y `< H >` por TCP, con `buttonKeyPlato` '1'..'9'. Si queda muy alto en el teléfono, se compactan los tamaños.
 - FAB Guardar: `calcularPayload9Platos` → `DialogWidget` → `guardarPesada9PlatosPayload`.
 
-### [ ] PR 9 · `historialNuevePlatos`: historial y exportación
+### [x] PR 9 · `historialNuevePlatos`: historial y exportación
 - `PesadasPage` / `ItemsPesadas` leen el modelo nuevo (base + `Pesada9PlatosDetalle`).
 - La tarjeta del historial muestra el enganche, los 4 juegos (izq | juego | der), los lados y el total.
 - Quitar el `Pesaje` legacy. `getPesadasExportacion` pasa a usar el modelo nuevo.
