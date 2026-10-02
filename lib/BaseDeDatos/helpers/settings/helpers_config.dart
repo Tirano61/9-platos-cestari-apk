@@ -40,11 +40,7 @@ class HelpersConfig{
         SnackBar(content: const Text('No se pudo guardar.'),backgroundColor: ThemePlatos.errorColor,)
       );
     }else{
-      final configGetx = Get.find<ConfigController>();
-      configGetx.setPuerto(1, config.plato1);
-      configGetx.setPuerto(2, config.plato2);
-      configGetx.setPuerto(3, config.plato3);
-      configGetx.setPuerto(4, config.plato4);
+      Get.find<ConfigController>().setPuertos(config.puertos);
       _refreshScaleConnections();
       scafold.showSnackBar(
         SnackBar(content: const Text('Datos guardados correctamente !!!'),backgroundColor:ThemePlatos.positiveColor,),
@@ -65,11 +61,7 @@ class HelpersConfig{
         SnackBar(content: const Text('No se pudo guardar.'),backgroundColor: ThemePlatos.errorColor,)
       );
     }else{
-      final configGetx = Get.find<ConfigController>();
-      configGetx.setPuerto(1, config.plato1);
-      configGetx.setPuerto(2, config.plato2);
-      configGetx.setPuerto(3, config.plato3);
-      configGetx.setPuerto(4, config.plato4);
+      Get.find<ConfigController>().setPuertos(config.puertos);
       _refreshScaleConnections();
       scafold.showSnackBar(
         SnackBar(content: const Text('Datos guardados correctamente !!!'),backgroundColor:ThemePlatos.positiveColor,),

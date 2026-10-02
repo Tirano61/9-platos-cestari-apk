@@ -5,6 +5,7 @@ import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Widgets/botton_bar.dart';
 import 'package:nueve_platos_cestari/Widgets/icon_button_bar_widget.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/platos.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/helpers/exportar_xml.dart';
 import 'package:flutter/material.dart';
@@ -117,15 +118,12 @@ class HomePage extends StatelessWidget {
     final cardWidth = width * (SizeScreen.sc().isMinWidth ? 0.72 : 0.9);
 
     return Obx(() {
-      final puerto1 = _configController.puerto(1).value;
-      final puerto2 = _configController.puerto(2).value;
-      final puerto3 = _configController.puerto(3).value;
-      final puerto4 = _configController.puerto(4).value;
-
-      final conectado1 = _pesoController(1).pesoModel.conexion;
-      final conectado2 = _pesoController(2).pesoModel.conexion;
-      final conectado3 = _pesoController(3).pesoModel.conexion;
-      final conectado4 = _pesoController(4).pesoModel.conexion;
+      // Item del plato n: lee puerto y conexion dentro del Obx.
+      Widget item(int plato) => _itemConfiguracion(
+        nombrePlato(plato),
+        _configController.puerto(plato).value,
+        conectado: _pesoController(plato).pesoModel.conexion,
+      );
 
       return Container(
         width: cardWidth,
@@ -163,37 +161,25 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: width * 0.02),
+                // Enganche solo, centrado en la fila.
                 Row(
                   children: [
-                    _itemConfiguracion(
-                      'Del Izq',
-                      puerto1,
-                      conectado: conectado1,
-                    ),
-                    SizedBox(width: compact ? 8 : 16),
-                    _itemConfiguracion(
-                      'Del Der',
-                      puerto2,
-                      conectado: conectado2,
-                    ),
+                    const Spacer(),
+                    item(1),
+                    const Spacer(),
                   ],
                 ),
-                SizedBox(height: width * 0.02),
-                Row(
-                  children: [
-                    _itemConfiguracion(
-                      'Tras Izq',
-                      puerto3,
-                      conectado: conectado3,
-                    ),
-                    SizedBox(width: compact ? 8 : 16),
-                    _itemConfiguracion(
-                      'Tras Der',
-                      puerto4,
-                      conectado: conectado4,
-                    ),
-                  ],
-                ),
+                // Juegos J1..J4: izq en el plato par, der en el impar siguiente.
+                for (var izq = 2; izq < cantidadPlatos; izq += 2) ...[
+                  SizedBox(height: width * 0.02),
+                  Row(
+                    children: [
+                      item(izq),
+                      SizedBox(width: compact ? 8 : 16),
+                      item(izq + 1),
+                    ],
+                  ),
+                ],
               ],
             );
           },

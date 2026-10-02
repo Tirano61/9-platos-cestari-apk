@@ -1,19 +1,17 @@
 
+import 'package:nueve_platos_cestari/config/platos.dart';
+
 class DBconfig{
 
   static const String tableNameConfig = 'tconfig';
 
   static const String fconId      = 'id';
-  static const String fconplato1  = 'plato1';
-  static const String fconplato2  = 'plato2';
-  static const String fconplato3  = 'plato3';
-  static const String fconplato4  = 'plato4';
 
-  static const String createTableConfig = "CREATE TABLE $tableNameConfig ("
+  /// Columna con el puerto del plato [plato]: 'plato1'..'plato9'.
+  static String fconPlato(int plato) => 'plato$plato';
+
+  static final String createTableConfig = "CREATE TABLE $tableNameConfig ("
       "$fconId INTEGER PRIMARY KEY AUTOINCREMENT, "
-      "$fconplato1 text, "
-      "$fconplato2 text, "
-      "$fconplato3 text, "
-      "$fconplato4 text);";
+      "${[for (var n = 1; n <= cantidadPlatos; n++) '${fconPlato(n)} text'].join(', ')});";
 
 }
