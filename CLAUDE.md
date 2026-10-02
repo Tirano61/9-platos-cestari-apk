@@ -18,7 +18,7 @@ Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App 
 
 **El plan paso a paso, con un PR por paso, está en [docs/plan_9_platos.md](docs/plan_9_platos.md).** Seguir ese orden y marcar cada paso al terminarlo.
 
-Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos. Desde el PR 7 el modelo, los cálculos y la base son de 9 platos: la pantalla de pesaje suma y guarda los 9, pero hasta el PR 8 solo dibuja los platos 1..4. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
+Lo que sigue en este archivo todavía describe el código heredado (4 platos). BLE se quitó en el PR 3, el pesaje por ejes en el PR 4, los 4 controllers de peso se unificaron en el PR 5 y desde el PR 6 la configuración y la conexión manejan 9 platos. Desde el PR 7 el modelo, los cálculos y la base son de 9 platos, y desde el PR 8 la pantalla de pesaje (`NuevePlatosPage`) muestra los 9. El historial y la exportación siguen con el `Pesaje` legacy hasta el PR 9. Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
 
 ## Qué es la app (código heredado)
 
@@ -56,7 +56,7 @@ fvm dart run flutter_native_splash:create   # regenerar splash (assets/splash*.p
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 5 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en cuatro_platos_page, 2 × `prefer_typing_uninitialized_variables` en fila_platos). No introducir nuevos; no hace falta corregir estos salvo que se pida.
+Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en nueve_platos_page). No introducir nuevos; no hace falta corregir estos salvo que se pida.
 
 ## Mapa del código (`lib/`)
 
@@ -105,9 +105,11 @@ lib/Pages/
                                    compartir XLSX).
   Home/widgets/dialog_config.dart  Configuracion: un puerto por plato (9 campos con scroll). Solo OK -> HelpersConfig.upDateConfig
                                    los guarda y reconecta.
-  cuatro_platos/                   CuatroPlatosPage + widgets compartidos (PlatoWidget, EjeWidget,
-                                   FilaPlatos, SumaLados con chasis.png, RecuadroPesoTotal, BateryWidget,
-                                   DialogWidget para pedir identificacion al guardar).
+  nueve_platos/                    NuevePlatosPage (ruta 'platos'): RecuadroPesoTotal, PlatoWidget del
+                                   enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados
+                                   (lado izq = 2+4+6+8, der = 3+5+7+9). Widgets: PlatoWidget, EjeWidget,
+                                   FilaPlatos, SumaLados, RecuadroPesoTotal, BateryWidget, DialogWidget
+                                   para pedir identificacion al guardar.
   pesadas/                         Historial: lista con Dismissible para borrar, exportar XLSX, borrar todo.
 lib/helpers/exportar_xml.dart      A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte con share_plus.
 lib/helpers/comandos_plato.dart    ComandosPlato.enviarCero / enviarResetHold(plato): TCP a la IP del plato.
@@ -135,7 +137,7 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`.
 2. Cada datagrama pasa por `UdpScaleParser` (`ADC = peso,estable,?,tension` + terminador; se toma lo que sigue al `=`).
 3. Se actualiza `RecibirPesoModel`: `adreess` = IP de origen del datagrama, `conexion = true`, `contador = 0`.
 4. Reconexión: el timer de cada controller (arranca en `onInit`, se cancela en `onClose`, corre también en el Home) marca desconexión a los 5 s sin datos. Si ya estaba desconectado, llama `_tryReconnect`, que solo reabre si no hay socket (`_receiver == null`). Los 5 s se cuentan desde que termina el intento.
-5. Los botones `> 0 <` y `< H >` de `PlatoWidget` llaman a `ComandosPlato`, que abre un socket TCP al puerto 80 de esa IP (`Conexion.cn`) y manda `GET /peso?cero=1` o `GET /peso?resethold=1`. El número de plato sale del `buttonKeyPlato` ('1'..'4').
+5. Los botones `> 0 <` y `< H >` de `PlatoWidget` llaman a `ComandosPlato`, que abre un socket TCP al puerto 80 de esa IP (`Conexion.cn`) y manda `GET /peso?cero=1` o `GET /peso?resethold=1`. El número de plato sale del `buttonKeyPlato` ('1'..'9').
 
 ## Base de datos (sqflite, `platos.db`, versión 1)
 

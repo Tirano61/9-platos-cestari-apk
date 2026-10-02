@@ -4,7 +4,7 @@ import 'package:nueve_platos_cestari/BaseDeDatos/services/settings/service_confi
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
-import 'package:nueve_platos_cestari/Pages/cuatro_platos/cuatro_platos_page.dart';
+import 'package:nueve_platos_cestari/Pages/nueve_platos/nueve_platos_page.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/pesadas_page.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
@@ -118,7 +118,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         'home'    : (context) => const HomePage(),
         'pesadas' : (context) => PesadasPage(),
-        'platos'  : (context) => CuatroPlatosPage(),
+        'platos'  : (context) => NuevePlatosPage(),
       }
     );
   }

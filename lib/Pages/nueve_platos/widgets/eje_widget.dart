@@ -12,14 +12,14 @@ class EjeWidget extends StatelessWidget {
   String peso1;
   String peso2;
   String eje;
-  final String? label;
+  final String label;
   
   EjeWidget({
     super.key,
     required this.peso1,
     required this.peso2,
     required this.eje,
-    this.label,
+    required this.label,
   });
 
   @override
@@ -36,7 +36,7 @@ class EjeWidget extends StatelessWidget {
           ),
           child: Center(child: 
             Text(
-              label ?? (eje == '1' ? 'EJE  DEL' : 'EJE  TRAS'),
+              label,
               style: ThemePlatos.cn.textoTitulosPlatos,
             ),
           ),

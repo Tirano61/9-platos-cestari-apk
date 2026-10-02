@@ -2,7 +2,7 @@
 
 import 'package:nueve_platos_cestari/Controllers/calculos_controllers.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
-import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/batery_widget.dart';
+import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/batery_widget.dart';
 import 'package:nueve_platos_cestari/Widgets/connection_widget.dart';
 import 'package:nueve_platos_cestari/Widgets/widget_button.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 
 class PlatoWidget extends StatelessWidget {
   /// [buttonKeyPlato] debe tener como valor el numero de plato fisico
-  /// ('1'..'4') al que se envian los comandos de cero y hold.
+  /// ('1'..'9') al que se envian los comandos de cero y hold.
   const PlatoWidget({
     super.key,
     required this.numPlato,
@@ -87,12 +87,16 @@ class PlatoWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // Título del plato
-              Center(
-                child: Text(
-                  numPlato, 
-                  style: ThemePlatos.cn.textoTitulosPlatos,
-                )
+              // Título del plato; se achica si no entra (ENGANCHE en telefonos chicos)
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    numPlato, 
+                    maxLines: 1,
+                    style: ThemePlatos.cn.textoTitulosPlatos,
+                  ),
+                ),
               ),
               // Estado de la conexión
               ConnectionWidget( connection: conexionPlato),       
