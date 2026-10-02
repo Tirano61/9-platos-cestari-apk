@@ -31,14 +31,6 @@ class ThemePlatos{
                   border: Border.all()
                 );
 
-  widthTituloSumaLados(BuildContext context){
-    return SizeScreen.sc().screenWidth * 0.23;
-  } 
-  
-  posisionTopTituloSumaLados(BuildContext context){
-    return MediaQuery.of(context).size.height / 7.5;
-  } 
-
   TextStyle textoPesoPlatos(BuildContext context){
     final theme = TextStyle(
                 fontSize: SizeScreen.sc().screenWidth < 520 ? 18 : 24,

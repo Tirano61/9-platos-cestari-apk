@@ -8,14 +8,14 @@ import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
-import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/export_home_wigets.dart';
+import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/export_home_wigets.dart';
 import 'package:nueve_platos_cestari/Controllers/controllers_export.dart';
 
 
 
 
-class CuatroPlatosPage extends StatelessWidget {
-  CuatroPlatosPage({super.key});
+class NuevePlatosPage extends StatelessWidget {
+  NuevePlatosPage({super.key});
 
   final pesoControllers = [
     for (var n = 1; n <= cantidadPlatos; n++) Get.find<PesoController>(tag: 'plato$n'),
@@ -25,14 +25,9 @@ class CuatroPlatosPage extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Obx((){
-      // El total y el guardado usan los 9 platos; hasta el PR 8 la pantalla
-      // solo dibuja los platos 1..4.
       final pesos = [for (final c in pesoControllers) c.pesoModel.peso];
-      final plato1 = pesoControllers[0].pesoModel;
-      final plato2 = pesoControllers[1].pesoModel;
-      final plato3 = pesoControllers[2].pesoModel;
-      final plato4 = pesoControllers[3].pesoModel;
       CalculosController.cn.setPesoTotalByList(pesos);
+      final separacion = SizeScreen.sc().screenWidth * 0.025;
       return Scaffold(
         appBar: AppBar(
           //backgroundColor: ThemePlatos.backgroundTitulos,
@@ -40,8 +35,9 @@ class CuatroPlatosPage extends StatelessWidget {
          
         ),
         body: SingleChildScrollView(
+          // El padding de abajo deja libre el recuadro de lados bajo el FAB.
+          padding: const EdgeInsets.only(bottom: 90),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               // Recuadro de Peso total sumado  
               Padding(
@@ -50,35 +46,26 @@ class CuatroPlatosPage extends StatelessWidget {
                   suma: CalculosController.cn.pesoTotal
                 ),
               ),
-              /// Fila de platos eje delantero
-              FilaPlatos(
-                plato1: plato1, 
-                plato2: plato2, 
-                label1: 'DEL IZQ', 
-                label2: 'DEL DER', 
-                eje: '1', 
-                buttonKeyPlato1: const ValueKey('1'), 
-                buttonKeyPlato2: const ValueKey('2'),
-                estable1: plato1.estable,
-                estable2: plato2.estable,
-              ),
+              // Enganche, centrado
+              _platoWidget(1),
+              // Juegos de celdas: J1 = platos 2/3 ... J4 = platos 8/9
+              for (var juego = 1; juego <= 4; juego++)
+                Padding(
+                  padding: EdgeInsets.only(top: separacion),
+                  child: FilaPlatos(
+                    izq: _platoWidget(juego * 2),
+                    der: _platoWidget(juego * 2 + 1),
+                    eje: '$juego',
+                    label: 'JUEGO $juego',
+                  ),
+                ),
+              // Lados: izq = platos 2, 4, 6, 8 y der = 3, 5, 7, 9. El enganche no suma.
               Padding(
-                padding: EdgeInsets.symmetric(vertical: SizeScreen.sc().screenWidth * 0.025),
-                child:  SumaLados(
-                  pesoIzquierdo:(double.parse( plato1.peso ) + double.parse(plato3.peso)).toStringAsFixed(2),
-                  pesoDerecho:  (double.parse( plato2.peso ) + double.parse(plato4.peso )).toStringAsFixed(2)),
-              ),
-              // Fila de platos eje trasero  
-              FilaPlatos(
-                plato1: plato3, 
-                plato2: plato4, 
-                label1: 'TRAS IZQ', 
-                label2: 'TRAS DER', 
-                eje: '2', 
-                buttonKeyPlato1: const ValueKey('3'), 
-                buttonKeyPlato2: const ValueKey('4'),
-                estable1: plato3.estable, 
-                estable2: plato4.estable,
+                padding: EdgeInsets.only(top: separacion * 2),
+                child: SumaLados(
+                  pesoIzquierdo: _sumaPesos([pesos[1], pesos[3], pesos[5], pesos[7]]),
+                  pesoDerecho:   _sumaPesos([pesos[2], pesos[4], pesos[6], pesos[8]]),
+                ),
               ),
             ],
           )
@@ -122,11 +109,6 @@ class CuatroPlatosPage extends StatelessWidget {
                 );
                 if (!context.mounted) return;
                 showDialogGuardarPesada(payload, context);
-              /* if(plato1.conexion && plato2.conexion && plato3.conexion && plato4.conexion ){
-                 }else{
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: const Text('Los platos deben estar conectados'), backgroundColor: ThemePlatos.backgroundPeso));
-                 } */
             }
           ),
         ),
@@ -134,6 +116,24 @@ class CuatroPlatosPage extends StatelessWidget {
       );
     });
   }
+
+  /// PlatoWidget del plato [n] (1..9). La key de los botones es el numero
+  /// de plato al que se mandan cero y reset hold.
+  PlatoWidget _platoWidget(int n) {
+    final plato = pesoControllers[n - 1].pesoModel;
+    return PlatoWidget(
+      numPlato: nombrePlato(n),
+      pesoPlato: plato.peso,
+      buttonKeyPlato: ValueKey('$n'),
+      conexionPlato: plato.conexion,
+      batery: plato.tension,
+      estable: plato.estable,
+    );
+  }
+
+  String _sumaPesos(List<String> pesos) => pesos
+      .fold<double>(0, (sum, peso) => sum + (double.tryParse(peso) ?? 0))
+      .toStringAsFixed(2);
 
   showDialogGuardarPesada(Pesada9PlatosPayload payload, BuildContext context){
     showDialog(
