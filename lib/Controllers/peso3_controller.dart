@@ -2,11 +2,11 @@
 
 import 'dart:async';
 
-import 'package:cuatro_platos/Controllers/config_controller.dart';
-import 'package:cuatro_platos/data/ble/ble_scale_service.dart';
-import 'package:cuatro_platos/data/udp/udp_scale_parser.dart';
-import 'package:cuatro_platos/models/config_model.dart';
-import 'package:cuatro_platos/models/recibir_peso_model.dart';
+import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
+import 'package:nueve_platos_cestari/data/ble/ble_scale_service.dart';
+import 'package:nueve_platos_cestari/data/udp/udp_scale_parser.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
+import 'package:nueve_platos_cestari/models/recibir_peso_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:udp/udp.dart';

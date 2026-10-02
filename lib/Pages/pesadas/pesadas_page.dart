@@ -1,17 +1,17 @@
 
 
-import 'package:cuatro_platos/BaseDeDatos/connections/db_conexion.dart';
-import 'package:cuatro_platos/BaseDeDatos/services/pesadas/service_pesadas.dart';
-import 'package:cuatro_platos/models/pesaje_model.dart';
-import 'package:cuatro_platos/Pages/pesadas/widgets/dialog_borrar.dart';
-import 'package:cuatro_platos/Pages/pesadas/widgets/items_pesadas.dart';
-import 'package:cuatro_platos/Providers/pesadas/connections/pesadas_provider.dart';
-import 'package:cuatro_platos/Providers/pesadas/services/service_provider.dart';
-import 'package:cuatro_platos/Widgets/botton_bar.dart';
-import 'package:cuatro_platos/Widgets/icon_button_bar_widget.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
-import 'package:cuatro_platos/helpers/exportar_xml.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
+import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/Pages/pesadas/widgets/dialog_borrar.dart';
+import 'package:nueve_platos_cestari/Pages/pesadas/widgets/items_pesadas.dart';
+import 'package:nueve_platos_cestari/Providers/pesadas/connections/pesadas_provider.dart';
+import 'package:nueve_platos_cestari/Providers/pesadas/services/service_provider.dart';
+import 'package:nueve_platos_cestari/Widgets/botton_bar.dart';
+import 'package:nueve_platos_cestari/Widgets/icon_button_bar_widget.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
+import 'package:nueve_platos_cestari/helpers/exportar_xml.dart';
 import 'package:flutter/material.dart';
 
 class PesadasPage extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cuatro_platos/domain/entities/scale_reading.dart';
+import 'package:nueve_platos_cestari/domain/entities/scale_reading.dart';
 
 abstract class ScaleDataSource {
   Stream<ScaleReading> readings();

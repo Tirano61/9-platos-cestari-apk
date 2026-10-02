@@ -2,9 +2,9 @@
 
 
 
-import 'package:cuatro_platos/Controllers/calculos_controllers.dart';
-import 'package:cuatro_platos/Theme/theme.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/Controllers/calculos_controllers.dart';
+import 'package:nueve_platos_cestari/Theme/theme.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable

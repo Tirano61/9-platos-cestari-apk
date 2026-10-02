@@ -1,11 +1,11 @@
 
 
 
-import 'package:cuatro_platos/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
-import 'package:cuatro_platos/models/pesaje_model.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_4platos_model.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_base_model.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_ejes_model.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/pesadas/pesadas_interfaces.dart';
+import 'package:nueve_platos_cestari/models/pesaje_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_ejes_model.dart';
 
 import '../list_pesajes/list_pesaje.dart';
 

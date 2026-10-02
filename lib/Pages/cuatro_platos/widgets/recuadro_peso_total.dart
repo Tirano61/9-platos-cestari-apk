@@ -1,4 +1,4 @@
-import 'package:cuatro_platos/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:flutter/material.dart';
 
 class RecuadroPesoTotal extends StatefulWidget {

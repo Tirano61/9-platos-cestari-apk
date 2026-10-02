@@ -1,7 +1,7 @@
 
-import 'package:cuatro_platos/Theme/theme.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
+import 'package:nueve_platos_cestari/Theme/theme.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:flutter/material.dart';
 
 class DialogWidget extends StatefulWidget {

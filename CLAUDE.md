@@ -20,8 +20,6 @@ Se quitan BLE y el pesaje por ejes. Cero y reset hold se mantienen por TCP. App 
 
 Lo que sigue en este archivo todavía describe el código heredado (4 platos, ejes y BLE). Cada PR del plan actualiza la sección que toca, y el PR 10 lo reescribe completo.
 
-> Ojo: hoy `pubspec.yaml` dice `name: 9_platos_cestari`, que no es un nombre de paquete válido, mientras los imports usan `package:cuatro_platos/`. El PR 2 del plan lo corrige; hasta entonces `pub get` falla.
-
 ## Qué es la app (código heredado)
 
 App Flutter (Android es el único target real) para pesar vehículos con balanzas inalámbricas de plataforma ("platos") de Balanzas Hook. Dos modos de pesaje:
@@ -34,7 +32,7 @@ Cada plato se conecta a la app de una de dos formas, elegida globalmente en la c
 - **WiFi (UDP)**: modo histórico. Cada plato emite datagramas UDP a un puerto configurado (8001..8004 por defecto). Debe seguir funcionando siempre.
 - **Bluetooth LE**: modo nuevo, en desarrollo en esta rama. Cada plato es un periférico BLE identificado por nombre.
 
-La app no va al Play Store. Se cambió el `applicationId` a `com.dramirez.cuatroplatosejes` para que se instale como app nueva junto a la vieja, sin migrar datos (ver `docs/cambios_db.md`). Versión actual en `pubspec.yaml`: `3.0.1+5`. Nombre del package Dart: `cuatro_platos`. Label Android: "Platos".
+La app no va al Play Store. `applicationId`/namespace `com.dramirez.nueveplatoscestari` (se instala como app nueva, separada de la vieja "Platos"). Versión en `pubspec.yaml`: `1.0.1+1`. Nombre del package Dart: `nueve_platos_cestari`. Label Android y título: "Platos Cestari".
 
 ## Ramas y flujo de trabajo
 
@@ -218,7 +216,7 @@ Esquema nuevo creado desde cero en `onCreate` (sin `onUpgrade`, porque la app se
 - `ConfigModel.fromJson` acepta las claves viejas `platoN_ble_device_id` además de `platoN_ble_name`.
 - `HelpersConfig.upDateConfig` hace `Navigator.pop` antes de guardar y luego `_refreshScaleConnections()` reconecta los 4 platos.
 - `lib/BaseDeDatos/pesadas_export.dart` está vacío.
-- `test/Models/recibir_peso_model_test.dart` importa `package:cuatro_platos/Models/...` con M mayúscula (funciona en Windows, falla en Linux/macOS).
+- Tests que fallan desde antes (se resuelven en el PR 9 del plan): `test/BaseDeDatos/pesadas_export_test.dart` está vacío (sin `main`, y al compilarlo tira abajo también `service_pesadas_test` si se corren juntos) y `db_pesadas_test` espera largo 481 de la tabla legacy y hoy mide 607.
 - `test/BaseDeDatos/pesadas/tables/db_pesadas_test.dart` testea la tabla legacy `tpesadas`.
 - `integration_test/app_test.dart` y `test/BaseDeDatos/pesadas_export_test.dart` están vacíos.
 - `RecibirPesoModel.setTension` convierte voltios de batería en nivel 1..5 (`Bateria.min = 2.5`, rango 1.7 V); `BateryWidget` dibuja el ícono según ese nivel.

@@ -1,12 +1,12 @@
 
 
-import 'package:cuatro_platos/Controllers/calculos_controllers.dart';
-import 'package:cuatro_platos/Theme/theme.dart';
-import 'package:cuatro_platos/Pages/cuatro_platos/widgets/batery_widget.dart';
-import 'package:cuatro_platos/Widgets/connection_widget.dart';
-import 'package:cuatro_platos/Widgets/widget_button.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/helpers/comandos_plato.dart';
+import 'package:nueve_platos_cestari/Controllers/calculos_controllers.dart';
+import 'package:nueve_platos_cestari/Theme/theme.dart';
+import 'package:nueve_platos_cestari/Pages/cuatro_platos/widgets/batery_widget.dart';
+import 'package:nueve_platos_cestari/Widgets/connection_widget.dart';
+import 'package:nueve_platos_cestari/Widgets/widget_button.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/helpers/comandos_plato.dart';
 import 'package:flutter/material.dart';
 
 class PlatoWidget extends StatelessWidget {

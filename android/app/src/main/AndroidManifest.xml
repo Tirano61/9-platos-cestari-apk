@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.dramirez.cuatroplatosejes">
+    package="com.dramirez.nueveplatoscestari">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -15,7 +15,7 @@
     <!-- <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/> -->
     
    <application
-        android:label="Platos"
+        android:label="Platos Cestari"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

@@ -1,12 +1,12 @@
 
-import 'package:cuatro_platos/BaseDeDatos/helpers/settings/helpers_config.dart';
-import 'package:cuatro_platos/Controllers/config_controller.dart';
-import 'package:cuatro_platos/Pages/Home/widgets/dialog_scan_ble.dart';
-import 'package:cuatro_platos/Pages/Home/widgets/input_text_config.dart';
-import 'package:cuatro_platos/Theme/theme.dart';
-import 'package:cuatro_platos/config/SizeScreen.dart';
-import 'package:cuatro_platos/config/theme.dart';
-import 'package:cuatro_platos/models/config_model.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/helpers_config.dart';
+import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
+import 'package:nueve_platos_cestari/Pages/Home/widgets/dialog_scan_ble.dart';
+import 'package:nueve_platos_cestari/Pages/Home/widgets/input_text_config.dart';
+import 'package:nueve_platos_cestari/Theme/theme.dart';
+import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

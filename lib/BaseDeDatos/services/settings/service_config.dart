@@ -1,8 +1,8 @@
 
 
 
-import 'package:cuatro_platos/BaseDeDatos/interfaces/settings/config_interfaces.dart';
-import 'package:cuatro_platos/models/config_model.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/interfaces/settings/config_interfaces.dart';
+import 'package:nueve_platos_cestari/models/config_model.dart';
 
 
 class ServiceConfig{

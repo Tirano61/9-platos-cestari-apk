@@ -1,7 +1,7 @@
-import 'package:cuatro_platos/models/pesadas/pesada_4platos_model.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_base_model.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_ejes_model.dart';
-import 'package:cuatro_platos/models/pesadas/pesada_eje_detalle_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_4platos_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_base_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_ejes_model.dart';
+import 'package:nueve_platos_cestari/models/pesadas/pesada_eje_detalle_model.dart';
 
 class Pesada4PlatosPayload {
   final PesadaBase base;
