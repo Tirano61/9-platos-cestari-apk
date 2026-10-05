@@ -5,9 +5,11 @@ import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/batery_widget.dart';
 import 'package:nueve_platos_cestari/Widgets/connection_widget.dart';
+import 'package:nueve_platos_cestari/Widgets/tabla_maniobra.dart';
 import 'package:nueve_platos_cestari/Widgets/widget_button.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/helpers/comandos_plato.dart';
+import 'package:nueve_platos_cestari/models/ensayos/maniobra_plato.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -26,6 +28,7 @@ class PlatoWidget extends StatelessWidget {
     this.maximo = '',
     this.minimo = '',
     this.ceroHabilitado = true,
+    this.nivelAlarma = EstadoCelda.sinDato,
   });
 
   final String numPlato;
@@ -41,6 +44,9 @@ class PlatoWidget extends StatelessWidget {
   final String minimo;
   /// false durante la maniobra: el boton > 0 < queda deshabilitado.
   final bool ceroHabilitado;
+  /// Alarma contra la capacidad: con `alLimite` o `excede` el borde y el
+  /// titulo se pintan de ambar o rojo. `normal` y `sinDato` no marcan nada.
+  final EstadoCelda nivelAlarma;
 
   /// Envia cero al plato por TCP y avisa si no se pudo enviar.
   /// Si se envio, borra el estatico del ensayo, que deja de valer.
@@ -80,8 +86,16 @@ class PlatoWidget extends StatelessWidget {
     return Colors.red;
   }
 
+  /// Color de la alarma (el mismo de la tabla de la maniobra), o null sin alarma.
+  Color? get _colorAlarma => switch (nivelAlarma) {
+        EstadoCelda.alLimite || EstadoCelda.excede => TablaManiobra.colorEstado(nivelAlarma),
+        _ => null,
+      };
+
   @override
   Widget build(BuildContext context) {
+    final colorAlarma = _colorAlarma;
+    final borde = colorAlarma == null ? Border.all() : Border.all(color: colorAlarma, width: 3);
     final media = MediaQuery.of(context);
     final screenWidth = media.size.width;
     final isSmallPhone = media.size.height < 700 || media.size.shortestSide < 380;
@@ -103,9 +117,9 @@ class PlatoWidget extends StatelessWidget {
           width: SizeScreen.sc().screenWidth * 0.27,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: ThemePlatos.backgroundTitulos,
+            color: colorAlarma ?? ThemePlatos.backgroundTitulos,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-            border: Border.all()
+            border: borde
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -117,7 +131,10 @@ class PlatoWidget extends StatelessWidget {
                   child: Text(
                     numPlato, 
                     maxLines: 1,
-                    style: ThemePlatos.cn.textoTitulosPlatos,
+                    // En ambar el texto va en negro, como en la tabla.
+                    style: nivelAlarma == EstadoCelda.alLimite
+                        ? ThemePlatos.cn.textoTitulosPlatos.copyWith(color: Colors.black)
+                        : ThemePlatos.cn.textoTitulosPlatos,
                   ),
                 ),
               ),
@@ -134,7 +151,7 @@ class PlatoWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: ThemePlatos.backgroundPeso,
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
-            border: Border.all()
+            border: borde
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
