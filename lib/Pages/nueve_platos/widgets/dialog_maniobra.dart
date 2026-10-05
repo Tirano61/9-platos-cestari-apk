@@ -11,6 +11,11 @@ String formatoDuracion(Duration duracion) {
   return h > 0 ? '$h:${m.toString().padLeft(2, '0')}:$s' : '$m:$s';
 }
 
+/// Horario, duracion y umbral de la maniobra, para el dialogo y el historial.
+String descripcionManiobra(ManiobraModel maniobra) =>
+    '${maniobra.horaInicio} a ${maniobra.horaFin} '
+    '(${formatoDuracion(maniobra.duracion)}) · umbral ${maniobra.umbral} %';
+
 /// Muestra la tabla de resultados de una maniobra recien terminada, con el
 /// umbral copiado en la maniobra.
 Future<void> mostrarResultadoManiobra(
@@ -29,10 +34,7 @@ Future<void> mostrarResultadoManiobra(
           children: [
             Text('Maniobra ${maniobra.numero}', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 4),
-            Text(
-              '${maniobra.horaInicio} a ${maniobra.horaFin} '
-              '(${formatoDuracion(maniobra.duracion)}) · umbral ${maniobra.umbral} %',
-            ),
+            Text(descripcionManiobra(maniobra)),
             const SizedBox(height: 12),
             Flexible(
               child: SingleChildScrollView(
