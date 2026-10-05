@@ -136,7 +136,7 @@ duración de la maniobra dan la tasa real que hubo.
 - Cero general y cero de un plato → `borrarEstatico()` y un SnackBar: "Volvé a tomar el estático".
 - Estado intermedio aceptado: el historial de pesadas sigue existiendo, pero ya no se pueden guardar pesadas nuevas.
 
-### [ ] Paso 7 · `registrarManiobra`: iniciar y terminar maniobra (todavía sin guardar)
+### [x] Paso 7 · `registrarManiobra`: iniciar y terminar maniobra (todavía sin guardar)
 - `BarraEnsayo`: botón **Registrar maniobra**, habilitado solo en estado `listo`. Mientras corre cambia a
   **Terminar maniobra** y muestra el número de maniobra y el tiempo transcurrido.
 - `EnsayoController.iniciarManiobra()`: llama `iniciarRegistro()` en los 9 `PesoController` y guarda la hora de inicio.
@@ -147,7 +147,10 @@ duración de la maniobra dan la tasa real que hubo.
 - `PlatoWidget`: durante la maniobra muestra `máx / mín` en vivo.
 - Durante la maniobra: Cero general, Tomar estático y los `> 0 <` quedan deshabilitados.
 - Al terminar: diálogo con la tabla de resultados. Widget nuevo `TablaManiobra` con plato, estático, máx, mín, FC,
-  % cap y estado con color, igual que la tabla del punto 06 del documento.
+  % cap y estado con color, igual que la tabla del punto 06 del documento. Quedó en `lib/Widgets/tabla_maniobra.dart`
+  para reutilizarlo en el historial (paso 11).
+- Hecho así: `terminarManiobra()` devuelve un record `ResultadoManiobra` (número, inicio, fin y los 9
+  `ManiobraPlato`); en el paso 10 lo reemplaza `ManiobraModel`. Descartar no consume el número de maniobra.
 - `PopScope`: si se sale con una maniobra en curso, pide confirmación y la descarta.
 - Test nuevo `test/Models/maniobra_plato_test.dart`: los casos de borde (= umbral, = 100 %, > 100 %, capacidad 0 o
   vacía, estático 0) y los valores de ejemplo del documento.
@@ -156,7 +159,8 @@ duración de la maniobra dan la tasa real que hubo.
 - `PlatoWidget` recibe un `nivelAlarma` (normal / alLimite / excede), calculado con el **máximo** de la maniobra (o el
   peso actual si no hay maniobra) contra `EnsayoController.capacidades[n - 1]` y `umbral`.
 - Se dibuja con el borde y el título en ámbar (al límite) o rojo (excede). Sin capacidad cargada no hay alarma.
-- Reutilizar `ManiobraPlato.estado` u otra función pura compartida, para no duplicar la fórmula.
+- Reutilizar la función pura `estadoCelda(peso:, capacidad:, umbral:)` de `maniobra_plato.dart` (la usa
+  `ManiobraPlato.estado`), para no duplicar la fórmula.
 
 ### [ ] Paso 9 · `pantallaEncendida`: que no se apague la pantalla en la maniobra
 - Dependencia nueva `wakelock_plus`: `WakelockPlus.enable()` en `iniciarManiobra` y `disable()` en

@@ -23,6 +23,9 @@ class PlatoWidget extends StatelessWidget {
     required this.batery,
     required this.estable,
     this.estatico = '',
+    this.maximo = '',
+    this.minimo = '',
+    this.ceroHabilitado = true,
   });
 
   final String numPlato;
@@ -33,6 +36,11 @@ class PlatoWidget extends StatelessWidget {
   final String estable;
   /// Peso estatico de referencia ('' si no se tomo).
   final String estatico;
+  /// Maximo y minimo de la maniobra en curso ('' si no hay maniobra).
+  final String maximo;
+  final String minimo;
+  /// false durante la maniobra: el boton > 0 < queda deshabilitado.
+  final bool ceroHabilitado;
 
   /// Envia cero al plato por TCP y avisa si no se pudo enviar.
   /// Si se envio, borra el estatico del ensayo, que deja de valer.
@@ -189,21 +197,40 @@ class PlatoWidget extends StatelessWidget {
           ),
         ),
 
+        // Maximo / minimo en vivo durante la maniobra; vacia si no hay
+        SizedBox(
+          width: SizeScreen.sc().screenWidth * 0.27,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              maximo.isEmpty ? '' : '▲ $maximo  ▼ $minimo',
+              maxLines: 1,
+              style: estiloPorcentaje,
+            ),
+          ),
+        ),
+
         const SizedBox(height: 3),
 
         // Boton para enviar cero, centrado bajo el plato
         SizedBox(
           width: SizeScreen.sc().screenWidth * 0.27,
           child: Center(
-            child: WidgetButton(
-              ancho: SizeScreen.sc().screenWidth * 0.22,
-              alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
-              borderRadius: 5,
-              fontSize: SizeScreen.sc().screenWidth < 520
-              ? 12 : 16,
-              /// Enviar cero a la balanza del plato
-              onPress: () => _enviarCero(context),
-              texto: '> 0 <'
+            child: IgnorePointer(
+              ignoring: !ceroHabilitado,
+              child: Opacity(
+                opacity: ceroHabilitado ? 1 : 0.4,
+                child: WidgetButton(
+                  ancho: SizeScreen.sc().screenWidth * 0.22,
+                  alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
+                  borderRadius: 5,
+                  fontSize: SizeScreen.sc().screenWidth < 520
+                  ? 12 : 16,
+                  /// Enviar cero a la balanza del plato
+                  onPress: () => _enviarCero(context),
+                  texto: '> 0 <'
+                ),
+              ),
             ),
           ),
         ),
