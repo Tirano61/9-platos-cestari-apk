@@ -220,12 +220,18 @@ duración de la maniobra dan la tasa real que hubo.
   `'pesadas'` sigue registrada, pero sin botón que lleve a ella, hasta el paso 13. Tests nuevos
   `test/Providers/ensayos_provider_test.dart` y `test/widgets/ensayos/ensayos_page_test.dart`.
 
-### [ ] Paso 12 · `exportarEnsayos`: XLSX de maniobras
+### [x] Paso 12 · `exportarEnsayos`: XLSX de maniobras
 - `exportar_xml.dart`: `ensayos.xlsx` con la hoja `maniobras`, **una fila por maniobra y plato**: `ensayo_id`, `tolva`,
   `fecha`, `maniobra`, `hora_inicio`, `hora_fin`, `duracion_s`, `plato`, `nombre`, `capacidad`, `estatico`, `maximo`,
   `minimo`, `lecturas`, `factor_cresta`, `por_cap`, `estado`.
 - `ManiobraModel.toExportRows()` arma las filas. Test del orden de columnas.
 - `compartirArchivo` comparte `ensayos.xlsx` (asunto "Balanzas Hook, ensayo 9 platos").
+- Hecho así: `toExportRows(tolva:, fecha:)` recibe los datos del ensayo (la maniobra solo tiene `ensayoId`);
+  `duracion_s` va con 1 decimal y `estado` usa el umbral copiado en la maniobra. `Exportar.writeFileEnsayos` genera
+  el archivo (1, 0 sin maniobras, -1 si falla) con las filas de `Exportar.filasEnsayos`, de los ensayos más viejos a
+  los más nuevos. Como ya no hay botón que genere el archivo, el botón compartir del Home lo genera en el momento y
+  después lo comparte; sin maniobras avisa con un SnackBar. `writeFile` (pesadas) sigue para `PesadasPage` hasta el
+  paso 13. Test nuevo `test/Models/maniobra_export_test.dart`.
 
 ### [ ] Paso 13 · `quitarPesadas`: borrar el código y las tablas de pesadas
 - Borrar:

@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 80 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 84 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -113,6 +113,7 @@ lib/models/
   ensayos/ensayo_model.dart        EnsayoModel (id, tolva, fecha, createdAt, maniobras; toDb / fromDb).
   ensayos/maniobra_model.dart      ManiobraModel (id, ensayoId, numero, horaInicio / horaFin HH:mm:ss,
                                    duracionMs, umbral copiado, 9 ManiobraPlato; guardada = tiene id).
+                                   toExportRows(tolva:, fecha:): una fila XLSX por plato.
   ensayos/maniobra_plato.dart      ManiobraPlato (plato, estatico, maximo, minimo, lecturas, capacidad;
                                    toDb / fromDb; getters factorCresta y porCapacidad, estado(umbral)). Funciones puras
                                    porcentajeCapacidad y estadoCelda (EstadoCelda normal / alLimite / excede /
@@ -123,7 +124,9 @@ lib/models/
 lib/helpers/
   comandos_plato.dart              ComandosPlato.enviarCero(plato): TCP a la IP del plato.
                                    enviarCeroGeneral(): cero a los 9 en secuencia; devuelve los que fallaron.
-  exportar_xml.dart                A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte.
+  exportar_xml.dart                A pesar del nombre exporta XLSX: writeFileEnsayos (ensayos.xlsx, hoja
+                                   maniobras; filas de filasEnsayos), compartirArchivo (lo genera y lo
+                                   comparte) y writeFile (pesadas.xlsx, viejo, se borra en el paso 13).
   bateria.dart                     Bateria.porcentaje(voltios): 3.0 V = 0 %, 4.2 V = 100 %.
   preferencias_ensayo.dart         PreferenciasEnsayo: capacidad nominal de cada celda y umbral de alarma en
                                    SharedPreferences (leerCapacidades / leerUmbral / guardar). Los usa InicioEnsayoPage.
@@ -236,12 +239,12 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `ensayos`, `platos`, `inici
 
 ## Guardado, historial y exportación
 
-Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se guardan pesadas nuevas**; las maniobras se guardan en las tablas de ensayos (paso 10). El botón del Home ya lleva al historial de ensayos (paso 11); `PesadasPage` sigue en el código, sin botón, y la exportación de las pesadas guardadas sigue hasta que la reemplacen los ensayos (pasos 12 y 13).
+Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se guardan pesadas nuevas**; las maniobras se guardan en las tablas de ensayos (paso 10). El botón del Home ya lleva al historial de ensayos (paso 11); `PesadasPage` sigue en el código, sin botón, con su exportación de pesadas, hasta el paso 13. El botón compartir del Home ya exporta los ensayos (paso 12).
 
 1. `NuevePlatosPage` recalcula el total en cada `Obx` (`setPesoTotalByList` con los 9 pesos). `CalculosController.cn.calcularPayload9Platos` y `HelpersPesadas.guardarPesada9PlatosPayload` siguen en el código pero sin UI que los llame.
 2. Historial de pesadas (sin acceso desde el Home): `PesadasPage` lee `getPesadas9Platos()` a través de `PesadasProvider`. Al deslizar una tarjeta aparece un SnackBar: OK o timeout borran la pesada, cancel la conserva.
-3. Exportación: `Exportar.writeFile` genera `pesadas.xlsx` (en `getExternalStorageDirectory()` en Android) con una sola hoja `9_platos`: `id`, `fecha`, `hora`, `identificacion`, `total` y las columnas de `tpesadas_9platos` (sin `pesada_id`). El encabezado sale de las claves de `toExportRow`. Sin pesadas devuelve -1.
-4. `compartirArchivo` (botón compartir del Home) comparte el último `pesadas.xlsx` generado con share_plus (asunto "Balanzas Hook, 9 platos").
+3. Exportación de pesadas (solo desde `PesadasPage`): `Exportar.writeFile` genera `pesadas.xlsx` (en `getExternalStorageDirectory()` en Android) con una sola hoja `9_platos`: `id`, `fecha`, `hora`, `identificacion`, `total` y las columnas de `tpesadas_9platos` (sin `pesada_id`). El encabezado sale de las claves de `toExportRow`. Sin pesadas devuelve -1.
+4. Exportación de ensayos: `compartirArchivo` (botón compartir del Home) llama `Exportar.writeFileEnsayos`, que genera `ensayos.xlsx` (misma carpeta) con la hoja `maniobras`, **una fila por maniobra y plato**, de los ensayos más viejos a los más nuevos (`Exportar.filasEnsayos`): `ensayo_id`, `tolva`, `fecha`, `maniobra`, `hora_inicio`, `hora_fin`, `duracion_s` (1 decimal), `plato`, `nombre`, `capacidad`, `estatico`, `maximo`, `minimo`, `lecturas`, `factor_cresta`, `por_cap` y `estado` (con el umbral copiado en la maniobra). El encabezado sale de las claves de `ManiobraModel.toExportRows`. Devuelve 1, 0 sin maniobras o -1 si falla; con 0 o -1 un SnackBar avisa y no se comparte. Si no, lo comparte con share_plus (asunto "Balanzas Hook, ensayo 9 platos").
 
 ## Tests
 
@@ -252,6 +255,7 @@ Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se
 - `test/Providers/ensayos_provider_test.dart`: `EnsayosProvider` contra `DbEnsayosMock` (emite sin oyente, borrar uno y todos, después de `dispose`).
 - `test/widgets/ensayos/ensayos_page_test.dart`: `EnsayosPage` en un teléfono angosto (tarjetas, expandir con las tablas, deslizar con cancel y OK, borrar todo).
 - `test/Models/ensayo_model_test.dart`: `toDb` / `fromDb` de `EnsayoModel`, `ManiobraModel` y `ManiobraPlato`, y `copyWith`.
+- `test/Models/maniobra_export_test.dart`: orden de columnas y valores de `ManiobraModel.toExportRows` (ejemplo del documento, plato sin capacidad ni lecturas) y orden de `Exportar.filasEnsayos`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
 - `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController`, `iniciarEnsayo`, `tomarEstatico` (con `leerPesos` inyectado), `borrarEstatico`, iniciar / terminar / descartar maniobra (con `platos` inyectado), pantalla encendida durante la maniobra (con `pantallaEncendida` inyectado), guardado de las maniobras (con `ensayos` inyectado: un ensayo por tolva, umbral y capacidad copiados, reintento si falla) y `alarma` (peso actual, máximo durante la maniobra, sin capacidad, umbral del ensayo).
 - `test/widgets/nueve_platos/plato_widget_alarma_test.dart`: colores del título y el borde de `PlatoWidget` según `nivelAlarma`, en un teléfono chico sin desbordes.
