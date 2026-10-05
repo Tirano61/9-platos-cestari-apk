@@ -27,28 +27,58 @@ class NuevePlatosPage extends StatelessWidget {
       final pesos = [for (final c in pesoControllers) c.pesoModel.peso];
       CalculosController.cn.setPesoTotalByList(pesos);
       final separacion = SizeScreen.sc().screenWidth * 0.025;
-      return Scaffold(
-        appBar: AppBar(
-          //backgroundColor: ThemePlatos.backgroundTitulos,
-          // Nombre de la tolva del ensayo en curso.
-          title: Text(
-            ensayo.tolva.value.isEmpty ? 'Balanzas Hook' : ensayo.tolva.value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-         
-        ),
-        body: Column(
-          children: [
-            // Barra de acciones fija bajo el AppBar
-            const BarraEnsayo(),
-            Expanded(
-              child: _contenidoPlatos(pesos, separacion),
+      // Con una maniobra en curso, salir pide confirmacion y la descarta.
+      return PopScope(
+        canPop: !ensayo.registrando,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _confirmarSalida(context);
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            //backgroundColor: ThemePlatos.backgroundTitulos,
+            // Nombre de la tolva del ensayo en curso.
+            title: Text(
+              ensayo.tolva.value.isEmpty ? 'Balanzas Hook' : ensayo.tolva.value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
+         
+          ),
+          body: Column(
+            children: [
+              // Barra de acciones fija bajo el AppBar
+              const BarraEnsayo(),
+              Expanded(
+                child: _contenidoPlatos(pesos, separacion),
+              ),
+            ],
+          ),
         ),
       );
     });
+  }
+
+  Future<void> _confirmarSalida(BuildContext context) async {
+    final salir = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Maniobra en curso'),
+        content: const Text('Si salís, la maniobra se descarta.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Seguir'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Descartar y salir'),
+          ),
+        ],
+      ),
+    );
+    if (salir != true || !context.mounted) return;
+    ensayo.descartarManiobra();
+    Navigator.pop(context);
   }
 
   /// Total, enganche, los 4 juegos y los lados, con scroll.
@@ -93,7 +123,9 @@ class NuevePlatosPage extends StatelessWidget {
   /// PlatoWidget del plato [n] (1..9). La key del boton es el numero
   /// de plato al que se manda el cero.
   PlatoWidget _platoWidget(int n) {
-    final plato = pesoControllers[n - 1].pesoModel;
+    final controller = pesoControllers[n - 1];
+    final plato = controller.pesoModel;
+    final registrando = ensayo.registrando;
     return PlatoWidget(
       numPlato: nombrePlato(n),
       pesoPlato: plato.peso,
@@ -102,6 +134,10 @@ class NuevePlatosPage extends StatelessWidget {
       batery: plato.tension,
       estable: plato.estable,
       estatico: ensayo.estatico(n),
+      // Durante la maniobra: max / min en vivo y sin cero.
+      maximo: registrando ? controller.maximo.value : '',
+      minimo: registrando ? controller.minimo.value : '',
+      ceroHabilitado: !registrando,
     );
   }
 
