@@ -1,6 +1,7 @@
 
 
 import 'package:nueve_platos_cestari/Controllers/calculos_controllers.dart';
+import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/batery_widget.dart';
 import 'package:nueve_platos_cestari/Widgets/connection_widget.dart';
@@ -8,6 +9,7 @@ import 'package:nueve_platos_cestari/Widgets/widget_button.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/helpers/comandos_plato.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class PlatoWidget extends StatelessWidget {
   /// [buttonKeyPlato] debe tener como valor el numero de plato fisico
@@ -20,6 +22,7 @@ class PlatoWidget extends StatelessWidget {
     required this.conexionPlato,
     required this.batery,
     required this.estable,
+    this.estatico = '',
   });
 
   final String numPlato;
@@ -28,8 +31,11 @@ class PlatoWidget extends StatelessWidget {
   final ValueKey buttonKeyPlato;
   final bool conexionPlato;
   final String estable;
+  /// Peso estatico de referencia ('' si no se tomo).
+  final String estatico;
 
   /// Envia cero al plato por TCP y avisa si no se pudo enviar.
+  /// Si se envio, borra el estatico del ensayo, que deja de valer.
   Future<void> _enviarCero(BuildContext context) async {
     final plato = int.tryParse(buttonKeyPlato.value.toString());
     if (plato == null) return;
@@ -43,6 +49,17 @@ class PlatoWidget extends StatelessWidget {
           content: Text('No se pudo enviar cero a $numPlato.'),
           backgroundColor: ThemePlatos.errorColor,
           duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (Get.find<EnsayoController>().borrarEstatico()) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Cero enviado a $numPlato. Volvé a tomar el estático.'),
+          backgroundColor: ThemePlatos.positiveColor,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -160,7 +177,19 @@ class PlatoWidget extends StatelessWidget {
           )
         ),
 
-        const SizedBox(height: 5),
+        // Estatico de referencia; la linea queda vacia si no se tomo
+        SizedBox(
+          width: SizeScreen.sc().screenWidth * 0.27,
+          child: Text(
+            estatico.isEmpty ? '' : 'E: $estatico',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: estiloPorcentaje,
+          ),
+        ),
+
+        const SizedBox(height: 3),
 
         // Boton para enviar cero, centrado bajo el plato
         SizedBox(

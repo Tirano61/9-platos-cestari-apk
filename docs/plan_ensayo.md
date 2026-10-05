@@ -126,7 +126,7 @@ duración de la maniobra dan la tasa real que hubo.
 - Test nuevo `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura (máx = mín), negativos,
   reinicio.
 
-### [ ] Paso 6 · `tomarEstatico`: referencia estática
+### [x] Paso 6 · `tomarEstatico`: referencia estática
 - `EnsayoController`: `estaticos` (RxList<String>, vacía = sin estático), `estado` (`sinEstatico` / `listo` /
   `registrando`), `tomarEstatico()` y `borrarEstatico()`.
 - `NuevePlatosPage`:
@@ -234,7 +234,7 @@ duración de la maniobra dan la tasa real que hubo.
 
 ## Verificación en cada paso
 
-1. `fvm flutter analyze` (sin warnings nuevos; siguen los 3 info previos) y `fvm flutter test`.
+1. `fvm flutter analyze` (sin warnings nuevos; siguen los info previos) y `fvm flutter test`.
 2. `fvm flutter build apk --debug`.
 3. Con las balanzas, según el paso:
    - instalar **sobre** la versión anterior y comprobar que la migración conserva los puertos (pasos 10 y 13);
