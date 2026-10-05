@@ -91,9 +91,8 @@ class HomePage extends StatelessWidget {
               iconColor: ThemeApp.colorTarjetaPesaadas, 
               iconSize: 30,
               onPressed: (){
-                // Compartir las pesadas
+                // Generar y compartir ensayos.xlsx
                 final exportar = Exportar();
-                //exportarPesadas();
                 exportar.compartirArchivo(context);
               }, 
               icon: Icons.share

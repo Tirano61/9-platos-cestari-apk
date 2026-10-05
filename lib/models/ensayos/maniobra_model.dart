@@ -1,3 +1,4 @@
+import 'package:nueve_platos_cestari/config/platos.dart';
 import 'package:nueve_platos_cestari/models/ensayos/maniobra_plato.dart';
 
 /// Una maniobra del ensayo: cabecera (tmaniobras) y el resultado de cada plato
@@ -57,6 +58,32 @@ class ManiobraModel {
         'duracion_ms': duracionMs,
         'umbral': umbral,
       };
+
+  /// Filas de la hoja 'maniobras' del XLSX, una por plato. [tolva] y [fecha]
+  /// son las del ensayo. Todas las filas tienen las mismas claves y en el
+  /// mismo orden: el encabezado de la hoja sale de ellas.
+  List<Map<String, dynamic>> toExportRows({required String tolva, required String fecha}) => [
+        for (final plato in platos)
+          {
+            'ensayo_id': ensayoId ?? '',
+            'tolva': tolva,
+            'fecha': fecha,
+            'maniobra': numero,
+            'hora_inicio': horaInicio,
+            'hora_fin': horaFin,
+            'duracion_s': (duracionMs / 1000).toStringAsFixed(1),
+            'plato': plato.plato,
+            'nombre': nombrePlato(plato.plato),
+            'capacidad': plato.capacidad,
+            'estatico': plato.estatico,
+            'maximo': plato.maximo,
+            'minimo': plato.minimo,
+            'lecturas': plato.lecturas,
+            'factor_cresta': plato.factorCresta,
+            'por_cap': plato.porCapacidad,
+            'estado': plato.estado(umbral).texto,
+          },
+      ];
 
   ManiobraModel copyWith({int? id, int? ensayoId}) => ManiobraModel(
         id: id ?? this.id,
