@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/config/platos.dart';
@@ -24,15 +26,20 @@ typedef ResultadoManiobra = ({
 class EnsayoController extends GetxController {
   /// [leerPesos] devuelve el peso actual de los 9 platos (indice 0 = plato 1)
   /// y [platos] los 9 PesoController que registran la maniobra. Por defecto
-  /// salen de Get; los tests pasan los suyos.
+  /// salen de Get; los tests pasan los suyos. [pantallaEncendida] mantiene
+  /// la pantalla prendida (true) o la deja apagarse (false) durante la
+  /// maniobra; por defecto usa wakelock_plus.
   EnsayoController({
     List<String> Function()? leerPesos,
     List<PesoController> Function()? platos,
+    void Function(bool encender)? pantallaEncendida,
   })  : _leerPesos = leerPesos ?? _pesosDeLosPlatos,
-        _platos = platos ?? _controllersDeLosPlatos;
+        _platos = platos ?? _controllersDeLosPlatos,
+        _pantallaEncendida = pantallaEncendida ?? _wakelock;
 
   final List<String> Function() _leerPesos;
   final List<PesoController> Function() _platos;
+  final void Function(bool encender) _pantallaEncendida;
 
   /// Identificacion de la tolva ensayada.
   final tolva = ''.obs;
@@ -118,6 +125,8 @@ class EnsayoController extends GetxController {
     numeroManiobra.value++;
     inicioManiobra.value = DateTime.now();
     estado.value = EstadoEnsayo.registrando;
+    // Si la pantalla se apaga, Android puede cortar el WiFi y se pierden tramas.
+    _pantallaEncendida(true);
   }
 
   /// Termina la maniobra en curso y arma el resultado de cada plato con el
@@ -141,6 +150,7 @@ class EnsayoController extends GetxController {
     }
     inicioManiobra.value = null;
     estado.value = EstadoEnsayo.listo;
+    _pantallaEncendida(false);
     return (
       numero: numeroManiobra.value,
       inicio: inicio,
@@ -158,6 +168,19 @@ class EnsayoController extends GetxController {
     numeroManiobra.value--;
     inicioManiobra.value = null;
     estado.value = EstadoEnsayo.listo;
+    _pantallaEncendida(false);
+  }
+
+  @override
+  void onClose() {
+    _pantallaEncendida(false);
+    super.onClose();
+  }
+
+  static void _wakelock(bool encender) {
+    WakelockPlus.toggle(enable: encender).catchError((Object e) {
+      debugPrint('No se pudo cambiar el wakelock: $e');
+    });
   }
 
   static List<PesoController> _controllersDeLosPlatos() => [

@@ -166,10 +166,13 @@ duración de la maniobra dan la tasa real que hubo.
   `TablaManiobra.colorEstado` (borde de 3 px; en ámbar el título va en negro). Tests en `ensayo_controller_test` y
   `test/widgets/nueve_platos/plato_widget_alarma_test.dart`.
 
-### [ ] Paso 9 · `pantallaEncendida`: que no se apague la pantalla en la maniobra
+### [x] Paso 9 · `pantallaEncendida`: que no se apague la pantalla en la maniobra
 - Dependencia nueva `wakelock_plus`: `WakelockPlus.enable()` en `iniciarManiobra` y `disable()` en
   `terminarManiobra`, al descartar y en `onClose`.
 - Probar en el teléfono que una maniobra de varios minutos con la pantalla sin tocar sigue recibiendo datos.
+- Hecho así: `EnsayoController` recibe `pantallaEncendida` (por defecto `WakelockPlus.toggle`, con el error solo en
+  `debugPrint`) para que los tests no toquen el plugin. Un ensayo nuevo con la maniobra en curso la descarta y también
+  apaga el wakelock. Test en `ensayo_controller_test`.
 
 ### [ ] Paso 10 · `guardarManiobras`: ensayos y maniobras en la base
 - Tablas nuevas (`dbVersion = 2`; `onUpgrade` con `oldVersion < 2` las crea y `onCreate` también):
