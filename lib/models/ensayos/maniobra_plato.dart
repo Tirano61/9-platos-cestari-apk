@@ -49,6 +49,25 @@ class ManiobraPlato {
     required this.capacidad,
   });
 
+  /// Fila de tmaniobras_platos (sin maniobra_id, lo pone la base).
+  factory ManiobraPlato.fromDb(Map<String, dynamic> row) => ManiobraPlato(
+        plato: row['plato'] as int,
+        estatico: (row['estatico'] ?? '').toString(),
+        maximo: (row['maximo'] ?? '').toString(),
+        minimo: (row['minimo'] ?? '').toString(),
+        lecturas: (row['lecturas'] as int?) ?? 0,
+        capacidad: (row['capacidad'] ?? '').toString(),
+      );
+
+  Map<String, dynamic> toDb() => {
+        'plato': plato,
+        'estatico': estatico,
+        'maximo': maximo,
+        'minimo': minimo,
+        'lecturas': lecturas,
+        'capacidad': capacidad,
+      };
+
   /// Numero de plato (1..9).
   final int plato;
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:nueve_platos_cestari/BaseDeDatos/helpers/ensayos/helpers_ensayos.dart';
 import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/dialog_maniobra.dart';
@@ -97,10 +98,14 @@ class _BarraEnsayoState extends State<BarraEnsayo> {
 
   void _registrarManiobra() => ensayo.iniciarManiobra();
 
+  /// Corta el registro, guarda la maniobra y muestra el resultado.
   Future<void> _terminarManiobra() async {
-    final resultado = ensayo.terminarManiobra();
-    if (resultado == null) return;
-    await mostrarResultadoManiobra(context, resultado: resultado, umbral: ensayo.umbral.value);
+    final messenger = ScaffoldMessenger.of(context);
+    final maniobra = await ensayo.terminarManiobra();
+    if (maniobra == null) return;
+    HelpersEnsayos.avisarGuardado(messenger, maniobra);
+    if (!mounted) return;
+    await mostrarResultadoManiobra(context, maniobra: maniobra);
   }
 
   @override

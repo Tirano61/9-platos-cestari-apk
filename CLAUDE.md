@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 65 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 74 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -95,10 +95,11 @@ lib/Controllers/
                                    durante la maniobra, si no el peso actual) con estadoCelda. Maniobra: numeroManiobra, inicioManiobra,
                                    iniciarManiobra() (solo en listo; iniciarRegistro en los 9 platos y
                                    pantalla encendida con wakelock_plus hasta terminar / descartar),
-                                   terminarManiobra() (devuelve el record ResultadoManiobra: numero, inicio,
-                                   fin y 9 ManiobraPlato) y descartarManiobra() (no consume el numero).
-                                   Los tests inyectan los PesoController con platos y el wakelock con
-                                   pantallaEncendida.
+                                   terminarManiobra() (async: corta el registro, guarda y devuelve el
+                                   ManiobraModel; la fila del ensayo se inserta con la primera maniobra) y
+                                   descartarManiobra() (no consume el numero). Los tests inyectan los
+                                   PesoController con platos, el wakelock con pantallaEncendida y la base
+                                   con ensayos (ServiceEnsayos).
   controllers_export.dart          Barrel de calculos + peso_controller.
 lib/data/udp/udp_scale_parser.dart Parsea el datagrama "ADC = peso,estable,x,tension" -> ScaleReading.
 lib/domain/entities/scale_reading.dart  Lectura normalizada (peso, estable, tension, sourceId).
@@ -109,8 +110,11 @@ lib/models/
                                    Claves JSON = columnas tconfig plato1..plato9.
   recibir_peso_model.dart          Estado Rx de un plato: peso, estable, tension (nivel 1..5),
                                    adreess (IP de origen), conexion.
+  ensayos/ensayo_model.dart        EnsayoModel (id, tolva, fecha, createdAt, maniobras; toDb / fromDb).
+  ensayos/maniobra_model.dart      ManiobraModel (id, ensayoId, numero, horaInicio / horaFin HH:mm:ss,
+                                   duracionMs, umbral copiado, 9 ManiobraPlato; guardada = tiene id).
   ensayos/maniobra_plato.dart      ManiobraPlato (plato, estatico, maximo, minimo, lecturas, capacidad;
-                                   getters factorCresta y porCapacidad, estado(umbral)). Funciones puras
+                                   toDb / fromDb; getters factorCresta y porCapacidad, estado(umbral)). Funciones puras
                                    porcentajeCapacidad y estadoCelda (EstadoCelda normal / alLimite / excede /
                                    sinDato, con su texto), comparando el % ya redondeado a 1 decimal.
   pesadas/                         PesadaBase (cabecera), Pesada9PlatosDetalle (enganche, j1Izq..j4Der,
@@ -130,10 +134,12 @@ lib/Providers/
   pesadas/                         PesadasProvider -> ServiceProvider: stream de
                                    List<Pesada9PlatosPayload> para el historial.
 lib/BaseDeDatos/
-  connections/db_conexion.dart     DBconeccion.db (sqflite). Implementa PesadasInterface y ConfigInterface.
+  connections/db_conexion.dart     DBconeccion.db (sqflite). Implementa PesadasInterface, ConfigInterface y
+                                   EnsayosInterface.
   tables/                          SQL de cada tabla (ver Base de datos).
-  interfaces/ services/ helpers/   Cadena: DBconeccion -> ServicePesadas/ServiceConfig -> HelpersPesadas/
-                                   HelpersConfig (los helpers muestran SnackBar y actualizan GetX).
+  interfaces/ services/ helpers/   Cadena: DBconeccion -> ServicePesadas/ServiceConfig/ServiceEnsayos ->
+                                   HelpersPesadas/HelpersConfig/HelpersEnsayos (los helpers muestran SnackBar
+                                   y actualizan GetX). ServiceEnsayos lo usa EnsayoController.
   helpers/settings/first_data.dart puertosPorDefecto (8001..8009).
 lib/Pages/
   Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato (fila del
@@ -192,28 +198,35 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`, `inicioEnsayo`. H
 7. El botón **Cero general** de `BarraEnsayo` llama a `ComandosPlato.enviarCeroGeneral`, que manda `enviarCero(n)` de 1 a 9 **en secuencia** (`Conexion.cn` es un solo socket) y devuelve los platos que fallaron. El botón queda deshabilitado mientras manda, y un SnackBar avisa el resultado (los fallidos por `nombrePlato(n)`).
 8. Cualquier cero que se envió (el de un plato, o el general con al menos un plato OK) llama `EnsayoController.borrarEstatico()`; si había estático, el SnackBar agrega "Volvé a tomar el estático".
 9. **Tomar estático** (`BarraEnsayo`) guarda los 9 pesos actuales como referencia (`tomarEstatico`, 2 decimales, inválido = 0) y pasa el estado a `listo`. Si hay platos desconectados pide confirmación antes. Cero general y Tomar estático se deshabilitan en estado `registrando`.
-10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▲ máx ▼ mín` en vivo, los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()` y muestra el diálogo con la `TablaManiobra` (todavía no se guarda: paso 10 del plan).
+10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▲ máx ▼ mín` en vivo, los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()`, que guarda la maniobra en la base (la primera del ensayo inserta antes la fila de `tensayos`); `HelpersEnsayos.avisarGuardado` avisa con un SnackBar si se guardó y después se muestra el diálogo con la `TablaManiobra`.
 11. **Alarma**: en cada `Obx`, `EnsayoController.alarma(n, ...)` compara el máximo de la maniobra (o el peso actual si no hay maniobra o todavía no llegaron lecturas) con la capacidad de la celda y el umbral (`estadoCelda`). `PlatoWidget` pinta el borde y el título en ámbar (al límite) o rojo (excede), con los colores de `TablaManiobra.colorEstado`. Sin capacidad no hay alarma.
 
-## Base de datos (sqflite, `platos.db`, versión 1)
+## Base de datos (sqflite, `platos.db`, versión 2)
 
-Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app se instaló como nueva.
+`onCreate` crea todo el esquema. `onUpgrade` con `oldVersion < 2` crea las tablas de ensayos (la v1 solo tenía
+`tconfig` y las pesadas, que no se tocan).
 
 | Tabla | Contenido |
 |---|---|
 | `tconfig` | Una sola fila (`id = 1`): `plato1..plato9` con los puertos (por defecto 8001..8009). |
 | `tpesadas_base` | Cabecera: `id`, `fecha` (dd/MM/yyyy), `hora` (HH:mm), `identificacion`, `tipo_pesada`, `total`, `created_at` (ISO 8601). Índices por `fecha` y `tipo_pesada`. |
 | `tpesadas_9platos` | Detalle 1:1 (`pesada_id` PK y FK a `tpesadas_base(id)` `ON DELETE CASCADE`): `enganche`, `j1_izq`..`j4_der`, `juego1..4`, `lado_izq`, `lado_der` y un `por_*` por cada uno. |
+| `tensayos` | `id`, `tolva`, `fecha` (dd/MM/yyyy, la de la primera maniobra), `created_at` (ISO 8601). |
+| `tmaniobras` | `id`, `ensayo_id` (FK a `tensayos` `ON DELETE CASCADE`, con índice), `numero`, `hora_inicio` / `hora_fin` (HH:mm:ss), `duracion_ms`, `umbral` (copiado del ensayo). |
+| `tmaniobras_platos` | PK (`maniobra_id`, `plato`), FK a `tmaniobras` `ON DELETE CASCADE`: `estatico`, `maximo`, `minimo`, `lecturas`, `capacidad` (copiada del ensayo). |
 
 - `insertPesada9Platos` inserta cabecera y detalle en una transacción y devuelve el id, o -1 si falla.
 - `getPesadas9Platos` devuelve `List<Pesada9PlatosPayload>` ordenada por id descendente (historial). `getPesadasExportacion` devuelve las mismas pesadas como filas de `toExportRow`.
 - El borrado (`deletePesada(id)` / `deletePesadas()`) se hace solo sobre `tpesadas_base` y confía en el CASCADE.
+- Ensayos: `insertEnsayo` (cabecera, devuelve el id o -1), `insertManiobra` (cabecera + 9 platos en una transacción,
+  id o -1), `getEnsayos` (id descendente, con sus maniobras por número y sus platos) y `deleteEnsayo` /
+  `deleteManiobra` / `deleteEnsayos`, que también confían en el CASCADE. Todavía no hay pantalla que los lea (paso 11).
 - `PRAGMA foreign_keys = ON` se ejecuta en `onConfigure`, o sea en cada apertura (en sqflite el pragma es por conexión).
 - Si hace falta cambiar el esquema: subir `dbVersion` y escribir `onUpgrade`, o desinstalar la app en el dispositivo de prueba.
 
 ## Guardado, historial y exportación
 
-Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se guardan pesadas nuevas**. El historial y la exportación de las pesadas ya guardadas siguen funcionando hasta que los reemplacen los ensayos (pasos 10 a 13).
+Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se guardan pesadas nuevas**; las maniobras se guardan en las tablas de ensayos (paso 10). El historial y la exportación de las pesadas ya guardadas siguen funcionando hasta que los reemplacen los ensayos (pasos 11 a 13).
 
 1. `NuevePlatosPage` recalcula el total en cada `Obx` (`setPesoTotalByList` con los 9 pesos). `CalculosController.cn.calcularPayload9Platos` y `HelpersPesadas.guardarPesada9PlatosPayload` siguen en el código pero sin UI que los llame.
 2. Historial: `PesadasPage` lee `getPesadas9Platos()` a través de `PesadasProvider`. Al deslizar una tarjeta aparece un SnackBar: OK o timeout borran la pesada, cancel la conserva.
@@ -225,8 +238,10 @@ Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se
 - `test/controllers/calculos_9platos_test.dart`: total, pesos por plato, juegos, lados, porcentajes, total cero y pesos inválidos.
 - `test/Models/pesada_9platos_payload_test.dart`: fila y orden de columnas de `toExportRow`.
 - `test/BaseDeDatos/pesadas/services/service_pesadas_test.dart`: `ServicePesadas` contra `test/moks/db_connection_mock.dart`.
+- `test/BaseDeDatos/ensayos/service_ensayos_test.dart`: `ServiceEnsayos` contra `test/moks/db_ensayos_mock.dart` (base en memoria con ids, orden descendente, cascada y `fallar` para simular -1).
+- `test/Models/ensayo_model_test.dart`: `toDb` / `fromDb` de `EnsayoModel`, `ManiobraModel` y `ManiobraPlato`, y `copyWith`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
-- `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController`, `iniciarEnsayo`, `tomarEstatico` (con `leerPesos` inyectado), `borrarEstatico`, iniciar / terminar / descartar maniobra (con `platos` inyectado), pantalla encendida durante la maniobra (con `pantallaEncendida` inyectado) y `alarma` (peso actual, máximo durante la maniobra, sin capacidad, umbral del ensayo).
+- `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController`, `iniciarEnsayo`, `tomarEstatico` (con `leerPesos` inyectado), `borrarEstatico`, iniciar / terminar / descartar maniobra (con `platos` inyectado), pantalla encendida durante la maniobra (con `pantallaEncendida` inyectado), guardado de las maniobras (con `ensayos` inyectado: un ensayo por tolva, umbral y capacidad copiados, reintento si falla) y `alarma` (peso actual, máximo durante la maniobra, sin capacidad, umbral del ensayo).
 - `test/widgets/nueve_platos/plato_widget_alarma_test.dart`: colores del título y el borde de `PlatoWidget` según `nivelAlarma`, en un teléfono chico sin desbordes.
 - `test/Models/maniobra_plato_test.dart`: factor de cresta, % cap y estado (ejemplo del documento, = umbral, = 100 %, > 100 %, capacidad vacía o 0, estático 0, sin lecturas, redondeo).
 - `test/widgets/nueve_platos/dialog_maniobra_test.dart`: `formatoDuracion` y el diálogo con la tabla en un teléfono angosto.
@@ -240,7 +255,7 @@ Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se
 
 - `ConnectionWidget` muestra siempre un ícono de WiFi (solo visual, heredado de cuando había BLE).
 - `Conexion.enviarCalibracion` no tiene UI que lo use.
-- No hay pruebas automáticas de UDP ni de la base real (sqflite); se prueban con las balanzas en un teléfono (ver la verificación en `docs/plan_9_platos.md`).
+- No hay pruebas automáticas de UDP ni de la base real (sqflite); se prueban con las balanzas en un teléfono (ver la verificación en `docs/plan_9_platos.md` y `docs/plan_ensayo.md`).
 
 ## Legacy y trampas
 
