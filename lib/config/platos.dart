@@ -29,13 +29,14 @@ const double proporcionTolva = 1000 / 2868;
 ///
 /// En el enganche y el lado izq el campo termina en x (queda a la izquierda);
 /// en el lado der empieza en x (queda a la derecha). En y queda centrado.
-/// Son una primera medida sobre el dibujo: se ajustan viendolas en el telefono.
+/// Los izq/der van al borde exterior de las ruedas, asi el campo no tapa el
+/// dibujo. Se ajustan viendolas en el telefono.
 const List<({double x, double y})> posicionesCeldas = [
   (x: 0.40, y: 0.12), // ENGANCHE, junto a la lanza
-  (x: 0.20, y: 0.43), (x: 0.80, y: 0.43), // J1
-  (x: 0.20, y: 0.57), (x: 0.80, y: 0.57), // J2
-  (x: 0.20, y: 0.70), (x: 0.80, y: 0.70), // J3
-  (x: 0.20, y: 0.84), (x: 0.80, y: 0.84), // J4
+  (x: 0.06, y: 0.43), (x: 0.94, y: 0.43), // J1
+  (x: 0.06, y: 0.57), (x: 0.94, y: 0.57), // J2
+  (x: 0.06, y: 0.70), (x: 0.94, y: 0.70), // J3
+  (x: 0.06, y: 0.84), (x: 0.94, y: 0.84), // J4
 ];
 
 /// Posicion del campo del plato [plato] (1..cantidadPlatos) sobre [imagenTolva].
