@@ -73,7 +73,7 @@ duración de la maniobra dan la tasa real que hubo.
 - `Conexion` (`Providers/tcp_conexion.dart`): borrar `enviarHold`.
 - Revisar los comentarios y `CLAUDE.md` que nombran el reset hold.
 
-### [ ] Paso 2 · `ceroGeneral`: cero a los 9 platos con un botón
+### [x] Paso 2 · `ceroGeneral`: cero a los 9 platos con un botón
 - `ComandosPlato.enviarCeroGeneral()` → `Future<List<int>>` con los platos que fallaron. Manda `enviarCero(n)` **en
   secuencia** de 1 a 9: `Conexion.cn` es un solo socket, así que en paralelo no funciona.
 - `NuevePlatosPage`: barra de acciones arriba, debajo del AppBar, por ahora con un solo botón **Cero general** (widget
