@@ -42,7 +42,7 @@ La app no va al Play Store. Nació como copia de "Cuatro Platos" y se reformó e
 - `fvm` es un `.bat` (Pub cache): funciona desde PowerShell/cmd, no desde Git Bash. Desde Git Bash usar `.fvm/flutter_sdk/bin/flutter.bat`.
 - Android: AGP 8.11.1, Kotlin 2.2.20, `minifyEnabled true` en release, firma con `android/key.properties`. Permisos: `INTERNET` y `READ/WRITE_EXTERNAL_STORAGE` (exportación).
 - `android/key.properties` y `local.properties` están versionados en git (el primero con credenciales del keystore). No los toques ni los muestres salvo que se pida.
-- Dependencias principales: `get`, `udp`, `sqflite`, `excel`, `share_plus`, `path_provider`, `permission_handler`, `intl`, `flutter_native_splash`.
+- Dependencias principales: `get`, `udp`, `sqflite`, `shared_preferences`, `excel`, `share_plus`, `path_provider`, `permission_handler`, `intl`, `flutter_native_splash`.
 
 ```powershell
 fvm flutter pub get
@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 22 tests en verde.
+Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 27 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -97,6 +97,8 @@ lib/helpers/
                                    enviarCeroGeneral(): cero a los 9 en secuencia; devuelve los que fallaron.
   exportar_xml.dart                A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte.
   bateria.dart                     Bateria.porcentaje(voltios): 3.0 V = 0 %, 4.2 V = 100 %.
+  preferencias_ensayo.dart         PreferenciasEnsayo: capacidad nominal de cada celda y umbral de alarma en
+                                   SharedPreferences (leerCapacidades / leerUmbral / guardar). Sin UI todavia.
 lib/Providers/
   tcp_conexion.dart                Conexion.cn: socket TCP al puerto 80 de la IP del plato; manda cero
                                    (y calibracion, sin uso) por HTTP GET. No usarlo directo
@@ -182,6 +184,7 @@ Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app 
 - `test/Models/pesada_9platos_payload_test.dart`: fila y orden de columnas de `toExportRow`.
 - `test/BaseDeDatos/pesadas/services/service_pesadas_test.dart`: `ServicePesadas` contra `test/moks/db_connection_mock.dart`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
+- `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `test/list_pesajes/list_pesaje.dart`: pesada de ejemplo (`pesada9PlatosEjemplo`) y su fila de exportación esperada (`listPesaje`), usadas por el mock y los tests.
 - `integration_test/app_test.dart` está vacío.
 
