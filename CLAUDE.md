@@ -122,8 +122,9 @@ lib/Pages/
   Home/widgets/dialog_config.dart  Un InputTextConfig por plato (9 campos con scroll). OK ->
                                    HelpersConfig.upDateConfig los guarda y reconecta.
   inicio_ensayo/                   InicioEnsayoPage (ruta 'inicioEnsayo'), con scroll: identificacion de la
-                                   tolva (obligatoria), TolvaCapacidades (tolva.png con un campo en kg por
-                                   celda, Positioned segun posicionCelda) y umbral (%). Precarga
+                                   tolva (obligatoria), TolvaCapacidades (tolva.png centrado, como mucho 55 %
+                                   del ancho y 65 % del alto de pantalla, con un campo en kg por celda a los
+                                   costados, Positioned segun posicionCelda) y umbral (%). Precarga
                                    PreferenciasEnsayo; Comenzar ensayo valida, avisa las celdas sin
                                    capacidad, guarda, llama iniciarEnsayo y reemplaza la ruta por 'platos'.
   nueve_platos/                    NuevePlatosPage (ruta 'platos', AppBar con la tolva del ensayo):

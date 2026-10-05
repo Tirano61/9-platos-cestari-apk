@@ -193,11 +193,7 @@ class _InicioEnsayoPageState extends State<InicioEnsayoPage> {
             style: TextStyle(fontSize: tablet ? 13 : 11, color: Colors.black54),
           ),
           const SizedBox(height: 8),
-          // En tablet el dibujo no ocupa todo el ancho: quedaria demasiado alto.
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: TolvaCapacidades(capacidades: _capacidades),
-          ),
+          TolvaCapacidades(capacidades: _capacidades),
           const SizedBox(height: 20),
           SizedBox(
             width: tablet ? 260 : width * 0.6,

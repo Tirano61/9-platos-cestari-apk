@@ -49,10 +49,10 @@ tamaño de pantalla. Valores iniciales, medidos sobre el dibujo y a ajustar en e
 | Plato | Dónde está en el dibujo | x | y |
 |---|---|---|---|
 | 1 ENGANCHE | a la izquierda de la lanza, a la altura del recuadro chico (que está en x 0,46) | 0,40 | 0,12 |
-| 2 / 3 J1 IZQ / DER | 1ª línea transversal del bastidor, sobre el larguero izq / der | 0,20 / 0,80 | 0,43 |
-| 4 / 5 J2 | 2ª línea transversal | 0,20 / 0,80 | 0,57 |
-| 6 / 7 J3 | 3ª línea transversal | 0,20 / 0,80 | 0,70 |
-| 8 / 9 J4 | 4ª línea transversal | 0,20 / 0,80 | 0,84 |
+| 2 / 3 J1 IZQ / DER | 1ª línea transversal del bastidor, al borde exterior de las ruedas izq / der | 0,06 / 0,94 | 0,43 |
+| 4 / 5 J2 | 2ª línea transversal | 0,06 / 0,94 | 0,57 |
+| 6 / 7 J3 | 3ª línea transversal | 0,06 / 0,94 | 0,70 |
+| 8 / 9 J4 | 4ª línea transversal | 0,06 / 0,94 | 0,84 |
 
 Las fracciones van como constantes en `lib/config/platos.dart`, junto a `nombrePlato(n)`, así hay un solo lugar donde
 corregirlas. Marcan dónde se pega el campo: en el enganche y el lado izq el campo **termina** en x (queda a la
