@@ -82,7 +82,7 @@ duración de la maniobra dan la tasa real que hubo.
   `nombrePlato(n)`).
 - Test: no aplica (es TCP). Se prueba con las balanzas.
 
-### [ ] Paso 3 · `preferenciasEnsayo`: capacidades y umbral en SharedPreferences (sin UI)
+### [x] Paso 3 · `preferenciasEnsayo`: capacidades y umbral en SharedPreferences (sin UI)
 - Dependencia nueva `shared_preferences`.
 - Nuevo `lib/helpers/preferencias_ensayo.dart`, clase `PreferenciasEnsayo` con:
   - `Future<List<String>> leerCapacidades()`: 9 valores, índice 0 = plato 1, `''` si nunca se cargó;
