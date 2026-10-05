@@ -62,9 +62,9 @@ class HomePage extends StatelessWidget {
                       SizedBox(height: verticalSpacing),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, 'platos');
+                          Navigator.pushNamed(context, 'inicioEnsayo');
                         },
-                        child: const Text('Iniciar Pesaje'),
+                        child: const Text('Iniciar ensayo'),
                       ),
                     ],
                   ),
@@ -118,11 +118,19 @@ class HomePage extends StatelessWidget {
     final cardWidth = width * (SizeScreen.sc().isMinWidth ? 0.72 : 0.9);
 
     return Obx(() {
-      // Item del plato n: lee puerto y conexion dentro del Obx.
+      // Puerto y conexion se leen aca, en el build del Obx: el builder del
+      // LayoutBuilder corre despues, en el layout, y ahi el Obx no los registra.
+      final puertos = [
+        for (var n = 1; n <= cantidadPlatos; n++) _configController.puerto(n).value,
+      ];
+      final conectados = [
+        for (var n = 1; n <= cantidadPlatos; n++) _pesoController(n).pesoModel.conexion,
+      ];
+
       Widget item(int plato) => _itemConfiguracion(
         nombrePlato(plato),
-        _configController.puerto(plato).value,
-        conectado: _pesoController(plato).pesoModel.conexion,
+        puertos[plato - 1],
+        conectado: conectados[plato - 1],
       );
 
       return Container(
