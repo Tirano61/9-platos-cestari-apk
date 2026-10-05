@@ -117,8 +117,8 @@ class NuevePlatosPage extends StatelessWidget {
     });
   }
 
-  /// PlatoWidget del plato [n] (1..9). La key de los botones es el numero
-  /// de plato al que se mandan cero y reset hold.
+  /// PlatoWidget del plato [n] (1..9). La key del boton es el numero
+  /// de plato al que se manda el cero.
   PlatoWidget _platoWidget(int n) {
     final plato = pesoControllers[n - 1].pesoModel;
     return PlatoWidget(

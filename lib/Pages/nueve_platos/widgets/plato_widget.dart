@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 
 class PlatoWidget extends StatelessWidget {
   /// [buttonKeyPlato] debe tener como valor el numero de plato fisico
-  /// ('1'..'9') al que se envian los comandos de cero y hold.
+  /// ('1'..'9') al que se envia el comando de cero.
   const PlatoWidget({
     super.key,
     required this.numPlato,
@@ -29,20 +29,18 @@ class PlatoWidget extends StatelessWidget {
   final bool conexionPlato;
   final String estable;
 
-  /// Envia cero o reset de hold al plato por TCP y avisa si no se pudo enviar.
-  Future<void> _enviarComando(BuildContext context, {required bool cero}) async {
+  /// Envia cero al plato por TCP y avisa si no se pudo enviar.
+  Future<void> _enviarCero(BuildContext context) async {
     final plato = int.tryParse(buttonKeyPlato.value.toString());
     if (plato == null) return;
 
     final messenger = ScaffoldMessenger.of(context);
-    final enviado = cero
-        ? await ComandosPlato.enviarCero(plato)
-        : await ComandosPlato.enviarResetHold(plato);
+    final enviado = await ComandosPlato.enviarCero(plato);
 
     if (!enviado) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('No se pudo enviar ${cero ? 'cero' : 'reset hold'} a $numPlato.'),
+          content: Text('No se pudo enviar cero a $numPlato.'),
           backgroundColor: ThemePlatos.errorColor,
           duration: const Duration(seconds: 2),
         ),
@@ -164,36 +162,20 @@ class PlatoWidget extends StatelessWidget {
 
         const SizedBox(height: 5),
 
-        // Botones para enviar cero y hold
+        // Boton para enviar cero, centrado bajo el plato
         SizedBox(
           width: SizeScreen.sc().screenWidth * 0.27,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              WidgetButton(
-                ancho: SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.13 : 0.13),
-                alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
-                borderRadius: 5,
-                fontSize: SizeScreen.sc().screenWidth < 520 
-                ? 12 : 16,
-                /// Enviar cero a cada una de las balanzas
-                onPress: () => _enviarComando(context, cero: true),
-                texto: '> 0 <'
-              ),
-           
-              WidgetButton(
-                color1: Colors.amber.shade200,
-                color2: const Color.fromARGB(255, 188, 148, 29),
-                ancho: SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.13 : 0.13),
-                alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
-                borderRadius: 5,
-                fontSize: SizeScreen.sc().screenWidth < 520 
-                ? 12 : 16,
-                /// Enviar hold a cada una de las balanzas
-                onPress: () => _enviarComando(context, cero: false),
-                texto: '< H >'
-              ),
-            ],
+          child: Center(
+            child: WidgetButton(
+              ancho: SizeScreen.sc().screenWidth * 0.22,
+              alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
+              borderRadius: 5,
+              fontSize: SizeScreen.sc().screenWidth < 520
+              ? 12 : 16,
+              /// Enviar cero a la balanza del plato
+              onPress: () => _enviarCero(context),
+              texto: '> 0 <'
+            ),
           ),
         ),
         

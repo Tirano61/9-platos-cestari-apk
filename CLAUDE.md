@@ -17,7 +17,7 @@ App Flutter (Android es el único target real) para pesar una tolva de 3 ejes de
 
 - Plato 1: enganche. Platos 2..9: 4 **juegos** de celdas izq/der (J1 = 2/3 … J4 = 8/9). Los juegos no corresponden a ejes.
 - Cálculos: peso y % de cada plato, subtotal y % de cada juego, lado izq (2+4+6+8) y lado der (3+5+7+9) con su %, y total. El enganche no suma a ningún lado.
-- Conexión **solo WiFi UDP**: cada plato emite datagramas a su puerto (8001..8009 por defecto). Cero y reset hold se mandan por TCP a la IP del plato. No hay BLE.
+- Conexión **solo WiFi UDP**: cada plato emite datagramas a su puerto (8001..8009 por defecto). El cero se manda por TCP a la IP del plato. No hay BLE ni reset hold.
 
 Identidad:
 
@@ -93,12 +93,12 @@ lib/models/
                                    juego1..4, ladoIzq/Der y un por* por cada uno; toDb/fromDb) y
                                    Pesada9PlatosPayload (base + detalle; toExportRow arma la fila XLSX).
 lib/helpers/
-  comandos_plato.dart              ComandosPlato.enviarCero / enviarResetHold(plato): TCP a la IP del plato.
+  comandos_plato.dart              ComandosPlato.enviarCero(plato): TCP a la IP del plato.
   exportar_xml.dart                A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte.
   bateria.dart                     Bateria.porcentaje(voltios): 3.0 V = 0 %, 4.2 V = 100 %.
 lib/Providers/
-  tcp_conexion.dart                Conexion.cn: socket TCP al puerto 80 de la IP del plato; manda cero,
-                                   reset hold (y calibracion, sin uso) por HTTP GET. No usarlo directo
+  tcp_conexion.dart                Conexion.cn: socket TCP al puerto 80 de la IP del plato; manda cero
+                                   (y calibracion, sin uso) por HTTP GET. No usarlo directo
                                    desde la UI: pasar por ComandosPlato.
   pesadas/                         PesadasProvider -> ServiceProvider: stream de
                                    List<Pesada9PlatosPayload> para el historial.
@@ -117,7 +117,7 @@ lib/Pages/
   nueve_platos/                    NuevePlatosPage (ruta 'platos'): RecuadroPesoTotal, PlatoWidget del
                                    enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados.
                                    FAB Guardar -> DialogWidget (identificacion). Widgets: PlatoWidget
-                                   (peso, bateria, estable, conexion, botones > 0 < y < H >), EjeWidget,
+                                   (peso, bateria, estable, conexion, boton > 0 <), EjeWidget,
                                    FilaPlatos, SumaLados, RecuadroPesoTotal, BateryWidget, DialogWidget.
   pesadas/                         PesadasPage (ruta 'pesadas'): lista con Dismissible para borrar,
                                    exportar XLSX, borrar todo (DialogBorrar). ItemsPesadas: datos de la
@@ -147,7 +147,7 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`.
 3. Se actualiza `RecibirPesoModel`: peso, estable, tensión (nivel de batería 1..5), `adreess` = IP de origen, `conexion = true`, `contador = 0`.
 4. Desconexión y reconexión: el timer de 1 s (arranca en `onInit`, se cancela en `onClose`, corre también en el Home) marca desconexión a los 5 s sin datos. Si ya estaba desconectado, llama `_tryReconnect`, que solo reabre si no hay socket (`_receiver == null`): con el socket abierto, el plato está apagado y no hace falta reabrir. Los 5 s se cuentan desde que termina el intento.
 5. Cambio de puertos: `HelpersConfig.upDateConfig` guarda, actualiza `ConfigController` y `_refreshScaleConnections()` llama `recibirPeso()` de los 9 platos.
-6. Los botones `> 0 <` y `< H >` de `PlatoWidget` llaman a `ComandosPlato`, que abre un socket TCP al puerto 80 de la IP del plato (`Conexion.cn`), manda `GET /peso?cero=1` o `GET /peso?resethold=1` y lo cierra. El número de plato sale del `buttonKeyPlato` ('1'..'9'). Sin IP conocida (el plato nunca mandó datos) no se envía nada.
+6. El botón `> 0 <` de `PlatoWidget` llama a `ComandosPlato.enviarCero`, que abre un socket TCP al puerto 80 de la IP del plato (`Conexion.cn`), manda `GET /peso?cero=1` y lo cierra. El número de plato sale del `buttonKeyPlato` ('1'..'9'). Sin IP conocida (el plato nunca mandó datos) no se envía nada.
 
 ## Base de datos (sqflite, `platos.db`, versión 1)
 
@@ -201,3 +201,4 @@ Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app 
 
 - `README.md`: descripción e historial.
 - `docs/plan_9_platos.md`: plan de la reforma de 4 a 9 platos (PRs 1..10) y checklist de verificación con las balanzas.
+- `docs/plan_ensayo.md`: plan **pendiente** del modo ensayo de tolva (inicio con tolva y capacidad nominal por celda sobre `assets/tolva.png`, guardadas en SharedPreferences; estático, maniobra con máx/mín, alarma, historial de ensayos). Se implementa de a un paso por PR; leer el paso pedido antes de empezar.

@@ -2,7 +2,7 @@ import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Providers/tcp_conexion.dart';
 import 'package:get/get.dart';
 
-/// Envia los comandos de cero y reset de hold a un plato (1..N) por TCP,
+/// Envia el comando de cero a un plato (1..N) por TCP,
 /// a la IP desde la que llegan los datagramas UDP del plato.
 ///
 /// Devuelve false si el comando no se pudo enviar.
@@ -11,10 +11,6 @@ class ComandosPlato {
 
   static Future<bool> enviarCero(int plato) {
     return _enviarTcp(plato, (conexion) => conexion.enviarCero());
-  }
-
-  static Future<bool> enviarResetHold(int plato) {
-    return _enviarTcp(plato, (conexion) => conexion.enviarHold());
   }
 
   static Future<bool> _enviarTcp(

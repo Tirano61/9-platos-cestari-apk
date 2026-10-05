@@ -35,15 +35,6 @@ class Conexion {
     }
   }
 
-  Future<bool> enviarHold() async {
-    try {
-      socket!.write("GET /peso?resethold=1 HTTP/1.1\r\n\r\n");
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   Future<bool> enviarCalibracion(String celdas, String sensibilidad, String division, String conversiones, String recortes, String ventana, String kgfiltro, String tiempoestable)async{
     try {
       socket!.write(
