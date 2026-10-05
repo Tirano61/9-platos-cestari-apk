@@ -5,6 +5,10 @@ import 'package:nueve_platos_cestari/config/platos.dart';
 import 'package:nueve_platos_cestari/models/ensayos/maniobra_plato.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/services/ensayos/service_ensayos.dart';
+
+import '../moks/db_ensayos_mock.dart';
 
 void main() {
   test('Sin ensayo iniciado: tolva y capacidades vacias, umbral 90', () {
@@ -87,9 +91,11 @@ void main() {
     late EnsayoController ensayo;
     // Llamadas al wakelock: true = pantalla encendida.
     late List<bool> pantalla;
+    late DbEnsayosMock db;
 
     setUp(() {
       pantalla = [];
+      db = DbEnsayosMock();
       // PesoController busca el ConfigController; no se abre UDP.
       Get.put(ConfigController());
       platos = [for (var n = 1; n <= cantidadPlatos; n++) PesoController(plato: n)];
@@ -97,6 +103,7 @@ void main() {
         leerPesos: () => ['850', '2410', '2400', '2400', '2400', '2400', '2400', '2400', '0'],
         platos: () => platos,
         pantallaEncendida: pantalla.add,
+        ensayos: ServiceEnsayos(db),
       );
       ensayo.iniciarEnsayo(
         tolva: 'TC-1',
@@ -106,12 +113,13 @@ void main() {
     });
     tearDown(Get.reset);
 
-    test('Sin estatico no se puede iniciar', () {
+    test('Sin estatico no se puede iniciar', () async {
       ensayo.iniciarManiobra();
       expect(ensayo.registrando, false);
       expect(ensayo.numeroManiobra.value, 0);
       expect(platos.any((p) => p.registrando), false);
-      expect(ensayo.terminarManiobra(), isNull);
+      expect(await ensayo.terminarManiobra(), isNull);
+      expect(db.ensayos, isEmpty);
     });
 
     test('Iniciar pone a registrar los 9 platos y numera la maniobra', () {
@@ -128,7 +136,7 @@ void main() {
       expect(ensayo.numeroManiobra.value, 1);
     });
 
-    test('Terminar arma el resultado con estatico, max / min y capacidades', () {
+    test('Terminar arma el resultado con estatico, max / min y capacidades', () async {
       ensayo.tomarEstatico();
       ensayo.iniciarManiobra();
       for (final peso in ['2410.00', '5980.00', '1800.00']) {
@@ -136,9 +144,10 @@ void main() {
       }
       platos[8].registrarLectura('300.00');
 
-      final resultado = ensayo.terminarManiobra()!;
+      final resultado = (await ensayo.terminarManiobra())!;
       expect(resultado.numero, 1);
-      expect(resultado.fin.isBefore(resultado.inicio), false);
+      expect(resultado.duracionMs >= 0, true);
+      expect(resultado.umbral, '90');
       expect(resultado.platos.length, cantidadPlatos);
       expect(ensayo.estado.value, EstadoEnsayo.listo);
       expect(ensayo.inicioManiobra.value, isNull);
@@ -181,14 +190,14 @@ void main() {
       expect(ensayo.numeroManiobra.value, 1);
     });
 
-    test('La pantalla queda encendida solo durante la maniobra', () {
+    test('La pantalla queda encendida solo durante la maniobra', () async {
       ensayo.iniciarManiobra(); // sin estatico no arranca
       expect(pantalla, isEmpty);
 
       ensayo.tomarEstatico();
       ensayo.iniciarManiobra();
       expect(pantalla, [true]);
-      ensayo.terminarManiobra();
+      await ensayo.terminarManiobra();
       expect(pantalla, [true, false]);
 
       ensayo.iniciarManiobra();
@@ -240,6 +249,65 @@ void main() {
       );
       expect(ensayo.alarma(5, peso: '799.00'), EstadoCelda.normal);
       expect(ensayo.alarma(5, peso: '800.00'), EstadoCelda.alLimite);
+    });
+
+    test('Terminar guarda la maniobra; el ensayo se inserta con la primera', () async {
+      ensayo.tomarEstatico();
+      expect(db.ensayos, isEmpty);
+
+      ensayo.iniciarManiobra();
+      platos[1].registrarLectura('5980.00');
+      final primera = (await ensayo.terminarManiobra())!;
+      ensayo.iniciarManiobra();
+      final segunda = (await ensayo.terminarManiobra())!;
+
+      // Un solo ensayo, con la tolva y la fecha de la primera maniobra.
+      expect(db.ensayos.length, 1);
+      expect(db.ensayos.single.tolva, 'TC-1');
+      expect(db.ensayos.single.fecha, DateFormat('dd/MM/yyyy').format(DateTime.now()));
+      expect(primera.guardada, true);
+      expect(segunda.guardada, true);
+      expect(primera.ensayoId, db.ensayos.single.id);
+      expect(segunda.ensayoId, primera.ensayoId);
+      expect(db.maniobras.map((m) => m.numero), [1, 2]);
+
+      // Se guarda el max y la capacidad del plato, y el umbral del ensayo.
+      final guardada = db.maniobras.first;
+      expect(guardada.umbral, '90');
+      expect(guardada.platos[1].maximo, '5980.00');
+      expect(guardada.platos[1].capacidad, '5000');
+
+      // Otro ensayo inserta otra fila.
+      ensayo.iniciarEnsayo(
+        tolva: 'TC-2',
+        capacidades: List.filled(cantidadPlatos, ''),
+        umbral: '80',
+      );
+      ensayo.tomarEstatico();
+      ensayo.iniciarManiobra();
+      final otra = (await ensayo.terminarManiobra())!;
+      expect(db.ensayos.map((e) => e.tolva), ['TC-1', 'TC-2']);
+      expect(otra.numero, 1);
+      expect(otra.ensayoId, db.ensayos.last.id);
+      expect(otra.umbral, '80');
+    });
+
+    test('Si no se puede guardar, la maniobra vuelve sin id y se reintenta', () async {
+      ensayo.tomarEstatico();
+      db.fallar = true;
+      ensayo.iniciarManiobra();
+      final fallida = (await ensayo.terminarManiobra())!;
+      expect(fallida.guardada, false);
+      expect(fallida.numero, 1);
+      expect(ensayo.estado.value, EstadoEnsayo.listo);
+
+      // La siguiente vuelve a intentar insertar el ensayo.
+      db.fallar = false;
+      ensayo.iniciarManiobra();
+      final guardada = (await ensayo.terminarManiobra())!;
+      expect(guardada.guardada, true);
+      expect(guardada.numero, 2);
+      expect(db.ensayos.length, 1);
     });
 
     test('Un ensayo nuevo descarta la maniobra y reinicia la numeracion', () {

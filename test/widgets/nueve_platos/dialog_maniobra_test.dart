@@ -1,4 +1,5 @@
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/dialog_maniobra.dart';
+import 'package:nueve_platos_cestari/models/ensayos/maniobra_model.dart';
 import 'package:nueve_platos_cestari/models/ensayos/maniobra_plato.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,11 +17,12 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final inicio = DateTime(2026, 10, 5, 10, 0, 0);
-    final resultado = (
+    final maniobra = ManiobraModel(
       numero: 3,
-      inicio: inicio,
-      fin: inicio.add(const Duration(minutes: 1, seconds: 30)),
+      horaInicio: '10:00:00',
+      horaFin: '10:01:30',
+      duracionMs: 90000,
+      umbral: '90',
       platos: [
         for (var n = 1; n <= 9; n++)
           ManiobraPlato(
@@ -37,7 +39,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Builder(
         builder: (context) => TextButton(
-          onPressed: () => mostrarResultadoManiobra(context, resultado: resultado, umbral: '90'),
+          onPressed: () => mostrarResultadoManiobra(context, maniobra: maniobra),
           child: const Text('abrir'),
         ),
       ),
@@ -46,7 +48,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Maniobra 3'), findsOneWidget);
-    expect(find.textContaining('10:00:00 a 10:01:30 (1:30)'), findsOneWidget);
+    expect(find.textContaining('10:00:00 a 10:01:30 (1:30) · umbral 90 %'), findsOneWidget);
     expect(find.text('ENGANCHE'), findsOneWidget);
     expect(find.text('J4 DER'), findsOneWidget);
     // Maximos 4000..5500 contra 5000: 80 y 85 % normal, 90 a 100 % al limite,
