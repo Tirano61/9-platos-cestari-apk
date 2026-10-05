@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 38 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 42 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -86,7 +86,11 @@ lib/Controllers/
   calculos_controllers.dart        Singleton CalculosController.cn: total (setPesoTotalByList /
                                    pesoTotal), porcentajes, fecha/hora y calcularPayload9Platos(pesos).
   ensayo_controller.dart           EnsayoController (Get.put en main.dart): tolva, capacidades (9 String,
-                                   '' = sin alarma) y umbral del ensayo en curso; iniciarEnsayo(...).
+                                   '' = sin alarma) y umbral del ensayo en curso; iniciarEnsayo(...) (borra
+                                   el estatico). Estatico: estaticos (RxList, vacia = sin estatico),
+                                   estado (EstadoEnsayo sinEstatico / listo / registrando), tomarEstatico()
+                                   (lee los 9 PesoController; los tests inyectan leerPesos) y
+                                   borrarEstatico() (devuelve si habia uno).
   controllers_export.dart          Barrel de calculos + peso_controller.
 lib/data/udp/udp_scale_parser.dart Parsea el datagrama "ADC = peso,estable,x,tension" -> ScaleReading.
 lib/domain/entities/scale_reading.dart  Lectura normalizada (peso, estable, tension, sourceId).
@@ -132,12 +136,13 @@ lib/Pages/
                                    PreferenciasEnsayo; Comenzar ensayo valida, avisa las celdas sin
                                    capacidad, guarda, llama iniciarEnsayo y reemplaza la ruta por 'platos'.
   nueve_platos/                    NuevePlatosPage (ruta 'platos', AppBar con la tolva del ensayo):
-                                   BarraEnsayo fija arriba (Cero general)
+                                   BarraEnsayo fija arriba (Cero general, Tomar estatico)
                                    y, con scroll, RecuadroPesoTotal, PlatoWidget del
                                    enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados.
-                                   FAB Guardar -> DialogWidget (identificacion). Widgets: PlatoWidget
-                                   (peso, bateria, estable, conexion, boton > 0 <), EjeWidget,
-                                   FilaPlatos, SumaLados, RecuadroPesoTotal, BateryWidget, DialogWidget.
+                                   Ya no hay FAB Guardar: no se guardan pesadas nuevas. Widgets: PlatoWidget
+                                   (peso, bateria, estable, conexion, linea 'E: <estatico>', boton > 0 <),
+                                   EjeWidget, FilaPlatos, SumaLados, RecuadroPesoTotal, BateryWidget y
+                                   DialogWidget (sin uso, se borra en el paso 13 del plan de ensayo).
   pesadas/                         PesadasPage (ruta 'pesadas'): lista con Dismissible para borrar,
                                    exportar XLSX, borrar todo (DialogBorrar). ItemsPesadas: datos de la
                                    pesada | enganche, 4 filas (J izq | Juego N | J der) y lados, cada uno
@@ -169,6 +174,8 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`, `inicioEnsayo`. H
 5. Cambio de puertos: `HelpersConfig.upDateConfig` guarda, actualiza `ConfigController` y `_refreshScaleConnections()` llama `recibirPeso()` de los 9 platos.
 6. El botón `> 0 <` de `PlatoWidget` llama a `ComandosPlato.enviarCero`, que abre un socket TCP al puerto 80 de la IP del plato (`Conexion.cn`), manda `GET /peso?cero=1` y lo cierra. El número de plato sale del `buttonKeyPlato` ('1'..'9'). Sin IP conocida (el plato nunca mandó datos) no se envía nada. La conexión TCP tiene un timeout de 3 s.
 7. El botón **Cero general** de `BarraEnsayo` llama a `ComandosPlato.enviarCeroGeneral`, que manda `enviarCero(n)` de 1 a 9 **en secuencia** (`Conexion.cn` es un solo socket) y devuelve los platos que fallaron. El botón queda deshabilitado mientras manda, y un SnackBar avisa el resultado (los fallidos por `nombrePlato(n)`).
+8. Cualquier cero que se envió (el de un plato, o el general con al menos un plato OK) llama `EnsayoController.borrarEstatico()`; si había estático, el SnackBar agrega "Volvé a tomar el estático".
+9. **Tomar estático** (`BarraEnsayo`) guarda los 9 pesos actuales como referencia (`tomarEstatico`, 2 decimales, inválido = 0) y pasa el estado a `listo`. Si hay platos desconectados pide confirmación antes. Cero general y Tomar estático se deshabilitan en estado `registrando` (maniobra, paso 7 del plan).
 
 ## Base de datos (sqflite, `platos.db`, versión 1)
 
@@ -188,11 +195,12 @@ Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app 
 
 ## Guardado, historial y exportación
 
-1. `NuevePlatosPage` recalcula el total en cada `Obx` (`setPesoTotalByList` con los 9 pesos) y el FAB Guardar llama `CalculosController.cn.calcularPayload9Platos(pesos: ...)` con los pesos en orden de plato.
-2. Abre `DialogWidget` pidiendo identificación; `onConfirm` llama `HelpersPesadas.guardarPesada9PlatosPayload`, que inserta vía `ServicePesadas` y muestra SnackBar.
-3. Historial: `PesadasPage` lee `getPesadas9Platos()` a través de `PesadasProvider`. Al deslizar una tarjeta aparece un SnackBar: OK o timeout borran la pesada, cancel la conserva.
-4. Exportación: `Exportar.writeFile` genera `pesadas.xlsx` (en `getExternalStorageDirectory()` en Android) con una sola hoja `9_platos`: `id`, `fecha`, `hora`, `identificacion`, `total` y las columnas de `tpesadas_9platos` (sin `pesada_id`). El encabezado sale de las claves de `toExportRow`. Sin pesadas devuelve -1.
-5. `compartirArchivo` (botón compartir del Home) comparte el último `pesadas.xlsx` generado con share_plus (asunto "Balanzas Hook, 9 platos").
+Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se guardan pesadas nuevas**. El historial y la exportación de las pesadas ya guardadas siguen funcionando hasta que los reemplacen los ensayos (pasos 10 a 13).
+
+1. `NuevePlatosPage` recalcula el total en cada `Obx` (`setPesoTotalByList` con los 9 pesos). `CalculosController.cn.calcularPayload9Platos` y `HelpersPesadas.guardarPesada9PlatosPayload` siguen en el código pero sin UI que los llame.
+2. Historial: `PesadasPage` lee `getPesadas9Platos()` a través de `PesadasProvider`. Al deslizar una tarjeta aparece un SnackBar: OK o timeout borran la pesada, cancel la conserva.
+3. Exportación: `Exportar.writeFile` genera `pesadas.xlsx` (en `getExternalStorageDirectory()` en Android) con una sola hoja `9_platos`: `id`, `fecha`, `hora`, `identificacion`, `total` y las columnas de `tpesadas_9platos` (sin `pesada_id`). El encabezado sale de las claves de `toExportRow`. Sin pesadas devuelve -1.
+4. `compartirArchivo` (botón compartir del Home) comparte el último `pesadas.xlsx` generado con share_plus (asunto "Balanzas Hook, 9 platos").
 
 ## Tests
 
@@ -200,7 +208,7 @@ Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app 
 - `test/Models/pesada_9platos_payload_test.dart`: fila y orden de columnas de `toExportRow`.
 - `test/BaseDeDatos/pesadas/services/service_pesadas_test.dart`: `ServicePesadas` contra `test/moks/db_connection_mock.dart`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
-- `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController` e `iniciarEnsayo`.
+- `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController`, `iniciarEnsayo`, `tomarEstatico` (con `leerPesos` inyectado) y `borrarEstatico`.
 - `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
 - `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` de `PesoController` (sin UDP).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).

@@ -4,9 +4,6 @@ import 'package:get/get.dart';
 
 import 'package:nueve_platos_cestari/config/platos.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
-import 'package:nueve_platos_cestari/config/theme.dart';
-import 'package:nueve_platos_cestari/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
-import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/export_home_wigets.dart';
 import 'package:nueve_platos_cestari/Controllers/controllers_export.dart';
@@ -50,49 +47,6 @@ class NuevePlatosPage extends StatelessWidget {
             ),
           ],
         ),
-
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: Container(
-          decoration: BoxDecoration(
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromARGB(107, 3, 3, 3),
-                offset: Offset(0.3, 3),
-                blurRadius: 3,
-                spreadRadius: 0.3,
-                blurStyle: BlurStyle.normal
-              ),
-            ],
-            borderRadius: BorderRadius.circular(50)
-          ),
-          child: IconButton(
-            padding: EdgeInsets.all(SizeScreen.sc().isMinWidth ? 25 : 15),
-            color: ThemeApp.colorPesoPlatos,
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                (Set<WidgetState> states) {
-                  if (states.contains(WidgetState.pressed)) {
-                    return Theme.of(context).colorScheme.primary.withOpacity(0.5);
-                  }
-                  return ThemeApp.colorPesoPlatos; 
-                },
-              ),
-            ),
-            icon: const Icon(Icons.save, color: Color.fromARGB(172, 255, 255, 255),),
-            onPressed: ()async{
-              /// Debe abrir dialogo para ingresar datos de la maquina
-              /// Antes de abrir el dialogo debe verificar la conexión
-              /// Se quito la verificación de conexion por que querian 
-              /// usar una cantidad indeterminada de platos
-                final payload = await CalculosController.cn.calcularPayload9Platos(
-                  pesos: pesos,
-                );
-                if (!context.mounted) return;
-                showDialogGuardarPesada(payload, context);
-            }
-          ),
-        ),
-        
       );
     });
   }
@@ -100,8 +54,7 @@ class NuevePlatosPage extends StatelessWidget {
   /// Total, enganche, los 4 juegos y los lados, con scroll.
   Widget _contenidoPlatos(List<String> pesos, double separacion) {
     return SingleChildScrollView(
-      // El padding de abajo deja libre el recuadro de lados bajo el FAB.
-      padding: const EdgeInsets.only(bottom: 90),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         children: [
           // Recuadro de Peso total sumado
@@ -148,37 +101,11 @@ class NuevePlatosPage extends StatelessWidget {
       conexionPlato: plato.conexion,
       batery: plato.tension,
       estable: plato.estable,
+      estatico: ensayo.estatico(n),
     );
   }
 
   String _sumaPesos(List<String> pesos) => pesos
       .fold<double>(0, (sum, peso) => sum + (double.tryParse(peso) ?? 0))
       .toStringAsFixed(2);
-
-  showDialogGuardarPesada(Pesada9PlatosPayload payload, BuildContext context){
-    showDialog(
-      context: context,
-      builder: (_){
-
-        return DialogWidget(
-          onConfirm: (identificacion) {
-            return HelpersPesadas.guardarPesada9PlatosPayload(
-              payload: payload,
-              identificacion: identificacion,
-              context: context,
-            );
-          },
-        );
-      }
-    );
-  }
 }
-
-
-
-
-
-
-
-
-
