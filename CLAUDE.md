@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 84 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 76 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -84,7 +84,7 @@ lib/Controllers/
                                    max/min: iniciarRegistro() / detenerRegistro() (devuelve el
                                    RegistroMaxMin) y Rx maximo / minimo / lecturas para la UI.
   calculos_controllers.dart        Singleton CalculosController.cn: total (setPesoTotalByList /
-                                   pesoTotal), porcentajes, fecha/hora y calcularPayload9Platos(pesos).
+                                   pesoTotal) y porcentajes en vivo de platos, juegos y lados.
   ensayo_controller.dart           EnsayoController (Get.put en main.dart): tolva, capacidades (9 String,
                                    '' = sin alarma) y umbral del ensayo en curso; iniciarEnsayo(...) (borra
                                    el estatico, descarta la maniobra y reinicia la numeracion). Estatico:
@@ -118,15 +118,12 @@ lib/models/
                                    toDb / fromDb; getters factorCresta y porCapacidad, estado(umbral)). Funciones puras
                                    porcentajeCapacidad y estadoCelda (EstadoCelda normal / alLimite / excede /
                                    sinDato, con su texto), comparando el % ya redondeado a 1 decimal.
-  pesadas/                         PesadaBase (cabecera), Pesada9PlatosDetalle (enganche, j1Izq..j4Der,
-                                   juego1..4, ladoIzq/Der y un por* por cada uno; toDb/fromDb) y
-                                   Pesada9PlatosPayload (base + detalle; toExportRow arma la fila XLSX).
 lib/helpers/
   comandos_plato.dart              ComandosPlato.enviarCero(plato): TCP a la IP del plato.
                                    enviarCeroGeneral(): cero a los 9 en secuencia; devuelve los que fallaron.
   exportar_xml.dart                A pesar del nombre exporta XLSX: writeFileEnsayos (ensayos.xlsx, hoja
-                                   maniobras; filas de filasEnsayos), compartirArchivo (lo genera y lo
-                                   comparte) y writeFile (pesadas.xlsx, viejo, se borra en el paso 13).
+                                   maniobras; filas de filasEnsayos) y compartirArchivo (lo genera y lo
+                                   comparte).
   bateria.dart                     Bateria.porcentaje(voltios): 3.0 V = 0 %, 4.2 V = 100 %.
   preferencias_ensayo.dart         PreferenciasEnsayo: capacidad nominal de cada celda y umbral de alarma en
                                    SharedPreferences (leerCapacidades / leerUmbral / guardar). Los usa InicioEnsayoPage.
@@ -137,14 +134,11 @@ lib/Providers/
   ensayos/ensayos_provider.dart    EnsayosProvider(ServiceEnsayos): stream (sin broadcast) de
                                    List<EnsayoModel> para EnsayosPage; getEnsayos / borrarEnsayo /
                                    borrarEnsayos vuelven a emitir la lista; despues de dispose no emite.
-  pesadas/                         PesadasProvider -> ServiceProvider: stream de
-                                   List<Pesada9PlatosPayload> para el historial.
 lib/BaseDeDatos/
-  connections/db_conexion.dart     DBconeccion.db (sqflite). Implementa PesadasInterface, ConfigInterface y
-                                   EnsayosInterface.
+  connections/db_conexion.dart     DBconeccion.db (sqflite). Implementa ConfigInterface y EnsayosInterface.
   tables/                          SQL de cada tabla (ver Base de datos).
-  interfaces/ services/ helpers/   Cadena: DBconeccion -> ServicePesadas/ServiceConfig/ServiceEnsayos ->
-                                   HelpersPesadas/HelpersConfig/HelpersEnsayos (los helpers muestran SnackBar
+  interfaces/ services/ helpers/   Cadena: DBconeccion -> ServiceConfig/ServiceEnsayos ->
+                                   HelpersConfig/HelpersEnsayos (los helpers muestran SnackBar
                                    y actualizan GetX). ServiceEnsayos lo usa EnsayoController.
   helpers/settings/first_data.dart puertosPorDefecto (8001..8009).
 lib/Pages/
@@ -164,22 +158,17 @@ lib/Pages/
                                    BarraEnsayo fija arriba (Cero general, Tomar estatico, Registrar /
                                    Terminar maniobra con numero y cronometro) y, con scroll, RecuadroPesoTotal, PlatoWidget del
                                    enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados.
-                                   Ya no hay FAB Guardar: no se guardan pesadas nuevas. Widgets: PlatoWidget
+                                   Widgets: PlatoWidget
                                    (peso, bateria, estable, conexion, linea 'E: <estatico>', linea
                                    '▲ max ▼ min' durante la maniobra, boton > 0 < deshabilitado mientras
                                    registra, nivelAlarma: borde y titulo ambar / rojo con alLimite / excede), mostrarResultadoManiobra (dialog_maniobra.dart: dialogo con la
-                                   TablaManiobra al terminar), formatoDuracion y descripcionManiobra, EjeWidget, FilaPlatos, SumaLados, RecuadroPesoTotal, BateryWidget y
-                                   DialogWidget (sin uso, se borra en el paso 13 del plan de ensayo).
+                                   TablaManiobra al terminar), formatoDuracion y descripcionManiobra, EjeWidget, FilaPlatos, SumaLados, RecuadroPesoTotal y
+                                   BateryWidget.
   ensayos/                         EnsayosPage (ruta 'ensayos', StatefulWidget; recibe ensayos para los tests):
                                    una TarjetaEnsayo por ensayo (ExpansionTile: tolva, fecha, cantidad de
                                    maniobras; al expandirse, numero, descripcionManiobra y TablaManiobra de cada
                                    maniobra). Deslizar oculta el ensayo y muestra el SnackBar OK / cancel (OK o
                                    timeout lo borran, cancel lo vuelve a mostrar). Borrar todo con DialogBorrar.
-  pesadas/                         PesadasPage (ruta 'pesadas', ya sin boton que lleve a ella; se borra en el
-                                   paso 13): lista con Dismissible para borrar,
-                                   exportar XLSX, borrar todo (DialogBorrar). ItemsPesadas: datos de la
-                                   pesada | enganche, 4 filas (J izq | Juego N | J der) y lados, cada uno
-                                   con PlatoPesadas (peso y %).
 lib/Widgets/                       Comunes: BottonBarApp, IconBottonBarWidget, WidgetButton,
                                    ConnectionWidget, DialogBorrar (titulo, mensaje y onBorrar; cierra con
                                    true si borro) y TablaManiobra (plato, estatico, max, min, FC, % cap y
@@ -187,7 +176,7 @@ lib/Widgets/                       Comunes: BottonBarApp, IconBottonBarWidget, W
 lib/generated/ + lib/l10n/         intl (en/es/pt) configurado pero casi sin uso (solo la clave "titulo").
 ```
 
-Rutas registradas en `main.dart`: `home`, `pesadas`, `ensayos`, `platos`, `inicioEnsayo`. Home -> `inicioEnsayo` ->
+Rutas registradas en `main.dart`: `home`, `ensayos`, `platos`, `inicioEnsayo`. Home -> `inicioEnsayo` ->
 (reemplazo) `platos`, así "atrás" desde los platos vuelve al Home.
 
 ## Estado y patrones
@@ -196,7 +185,6 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `ensayos`, `platos`, `inici
 - Un plato se busca con `Get.find<PesoController>(tag: 'plato$n')`. Para recorrer los platos usar `cantidadPlatos` y `nombrePlato(n)` de `config/platos.dart`, no números sueltos.
 - Singletons con constructor privado: `CalculosController.cn`, `Conexion.cn`, `ThemePlatos.cn`, `SizeScreen.sc()`, `DBconeccion.db`.
 - Los pesos viajan como `String` con 2 decimales (`"0.00"`); se parsean con `double.tryParse` (un valor inválido cuenta como 0). Porcentajes también como `String`, con 1 decimal.
-- `tipoPesada` es siempre `'9_platos'`.
 - Feedback al usuario con `SnackBar` desde los helpers; colores en `ThemePlatos.errorColor` / `positiveColor`.
 - Layout responsive a mano con `SizeScreen.sc().screenWidth * factor` y `isMinWidth`.
 
@@ -214,43 +202,36 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `ensayos`, `platos`, `inici
 10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▲ máx ▼ mín` en vivo, los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()`, que guarda la maniobra en la base (la primera del ensayo inserta antes la fila de `tensayos`); `HelpersEnsayos.avisarGuardado` avisa con un SnackBar si se guardó y después se muestra el diálogo con la `TablaManiobra`.
 11. **Alarma**: en cada `Obx`, `EnsayoController.alarma(n, ...)` compara el máximo de la maniobra (o el peso actual si no hay maniobra o todavía no llegaron lecturas) con la capacidad de la celda y el umbral (`estadoCelda`). `PlatoWidget` pinta el borde y el título en ámbar (al límite) o rojo (excede), con los colores de `TablaManiobra.colorEstado`. Sin capacidad no hay alarma.
 
-## Base de datos (sqflite, `platos.db`, versión 2)
+## Base de datos (sqflite, `platos.db`, versión 3)
 
 `onCreate` crea todo el esquema. `onUpgrade` con `oldVersion < 2` crea las tablas de ensayos (la v1 solo tenía
-`tconfig` y las pesadas, que no se tocan).
+`tconfig` y las pesadas) y con `oldVersion < 3` hace `DROP TABLE IF EXISTS` de `tpesadas_9platos` y `tpesadas_base`
+(las pesadas de la app vieja se pierden; `tconfig` se conserva).
 
 | Tabla | Contenido |
 |---|---|
 | `tconfig` | Una sola fila (`id = 1`): `plato1..plato9` con los puertos (por defecto 8001..8009). |
-| `tpesadas_base` | Cabecera: `id`, `fecha` (dd/MM/yyyy), `hora` (HH:mm), `identificacion`, `tipo_pesada`, `total`, `created_at` (ISO 8601). Índices por `fecha` y `tipo_pesada`. |
-| `tpesadas_9platos` | Detalle 1:1 (`pesada_id` PK y FK a `tpesadas_base(id)` `ON DELETE CASCADE`): `enganche`, `j1_izq`..`j4_der`, `juego1..4`, `lado_izq`, `lado_der` y un `por_*` por cada uno. |
 | `tensayos` | `id`, `tolva`, `fecha` (dd/MM/yyyy, la de la primera maniobra), `created_at` (ISO 8601). |
 | `tmaniobras` | `id`, `ensayo_id` (FK a `tensayos` `ON DELETE CASCADE`, con índice), `numero`, `hora_inicio` / `hora_fin` (HH:mm:ss), `duracion_ms`, `umbral` (copiado del ensayo). |
 | `tmaniobras_platos` | PK (`maniobra_id`, `plato`), FK a `tmaniobras` `ON DELETE CASCADE`: `estatico`, `maximo`, `minimo`, `lecturas`, `capacidad` (copiada del ensayo). |
 
-- `insertPesada9Platos` inserta cabecera y detalle en una transacción y devuelve el id, o -1 si falla.
-- `getPesadas9Platos` devuelve `List<Pesada9PlatosPayload>` ordenada por id descendente (historial). `getPesadasExportacion` devuelve las mismas pesadas como filas de `toExportRow`.
-- El borrado (`deletePesada(id)` / `deletePesadas()`) se hace solo sobre `tpesadas_base` y confía en el CASCADE.
 - Ensayos: `insertEnsayo` (cabecera, devuelve el id o -1), `insertManiobra` (cabecera + 9 platos en una transacción,
   id o -1), `getEnsayos` (id descendente, con sus maniobras por número y sus platos) y `deleteEnsayo` /
-  `deleteManiobra` / `deleteEnsayos`, que también confían en el CASCADE. Los lee `EnsayosPage` (historial).
+  `deleteManiobra` / `deleteEnsayos`, que confían en el CASCADE. Los lee `EnsayosPage` (historial).
 - `PRAGMA foreign_keys = ON` se ejecuta en `onConfigure`, o sea en cada apertura (en sqflite el pragma es por conexión).
 - Si hace falta cambiar el esquema: subir `dbVersion` y escribir `onUpgrade`, o desinstalar la app en el dispositivo de prueba.
 
 ## Guardado, historial y exportación
 
-Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se guardan pesadas nuevas**; las maniobras se guardan en las tablas de ensayos (paso 10). El botón del Home ya lleva al historial de ensayos (paso 11); `PesadasPage` sigue en el código, sin botón, con su exportación de pesadas, hasta el paso 13. El botón compartir del Home ya exporta los ensayos (paso 12).
+Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guardan las maniobras, en las tablas de ensayos.
 
-1. `NuevePlatosPage` recalcula el total en cada `Obx` (`setPesoTotalByList` con los 9 pesos). `CalculosController.cn.calcularPayload9Platos` y `HelpersPesadas.guardarPesada9PlatosPayload` siguen en el código pero sin UI que los llame.
-2. Historial de pesadas (sin acceso desde el Home): `PesadasPage` lee `getPesadas9Platos()` a través de `PesadasProvider`. Al deslizar una tarjeta aparece un SnackBar: OK o timeout borran la pesada, cancel la conserva.
-3. Exportación de pesadas (solo desde `PesadasPage`): `Exportar.writeFile` genera `pesadas.xlsx` (en `getExternalStorageDirectory()` en Android) con una sola hoja `9_platos`: `id`, `fecha`, `hora`, `identificacion`, `total` y las columnas de `tpesadas_9platos` (sin `pesada_id`). El encabezado sale de las claves de `toExportRow`. Sin pesadas devuelve -1.
-4. Exportación de ensayos: `compartirArchivo` (botón compartir del Home) llama `Exportar.writeFileEnsayos`, que genera `ensayos.xlsx` (misma carpeta) con la hoja `maniobras`, **una fila por maniobra y plato**, de los ensayos más viejos a los más nuevos (`Exportar.filasEnsayos`): `ensayo_id`, `tolva`, `fecha`, `maniobra`, `hora_inicio`, `hora_fin`, `duracion_s` (1 decimal), `plato`, `nombre`, `capacidad`, `estatico`, `maximo`, `minimo`, `lecturas`, `factor_cresta`, `por_cap` y `estado` (con el umbral copiado en la maniobra). El encabezado sale de las claves de `ManiobraModel.toExportRows`. Devuelve 1, 0 sin maniobras o -1 si falla; con 0 o -1 un SnackBar avisa y no se comparte. Si no, lo comparte con share_plus (asunto "Balanzas Hook, ensayo 9 platos").
+1. `NuevePlatosPage` recalcula el total y los % en vivo en cada `Obx` (`setPesoTotalByList` con los 9 pesos); no se guardan.
+2. Historial: el botón del Home lleva a `EnsayosPage` (ruta `ensayos`).
+3. Exportación de ensayos: `compartirArchivo` (botón compartir del Home) llama `Exportar.writeFileEnsayos`, que genera `ensayos.xlsx` (en `getExternalStorageDirectory()` en Android) con la hoja `maniobras`, **una fila por maniobra y plato**, de los ensayos más viejos a los más nuevos (`Exportar.filasEnsayos`): `ensayo_id`, `tolva`, `fecha`, `maniobra`, `hora_inicio`, `hora_fin`, `duracion_s` (1 decimal), `plato`, `nombre`, `capacidad`, `estatico`, `maximo`, `minimo`, `lecturas`, `factor_cresta`, `por_cap` y `estado` (con el umbral copiado en la maniobra). El encabezado sale de las claves de `ManiobraModel.toExportRows`. Devuelve 1, 0 sin maniobras o -1 si falla; con 0 o -1 un SnackBar avisa y no se comparte. Si no, lo comparte con share_plus (asunto "Balanzas Hook, ensayo 9 platos").
 
 ## Tests
 
-- `test/controllers/calculos_9platos_test.dart`: total, pesos por plato, juegos, lados, porcentajes, total cero y pesos inválidos.
-- `test/Models/pesada_9platos_payload_test.dart`: fila y orden de columnas de `toExportRow`.
-- `test/BaseDeDatos/pesadas/services/service_pesadas_test.dart`: `ServicePesadas` contra `test/moks/db_connection_mock.dart`.
+- `test/controllers/calculos_9platos_test.dart`: total, subtotal de juego, porcentajes de plato, juego y lado, total cero y pesos inválidos.
 - `test/BaseDeDatos/ensayos/service_ensayos_test.dart`: `ServiceEnsayos` contra `test/moks/db_ensayos_mock.dart` (base en memoria con ids, orden descendente, cascada y `fallar` para simular -1).
 - `test/Providers/ensayos_provider_test.dart`: `EnsayosProvider` contra `DbEnsayosMock` (emite sin oyente, borrar uno y todos, después de `dispose`).
 - `test/widgets/ensayos/ensayos_page_test.dart`: `EnsayosPage` en un teléfono angosto (tarjetas, expandir con las tablas, deslizar con cancel y OK, borrar todo).
@@ -264,7 +245,6 @@ Estado intermedio del plan de ensayo: el FAB Guardar se quitó, así que **no se
 - `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
 - `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` de `PesoController` (sin UDP).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
-- `test/list_pesajes/list_pesaje.dart`: pesada de ejemplo (`pesada9PlatosEjemplo`) y su fila de exportación esperada (`listPesaje`), usadas por el mock y los tests.
 - `integration_test/app_test.dart` está vacío.
 
 ## Pendientes conocidos

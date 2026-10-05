@@ -115,8 +115,8 @@ class _EnsayosPageState extends State<EnsayosPage> {
     );
   }
 
-  /// SnackBar con OK / cancel, como el de las pesadas: OK o timeout borran el
-  /// ensayo, cancel lo vuelve a mostrar.
+  /// SnackBar con OK / cancel: OK o timeout borran el ensayo, cancel lo vuelve
+  /// a mostrar.
   void _confirmarBorrado(EnsayoModel ensayo) {
     final id = ensayo.id;
     if (id == null) return;
