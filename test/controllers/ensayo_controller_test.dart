@@ -85,14 +85,18 @@ void main() {
   group('Maniobra', () {
     late List<PesoController> platos;
     late EnsayoController ensayo;
+    // Llamadas al wakelock: true = pantalla encendida.
+    late List<bool> pantalla;
 
     setUp(() {
+      pantalla = [];
       // PesoController busca el ConfigController; no se abre UDP.
       Get.put(ConfigController());
       platos = [for (var n = 1; n <= cantidadPlatos; n++) PesoController(plato: n)];
       ensayo = EnsayoController(
         leerPesos: () => ['850', '2410', '2400', '2400', '2400', '2400', '2400', '2400', '0'],
         platos: () => platos,
+        pantallaEncendida: pantalla.add,
       );
       ensayo.iniciarEnsayo(
         tolva: 'TC-1',
@@ -175,6 +179,33 @@ void main() {
 
       ensayo.iniciarManiobra();
       expect(ensayo.numeroManiobra.value, 1);
+    });
+
+    test('La pantalla queda encendida solo durante la maniobra', () {
+      ensayo.iniciarManiobra(); // sin estatico no arranca
+      expect(pantalla, isEmpty);
+
+      ensayo.tomarEstatico();
+      ensayo.iniciarManiobra();
+      expect(pantalla, [true]);
+      ensayo.terminarManiobra();
+      expect(pantalla, [true, false]);
+
+      ensayo.iniciarManiobra();
+      ensayo.descartarManiobra();
+      expect(pantalla, [true, false, true, false]);
+
+      // Un ensayo nuevo con una maniobra en curso tambien la apaga.
+      ensayo.iniciarManiobra();
+      ensayo.iniciarEnsayo(
+        tolva: 'TC-2',
+        capacidades: List.filled(cantidadPlatos, ''),
+        umbral: '90',
+      );
+      expect(pantalla.last, false);
+
+      ensayo.onClose();
+      expect(pantalla.last, false);
     });
 
     test('Alarma sin maniobra: compara el peso actual', () {
