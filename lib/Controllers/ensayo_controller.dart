@@ -64,6 +64,15 @@ class EnsayoController extends GetxController {
   /// Estatico del plato [n] (1..9), o `''` si no hay.
   String estatico(int n) => hayEstatico ? estaticos[n - 1] : '';
 
+  /// Alarma del plato [n] (1..9) contra su capacidad y el umbral del ensayo.
+  /// Durante la maniobra se compara el [maximo]; sin maniobra (o si todavia no
+  /// llego ninguna lectura) el [peso] actual. `sinDato` = sin capacidad.
+  EstadoCelda alarma(int n, {required String peso, String maximo = ''}) => estadoCelda(
+        peso: registrando && maximo.isNotEmpty ? maximo : peso,
+        capacidad: capacidades[n - 1],
+        umbral: umbral.value,
+      );
+
   void iniciarEnsayo({
     required String tolva,
     required List<String> capacidades,

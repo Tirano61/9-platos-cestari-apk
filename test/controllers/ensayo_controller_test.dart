@@ -177,6 +177,40 @@ void main() {
       expect(ensayo.numeroManiobra.value, 1);
     });
 
+    test('Alarma sin maniobra: compara el peso actual', () {
+      // Capacidad 5000 y umbral 90: >= 4500 al limite, > 100.0 % (ya redondeado) excede.
+      expect(ensayo.alarma(2, peso: '4000.00'), EstadoCelda.normal);
+      expect(ensayo.alarma(2, peso: '4500.00'), EstadoCelda.alLimite);
+      expect(ensayo.alarma(2, peso: '5000.00'), EstadoCelda.alLimite);
+      expect(ensayo.alarma(2, peso: '5003.00'), EstadoCelda.excede);
+      // Sin maniobra el maximo no cuenta.
+      expect(ensayo.alarma(2, peso: '100.00', maximo: '6000.00'), EstadoCelda.normal);
+      // Plato 9 sin capacidad: no hay alarma.
+      expect(ensayo.alarma(9, peso: '99999.00'), EstadoCelda.sinDato);
+    });
+
+    test('Alarma durante la maniobra: compara el maximo', () {
+      ensayo.tomarEstatico();
+      ensayo.iniciarManiobra();
+
+      // El peso actual bajo, pero el maximo ya se paso.
+      expect(ensayo.alarma(2, peso: '2400.00', maximo: '5980.00'), EstadoCelda.excede);
+      expect(ensayo.alarma(1, peso: '850.00', maximo: '2700.00'), EstadoCelda.alLimite);
+      // Sin lecturas todavia: usa el peso actual.
+      expect(ensayo.alarma(2, peso: '4600.00'), EstadoCelda.alLimite);
+      expect(ensayo.alarma(9, peso: '0', maximo: '99999.00'), EstadoCelda.sinDato);
+    });
+
+    test('Alarma con el umbral del ensayo', () {
+      ensayo.iniciarEnsayo(
+        tolva: 'TC-1',
+        capacidades: List.filled(cantidadPlatos, '1000'),
+        umbral: '80',
+      );
+      expect(ensayo.alarma(5, peso: '799.00'), EstadoCelda.normal);
+      expect(ensayo.alarma(5, peso: '800.00'), EstadoCelda.alLimite);
+    });
+
     test('Un ensayo nuevo descarta la maniobra y reinicia la numeracion', () {
       ensayo.tomarEstatico();
       ensayo.iniciarManiobra();

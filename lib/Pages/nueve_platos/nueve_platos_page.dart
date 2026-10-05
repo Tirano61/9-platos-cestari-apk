@@ -126,6 +126,7 @@ class NuevePlatosPage extends StatelessWidget {
     final controller = pesoControllers[n - 1];
     final plato = controller.pesoModel;
     final registrando = ensayo.registrando;
+    final maximo = registrando ? controller.maximo.value : '';
     return PlatoWidget(
       numPlato: nombrePlato(n),
       pesoPlato: plato.peso,
@@ -135,9 +136,10 @@ class NuevePlatosPage extends StatelessWidget {
       estable: plato.estable,
       estatico: ensayo.estatico(n),
       // Durante la maniobra: max / min en vivo y sin cero.
-      maximo: registrando ? controller.maximo.value : '',
+      maximo: maximo,
       minimo: registrando ? controller.minimo.value : '',
       ceroHabilitado: !registrando,
+      nivelAlarma: ensayo.alarma(n, peso: plato.peso, maximo: maximo),
     );
   }
 
