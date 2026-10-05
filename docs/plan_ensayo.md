@@ -155,12 +155,16 @@ duración de la maniobra dan la tasa real que hubo.
 - Test nuevo `test/Models/maniobra_plato_test.dart`: los casos de borde (= umbral, = 100 %, > 100 %, capacidad 0 o
   vacía, estático 0) y los valores de ejemplo del documento.
 
-### [ ] Paso 8 · `alarmaUmbral`: resaltar el plato que se pasa
+### [x] Paso 8 · `alarmaUmbral`: resaltar el plato que se pasa
 - `PlatoWidget` recibe un `nivelAlarma` (normal / alLimite / excede), calculado con el **máximo** de la maniobra (o el
   peso actual si no hay maniobra) contra `EnsayoController.capacidades[n - 1]` y `umbral`.
 - Se dibuja con el borde y el título en ámbar (al límite) o rojo (excede). Sin capacidad cargada no hay alarma.
 - Reutilizar la función pura `estadoCelda(peso:, capacidad:, umbral:)` de `maniobra_plato.dart` (la usa
   `ManiobraPlato.estado`), para no duplicar la fórmula.
+- Hecho así: `nivelAlarma` es un `EstadoCelda` (por defecto `sinDato`) y lo calcula `EnsayoController.alarma(n, peso:,
+  maximo:)`; si la maniobra todavía no recibió lecturas usa el peso actual. Los colores son los de
+  `TablaManiobra.colorEstado` (borde de 3 px; en ámbar el título va en negro). Tests en `ensayo_controller_test` y
+  `test/widgets/nueve_platos/plato_widget_alarma_test.dart`.
 
 ### [ ] Paso 9 · `pantallaEncendida`: que no se apague la pantalla en la maniobra
 - Dependencia nueva `wakelock_plus`: `WakelockPlus.enable()` en `iniciarManiobra` y `disable()` en
