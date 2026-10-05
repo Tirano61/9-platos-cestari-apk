@@ -62,9 +62,9 @@ class HomePage extends StatelessWidget {
                       SizedBox(height: verticalSpacing),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, 'platos');
+                          Navigator.pushNamed(context, 'inicioEnsayo');
                         },
-                        child: const Text('Iniciar Pesaje'),
+                        child: const Text('Iniciar ensayo'),
                       ),
                     ],
                   ),

@@ -2,8 +2,10 @@ import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/helpers/settings/first_data.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/settings/service_config.dart';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
+import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
+import 'package:nueve_platos_cestari/Pages/inicio_ensayo/inicio_ensayo_page.dart';
 import 'package:nueve_platos_cestari/Pages/nueve_platos/nueve_platos_page.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/pesadas_page.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
@@ -36,6 +38,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final puertos =  Get.put(ConfigController());
+  final ensayo = Get.put(EnsayoController());
   late final List<PesoController> platos;
 
   @override
@@ -119,6 +122,7 @@ class _MyAppState extends State<MyApp> {
         'home'    : (context) => const HomePage(),
         'pesadas' : (context) => PesadasPage(),
         'platos'  : (context) => NuevePlatosPage(),
+        'inicioEnsayo' : (context) => const InicioEnsayoPage(),
       }
     );
   }

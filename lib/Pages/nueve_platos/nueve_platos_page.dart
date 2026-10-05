@@ -10,6 +10,7 @@ import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
 
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/export_home_wigets.dart';
 import 'package:nueve_platos_cestari/Controllers/controllers_export.dart';
+import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 
 
 
@@ -20,6 +21,7 @@ class NuevePlatosPage extends StatelessWidget {
   final pesoControllers = [
     for (var n = 1; n <= cantidadPlatos; n++) Get.find<PesoController>(tag: 'plato$n'),
   ];
+  final ensayo = Get.find<EnsayoController>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,12 @@ class NuevePlatosPage extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           //backgroundColor: ThemePlatos.backgroundTitulos,
-          title: const Text( 'Balanzas Hook'),
+          // Nombre de la tolva del ensayo en curso.
+          title: Text(
+            ensayo.tolva.value.isEmpty ? 'Balanzas Hook' : ensayo.tolva.value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
          
         ),
         body: Column(
