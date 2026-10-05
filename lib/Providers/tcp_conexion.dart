@@ -11,7 +11,8 @@ class Conexion {
 
     try {
       
-        socket ??= await Socket.connect(ip, 80);
+        // Con timeout, un plato apagado no frena el cero general.
+        socket ??= await Socket.connect(ip, 80, timeout: const Duration(seconds: 3));
 
     } catch (e) {
       return false;

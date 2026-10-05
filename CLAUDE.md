@@ -94,6 +94,7 @@ lib/models/
                                    Pesada9PlatosPayload (base + detalle; toExportRow arma la fila XLSX).
 lib/helpers/
   comandos_plato.dart              ComandosPlato.enviarCero(plato): TCP a la IP del plato.
+                                   enviarCeroGeneral(): cero a los 9 en secuencia; devuelve los que fallaron.
   exportar_xml.dart                A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte.
   bateria.dart                     Bateria.porcentaje(voltios): 3.0 V = 0 %, 4.2 V = 100 %.
 lib/Providers/
@@ -114,7 +115,8 @@ lib/Pages/
                                    engranaje -> DialogConfig, barra inferior (ver pesadas / compartir XLSX).
   Home/widgets/dialog_config.dart  Un InputTextConfig por plato (9 campos con scroll). OK ->
                                    HelpersConfig.upDateConfig los guarda y reconecta.
-  nueve_platos/                    NuevePlatosPage (ruta 'platos'): RecuadroPesoTotal, PlatoWidget del
+  nueve_platos/                    NuevePlatosPage (ruta 'platos'): BarraEnsayo fija arriba (Cero general)
+                                   y, con scroll, RecuadroPesoTotal, PlatoWidget del
                                    enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados.
                                    FAB Guardar -> DialogWidget (identificacion). Widgets: PlatoWidget
                                    (peso, bateria, estable, conexion, boton > 0 <), EjeWidget,
@@ -147,7 +149,8 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`.
 3. Se actualiza `RecibirPesoModel`: peso, estable, tensión (nivel de batería 1..5), `adreess` = IP de origen, `conexion = true`, `contador = 0`.
 4. Desconexión y reconexión: el timer de 1 s (arranca en `onInit`, se cancela en `onClose`, corre también en el Home) marca desconexión a los 5 s sin datos. Si ya estaba desconectado, llama `_tryReconnect`, que solo reabre si no hay socket (`_receiver == null`): con el socket abierto, el plato está apagado y no hace falta reabrir. Los 5 s se cuentan desde que termina el intento.
 5. Cambio de puertos: `HelpersConfig.upDateConfig` guarda, actualiza `ConfigController` y `_refreshScaleConnections()` llama `recibirPeso()` de los 9 platos.
-6. El botón `> 0 <` de `PlatoWidget` llama a `ComandosPlato.enviarCero`, que abre un socket TCP al puerto 80 de la IP del plato (`Conexion.cn`), manda `GET /peso?cero=1` y lo cierra. El número de plato sale del `buttonKeyPlato` ('1'..'9'). Sin IP conocida (el plato nunca mandó datos) no se envía nada.
+6. El botón `> 0 <` de `PlatoWidget` llama a `ComandosPlato.enviarCero`, que abre un socket TCP al puerto 80 de la IP del plato (`Conexion.cn`), manda `GET /peso?cero=1` y lo cierra. El número de plato sale del `buttonKeyPlato` ('1'..'9'). Sin IP conocida (el plato nunca mandó datos) no se envía nada. La conexión TCP tiene un timeout de 3 s.
+7. El botón **Cero general** de `BarraEnsayo` llama a `ComandosPlato.enviarCeroGeneral`, que manda `enviarCero(n)` de 1 a 9 **en secuencia** (`Conexion.cn` es un solo socket) y devuelve los platos que fallaron. El botón queda deshabilitado mientras manda, y un SnackBar avisa el resultado (los fallidos por `nombrePlato(n)`).
 
 ## Base de datos (sqflite, `platos.db`, versión 1)
 
