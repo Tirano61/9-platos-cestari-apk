@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
 import 'package:nueve_platos_cestari/data/udp/udp_scale_parser.dart';
+import 'package:nueve_platos_cestari/domain/entities/registro_max_min.dart';
 import 'package:nueve_platos_cestari/models/recibir_peso_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -60,10 +61,52 @@ class PesoController extends GetxController{
       pesoModel.setTension = reading.tension;
       pesoModel.setAdreess = reading.sourceId;
       pesoModel.setConexion = true;
+      registrarLectura(reading.peso);
 
       estadoConexion = true;
       contador = 0;
     });
+  }
+
+  // Maximo y minimo de la maniobra en curso (lo usa EnsayoController).
+  bool registrando = false;
+  RegistroMaxMin registro = RegistroMaxMin();
+
+  // Estado del registro para la UI: pesos con 2 decimales ('' sin datos).
+  final maximo = ''.obs;
+  final minimo = ''.obs;
+  final lecturas = 0.obs;
+
+  /// Empieza un registro nuevo de maximo y minimo.
+  void iniciarRegistro() {
+    // Un objeto nuevo, asi el que devolvio detenerRegistro no cambia.
+    registro = RegistroMaxMin();
+    registrando = true;
+    _actualizarRxRegistro();
+  }
+
+  /// Corta el registro y lo devuelve. El estado Rx queda con los ultimos valores.
+  RegistroMaxMin detenerRegistro() {
+    registrando = false;
+    return registro;
+  }
+
+  /// Suma [peso] al registro si se esta registrando. Se llama con cada trama
+  /// UDP, no solo con las que llega a dibujar la pantalla. Un peso invalido se
+  /// saltea.
+  @visibleForTesting
+  void registrarLectura(String peso) {
+    if (!registrando) return;
+    final valor = double.tryParse(peso);
+    if (valor == null) return;
+    registro.registrar(valor);
+    _actualizarRxRegistro();
+  }
+
+  void _actualizarRxRegistro() {
+    maximo.value = registro.hayDatos ? registro.maximo.toStringAsFixed(2) : '';
+    minimo.value = registro.hayDatos ? registro.minimo.toStringAsFixed(2) : '';
+    lecturas.value = registro.lecturas;
   }
 
   int contador = 0;
