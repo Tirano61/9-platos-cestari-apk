@@ -204,12 +204,21 @@ duración de la maniobra dan la tasa real que hubo.
   (`ServiceEnsayos`, por defecto con `DBconeccion.db`) para los tests. Mock en memoria `test/moks/db_ensayos_mock.dart`
   (ids, orden y cascada) y test nuevo `test/Models/ensayo_model_test.dart` (`toDb` / `fromDb`).
 
-### [ ] Paso 11 · `historialEnsayos`: ver los ensayos guardados
+### [x] Paso 11 · `historialEnsayos`: ver los ensayos guardados
 - Nueva `lib/Pages/ensayos/ensayos_page.dart` (ruta `'ensayos'`), con un provider/stream como el de pesadas:
   - una tarjeta por ensayo (tolva, fecha y cantidad de maniobras) que se expande con una `TablaManiobra` por maniobra
     (número, hora y duración);
   - borrar un ensayo deslizando (el mismo SnackBar OK/cancel de hoy) y borrar todo con `DialogBorrar`.
 - Home: el botón "ver pesadas" de la barra inferior pasa a "ver ensayos".
+- Hecho así: el provider es una sola clase, `lib/Providers/ensayos/ensayos_provider.dart` (`EnsayosProvider` sobre
+  `ServiceEnsayos`, stream sin broadcast; `getEnsayos`, `borrarEnsayo`, `borrarEnsayos`; después de `dispose` no
+  emite). `EnsayosPage` es un `StatefulWidget` que recibe `ensayos` (`ServiceEnsayos`) para los tests; el ensayo
+  deslizado se oculta mientras está el SnackBar y vuelve si se cancela. La tarjeta es `TarjetaEnsayo`
+  (`Pages/ensayos/widgets/`, un `ExpansionTile`), y el horario de la maniobra sale de `descripcionManiobra`, que
+  comparte con el diálogo (`dialog_maniobra.dart`). `DialogBorrar` pasó a `lib/Widgets/` con `titulo`, `mensaje` y
+  `onBorrar` (lo usan pesadas y ensayos; `HelpersPesadas.borrarTodasPesadas` ahora espera el borrado). La ruta
+  `'pesadas'` sigue registrada, pero sin botón que lleve a ella, hasta el paso 13. Tests nuevos
+  `test/Providers/ensayos_provider_test.dart` y `test/widgets/ensayos/ensayos_page_test.dart`.
 
 ### [ ] Paso 12 · `exportarEnsayos`: XLSX de maniobras
 - `exportar_xml.dart`: `ensayos.xlsx` con la hoja `maniobras`, **una fila por maniobra y plato**: `ensayo_id`, `tolva`,

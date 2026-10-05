@@ -61,11 +61,9 @@ class HelpersPesadas{
   ///
   ///Borrar todas las pesadas de la base de daatos
   ///
-  static borrarTodasPesadas()async {
+  static Future<void> borrarTodasPesadas()async {
     final serviceDB = ServicePesadas(DBconeccion.db);
-    await Future.delayed(Duration.zero).then((value){
-      serviceDB.deletePesadas();
-    }); 
+    await serviceDB.deletePesadas();
   }
 
 }
