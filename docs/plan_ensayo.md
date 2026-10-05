@@ -114,7 +114,7 @@ duración de la maniobra dan la tasa real que hubo.
 - `NuevePlatosPage`: AppBar con el nombre de la tolva.
 - `assets/tolva.png` ya está en `assets/` (lo cubre `pubspec.yaml`); se agrega al repo en este paso.
 
-### [ ] Paso 5 · `registroMaxMin`: máximo y mínimo por plato (sin UI)
+### [x] Paso 5 · `registroMaxMin`: máximo y mínimo por plato (sin UI)
 - Nueva clase pura `lib/domain/entities/registro_max_min.dart`: `registrar(double peso)`, `maximo`, `minimo`,
   `lecturas`, `hayDatos` y `reiniciar()`.
 - `PesoController`:
