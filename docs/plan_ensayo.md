@@ -174,7 +174,7 @@ duración de la maniobra dan la tasa real que hubo.
   `debugPrint`) para que los tests no toquen el plugin. Un ensayo nuevo con la maniobra en curso la descarta y también
   apaga el wakelock. Test en `ensayo_controller_test`.
 
-### [ ] Paso 10 · `guardarManiobras`: ensayos y maniobras en la base
+### [x] Paso 10 · `guardarManiobras`: ensayos y maniobras en la base
 - Tablas nuevas (`dbVersion = 2`; `onUpgrade` con `oldVersion < 2` las crea y `onCreate` también):
 
   | Tabla | Columnas |
@@ -195,6 +195,14 @@ duración de la maniobra dan la tasa real que hubo.
 - `EnsayoController`: la fila de `tensayos` se inserta al tomar el **primer** estático (así no quedan ensayos vacíos),
   y `terminarManiobra` guarda antes de mostrar el diálogo.
 - Mock nuevo en `test/moks/` y test `test/BaseDeDatos/ensayos/service_ensayos_test.dart`.
+- Hecho así: la fila de `tensayos` se inserta al guardar la **primera maniobra**, no al tomar el estático (tampoco
+  quedan ensayos sin maniobras y `tomarEstatico` sigue siendo síncrono); la fecha es la de esa maniobra. Si falla, la
+  próxima maniobra lo reintenta. `terminarManiobra()` pasó a `Future<ManiobraModel?>`: corta el registro antes del
+  primer `await`, guarda y devuelve la maniobra con sus ids (`guardada` = tiene id). `ManiobraModel` reemplaza al
+  record `ResultadoManiobra` y lleva `hora_inicio` / `hora_fin` como `HH:mm:ss`. `HelpersEnsayos.avisarGuardado`
+  muestra el SnackBar y el diálogo usa el umbral copiado en la maniobra. `EnsayoController` recibe `ensayos`
+  (`ServiceEnsayos`, por defecto con `DBconeccion.db`) para los tests. Mock en memoria `test/moks/db_ensayos_mock.dart`
+  (ids, orden y cascada) y test nuevo `test/Models/ensayo_model_test.dart` (`toDb` / `fromDb`).
 
 ### [ ] Paso 11 · `historialEnsayos`: ver los ensayos guardados
 - Nueva `lib/Pages/ensayos/ensayos_page.dart` (ruta `'ensayos'`), con un provider/stream como el de pesadas:
