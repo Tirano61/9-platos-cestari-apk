@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 29 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 38 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -80,7 +80,9 @@ lib/Controllers/
                                    setPuertos(lista), cantidadPlatos.
   peso_controller.dart             PesoController(plato: n), uno por plato. Escucha UDP, actualiza
                                    pesoModel (RecibirPesoModel), timer de 1 s que marca desconexion a
-                                   los 5 s sin datos y reabre el socket si hace falta.
+                                   los 5 s sin datos y reabre el socket si hace falta. Registro de
+                                   max/min: iniciarRegistro() / detenerRegistro() (devuelve el
+                                   RegistroMaxMin) y Rx maximo / minimo / lecturas para la UI.
   calculos_controllers.dart        Singleton CalculosController.cn: total (setPesoTotalByList /
                                    pesoTotal), porcentajes, fecha/hora y calcularPayload9Platos(pesos).
   ensayo_controller.dart           EnsayoController (Get.put en main.dart): tolva, capacidades (9 String,
@@ -88,6 +90,8 @@ lib/Controllers/
   controllers_export.dart          Barrel de calculos + peso_controller.
 lib/data/udp/udp_scale_parser.dart Parsea el datagrama "ADC = peso,estable,x,tension" -> ScaleReading.
 lib/domain/entities/scale_reading.dart  Lectura normalizada (peso, estable, tension, sourceId).
+lib/domain/entities/registro_max_min.dart  RegistroMaxMin (clase pura): registrar(peso), maximo, minimo,
+                                   lecturas, hayDatos y reiniciar().
 lib/models/
   config_model.dart                ConfigModel: List<String> puertos (indice 0 = plato 1), puerto(n).
                                    Claves JSON = columnas tconfig plato1..plato9.
@@ -160,7 +164,7 @@ Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`, `inicioEnsayo`. H
 
 1. `PesoController.recibirPeso()` hace `UDP.bind(Endpoint.any(port: puerto(plato)))`. Un contador `_udpGeneracion` descarta binds viejos (OK repetido en la configuración mientras se abría el socket). Si el bind falla, el timer reintenta mientras `_receiver` siga en null.
 2. Cada datagrama pasa por `UdpScaleParser` (`ADC = peso,estable,?,tension` + terminador; se toma lo que sigue al `=`). Las tramas inválidas se descartan con `debugPrint`.
-3. Se actualiza `RecibirPesoModel`: peso, estable, tensión (nivel de batería 1..5), `adreess` = IP de origen, `conexion = true`, `contador = 0`.
+3. Se actualiza `RecibirPesoModel`: peso, estable, tensión (nivel de batería 1..5), `adreess` = IP de origen, `conexion = true`, `contador = 0`. Si el plato está registrando (maniobra), el peso pasa por `registrarLectura`, que lo suma al `RegistroMaxMin` (los pesos inválidos se saltean). Así se comparan todas las tramas, no solo las que dibuja la pantalla.
 4. Desconexión y reconexión: el timer de 1 s (arranca en `onInit`, se cancela en `onClose`, corre también en el Home) marca desconexión a los 5 s sin datos. Si ya estaba desconectado, llama `_tryReconnect`, que solo reabre si no hay socket (`_receiver == null`): con el socket abierto, el plato está apagado y no hace falta reabrir. Los 5 s se cuentan desde que termina el intento.
 5. Cambio de puertos: `HelpersConfig.upDateConfig` guarda, actualiza `ConfigController` y `_refreshScaleConnections()` llama `recibirPeso()` de los 9 platos.
 6. El botón `> 0 <` de `PlatoWidget` llama a `ComandosPlato.enviarCero`, que abre un socket TCP al puerto 80 de la IP del plato (`Conexion.cn`), manda `GET /peso?cero=1` y lo cierra. El número de plato sale del `buttonKeyPlato` ('1'..'9'). Sin IP conocida (el plato nunca mandó datos) no se envía nada. La conexión TCP tiene un timeout de 3 s.
@@ -197,6 +201,8 @@ Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app 
 - `test/BaseDeDatos/pesadas/services/service_pesadas_test.dart`: `ServicePesadas` contra `test/moks/db_connection_mock.dart`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
 - `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController` e `iniciarEnsayo`.
+- `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
+- `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` de `PesoController` (sin UDP).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `test/list_pesajes/list_pesaje.dart`: pesada de ejemplo (`pesada9PlatosEjemplo`) y su fila de exportación esperada (`listPesaje`), usadas por el mock y los tests.
 - `integration_test/app_test.dart` está vacío.
