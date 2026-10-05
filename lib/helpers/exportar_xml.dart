@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/ensayos/service_ensayos.dart';
-import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/models/ensayos/ensayo_model.dart';
 import 'package:flutter/material.dart';
@@ -98,41 +97,6 @@ class Exportar{
 
   static const archivoEnsayos = 'ensayos.xlsx';
 
-  /// Pesadas viejas (PesadasPage); se borra en el paso 13 del plan de ensayo.
-  Future<int> writeFile(BuildContext context)async{
-    try {
-      final sservicePesadas = ServicePesadas(DBconeccion.db);
-      final file = await _localFile('pesadas.xlsx');
-      final rows = await sservicePesadas.getPesadasExportacion();
-      if (rows.isEmpty) {
-        return -1;
-      }
-
-      final libro = Excel.createExcel();
-      final defaultSheet = libro.getDefaultSheet();
-      if (defaultSheet != null) {
-        libro.delete(defaultSheet);
-      }
-
-      _buildSheet(libro, '9_platos', rows);
-
-      if ((libro.tables.keys).isEmpty) {
-        return -1;
-      }
-
-      final bytes = libro.encode();
-      if (bytes == null || bytes.isEmpty) {
-        return -1;
-      }
-
-      await file.writeAsBytes(Uint8List.fromList(bytes), flush: true);
-      return 1;
-
-    } catch (e) {
-      return -1;
-    }
-  }
-
   void _appendRow(Sheet sheet, List<dynamic> values) {
     sheet.appendRow(values.map((e) => TextCellValue(e.toString())).toList());
   }
@@ -140,8 +104,7 @@ class Exportar{
   String _v(Map<String, dynamic> row, String key) => (row[key] ?? '').toString();
 
   /// Hoja [nombre]: el encabezado son las claves de la fila
-  /// (ManiobraModel.toExportRows o Pesada9PlatosPayload.toExportRow), que
-  /// salen todas con el mismo orden.
+  /// (ManiobraModel.toExportRows), que salen todas con el mismo orden.
   void _buildSheet(Excel libro, String nombre, List<Map<String, dynamic>> rows) {
     final sheet = libro[nombre];
     final columnas = rows.first.keys.toList();

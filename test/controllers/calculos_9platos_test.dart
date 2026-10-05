@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nueve_platos_cestari/Controllers/calculos_controllers.dart';
 
 void main() {
-  group('CalculosController.calcularPayload9Platos', () {
+  group('CalculosController (total y % en vivo)', () {
     final calculos = CalculosController.cn;
 
     // enganche, J1 IZQ, J1 DER, J2 IZQ, J2 DER, J3 IZQ, J3 DER, J4 IZQ, J4 DER
@@ -18,71 +18,45 @@ void main() {
       '180.00',
     ];
 
-    test('total de los 9 platos y tipo 9_platos', () async {
-      final payload = await calculos.calcularPayload9Platos(pesos: pesos);
+    setUp(() => calculos.setPesoTotalByList(pesos));
 
-      expect(payload.base.total, '1260.00');
+    test('total de los 9 platos', () {
       expect(calculos.pesoTotal, '1260.00');
-      expect(payload.base.tipoPesada, '9_platos');
-      expect(payload.base.identificacion, '');
     });
 
-    test('pesos de cada plato en su campo', () async {
-      final d = (await calculos.calcularPayload9Platos(pesos: pesos)).detalle;
-
-      expect(d.enganche, '100.00');
-      expect([d.j1Izq, d.j1Der], ['110.00', '120.00']);
-      expect([d.j2Izq, d.j2Der], ['130.00', '140.00']);
-      expect([d.j3Izq, d.j3Der], ['150.00', '160.00']);
-      expect([d.j4Izq, d.j4Der], ['170.00', '180.00']);
+    test('subtotal de un juego', () {
+      expect(calculos.calculoEje('110.00', '120.00'), '230.00');
+      expect(calculos.calculoEje('170.00', '180.00'), '350.00');
     });
 
-    test('juegos y lados (el enganche no suma a ningun lado)', () async {
-      final d = (await calculos.calcularPayload9Platos(pesos: pesos)).detalle;
-
-      expect(d.juego1, '230.00');
-      expect(d.juego2, '270.00');
-      expect(d.juego3, '310.00');
-      expect(d.juego4, '350.00');
-      expect(d.ladoIzq, '560.00');
-      expect(d.ladoDer, '600.00');
+    test('porcentajes sobre el total', () {
+      expect(calculos.calculoPorcentajePlatos('100.00'), '7.9');
+      expect(calculos.calculoPorcentajePlatos('110.00'), '8.7');
+      expect(calculos.calculoPorcentajePlatos('180.00'), '14.3');
+      expect(calculos.calculoPorcentajePorEje('1', '110.00', '120.00'), '18.3');
+      expect(calculos.calculoPorcentajePorEje('4', '170.00', '180.00'), '27.8');
+      // Lados: izq 2+4+6+8 y der 3+5+7+9; el enganche no suma a ninguno.
+      expect(calculos.porcentajePorLado('560.00'), '44.4');
+      expect(calculos.porcentajePorLado('600.00'), '47.6');
     });
 
-    test('porcentajes sobre el total', () async {
-      final d = (await calculos.calcularPayload9Platos(pesos: pesos)).detalle;
+    test('con total cero los porcentajes son 0', () {
+      calculos.setPesoTotalByList(List.filled(9, '0.00'));
 
-      expect(d.porEnganche, '7.9');
-      expect(d.porJ1Izq, '8.7');
-      expect(d.porJ1Der, '9.5');
-      expect(d.porJ4Der, '14.3');
-      expect(d.porJuego1, '18.3');
-      expect(d.porJuego2, '21.4');
-      expect(d.porJuego3, '24.6');
-      expect(d.porJuego4, '27.8');
-      expect(d.porLadoIzq, '44.4');
-      expect(d.porLadoDer, '47.6');
+      expect(calculos.pesoTotal, '0.00');
+      expect(calculos.calculoPorcentajePlatos('0.00'), '0');
+      expect(calculos.calculoPorcentajePorEje('1', '0.00', '0.00'), '0');
+      expect(calculos.porcentajePorLado('0.00'), '0');
     });
 
-    test('con total cero los porcentajes son 0', () async {
-      final d = (await calculos.calcularPayload9Platos(
-        pesos: List.filled(9, '0.00'),
-      )).detalle;
-
-      expect(d.porEnganche, '0');
-      expect(d.porJuego1, '0');
-      expect(d.porLadoIzq, '0');
-      expect(d.ladoDer, '0.00');
-    });
-
-    test('un peso invalido cuenta como 0 en juegos, lados y total', () async {
-      final payload = await calculos.calcularPayload9Platos(
-        pesos: ['100.00', '', '50.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00'],
+    test('un peso invalido cuenta como 0 en el total y los %', () {
+      calculos.setPesoTotalByList(
+        ['100.00', '', '50.00', '0.00', '0.00', '0.00', '0.00', '0.00', '0.00'],
       );
 
-      expect(payload.base.total, '150.00');
-      expect(payload.detalle.juego1, '50.00');
-      expect(payload.detalle.ladoIzq, '0.00');
-      expect(payload.detalle.porLadoDer, '33.3');
+      expect(calculos.pesoTotal, '150.00');
+      expect(calculos.calculoPorcentajePlatos(''), '0.0');
+      expect(calculos.calculoPorcentajePorEje('1', '', '50.00'), '33.3');
     });
   });
 }
