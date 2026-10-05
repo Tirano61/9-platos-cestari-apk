@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/services/ensayos/service_ensayos.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
+import 'package:nueve_platos_cestari/models/ensayos/ensayo_model.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -50,16 +52,57 @@ class Exportar{
     }
   }
 
-  Future<File> get _localFile async{
+  Future<File> _localFile(String nombre) async{
     final path = await _localPath;
-    final file = File('$path/pesadas.xlsx'); 
+    final file = File('$path/$nombre');
     return file;
   }
 
+  /// Filas de la hoja 'maniobras': una por maniobra y plato, de los ensayos
+  /// mas viejos a los mas nuevos (getEnsayos los da por id descendente).
+  static List<Map<String, dynamic>> filasEnsayos(List<EnsayoModel> ensayos) => [
+        for (final ensayo in ensayos.reversed)
+          for (final maniobra in ensayo.maniobras)
+            ...maniobra.toExportRows(tolva: ensayo.tolva, fecha: ensayo.fecha),
+      ];
+
+  /// Genera ensayos.xlsx con la hoja 'maniobras'. Devuelve 1 si lo genero,
+  /// 0 si no hay maniobras guardadas y -1 si fallo.
+  Future<int> writeFileEnsayos({ServiceEnsayos? ensayos}) async {
+    try {
+      final service = ensayos ?? ServiceEnsayos(DBconeccion.db);
+      final rows = filasEnsayos(await service.getEnsayos());
+      if (rows.isEmpty) {
+        return 0;
+      }
+
+      final libro = Excel.createExcel();
+      final defaultSheet = libro.getDefaultSheet();
+      if (defaultSheet != null) {
+        libro.delete(defaultSheet);
+      }
+      _buildSheet(libro, 'maniobras', rows);
+
+      final bytes = libro.encode();
+      if (bytes == null || bytes.isEmpty) {
+        return -1;
+      }
+
+      final file = await _localFile(archivoEnsayos);
+      await file.writeAsBytes(Uint8List.fromList(bytes), flush: true);
+      return 1;
+    } catch (e) {
+      return -1;
+    }
+  }
+
+  static const archivoEnsayos = 'ensayos.xlsx';
+
+  /// Pesadas viejas (PesadasPage); se borra en el paso 13 del plan de ensayo.
   Future<int> writeFile(BuildContext context)async{
     try {
       final sservicePesadas = ServicePesadas(DBconeccion.db);
-      final file = await _localFile;
+      final file = await _localFile('pesadas.xlsx');
       final rows = await sservicePesadas.getPesadasExportacion();
       if (rows.isEmpty) {
         return -1;
@@ -71,7 +114,7 @@ class Exportar{
         libro.delete(defaultSheet);
       }
 
-      _buildSheet9Platos(libro, rows);
+      _buildSheet(libro, '9_platos', rows);
 
       if ((libro.tables.keys).isEmpty) {
         return -1;
@@ -96,10 +139,11 @@ class Exportar{
 
   String _v(Map<String, dynamic> row, String key) => (row[key] ?? '').toString();
 
-  /// Hoja '9_platos': el encabezado son las claves de la fila
-  /// (Pesada9PlatosPayload.toExportRow), que salen todas con el mismo orden.
-  void _buildSheet9Platos(Excel libro, List<Map<String, dynamic>> rows) {
-    final sheet = libro['9_platos'];
+  /// Hoja [nombre]: el encabezado son las claves de la fila
+  /// (ManiobraModel.toExportRows o Pesada9PlatosPayload.toExportRow), que
+  /// salen todas con el mismo orden.
+  void _buildSheet(Excel libro, String nombre, List<Map<String, dynamic>> rows) {
+    final sheet = libro[nombre];
     final columnas = rows.first.keys.toList();
     _appendRow(sheet, columnas);
 
@@ -108,27 +152,28 @@ class Exportar{
     }
   }
 
-  compartirArchivo(BuildContext context) async {
+  /// Genera ensayos.xlsx con las maniobras guardadas y lo comparte.
+  Future<void> compartirArchivo(BuildContext context) async {
     final scaffold = ScaffoldMessenger.of(context);
-    final path = await _localPath;
-    final filePath = '${path.toString()}/pesadas.xlsx';
-    final file = File(filePath);
-
-    if (!await file.exists()) {
+    final resp = await writeFileEnsayos();
+    if (resp != 1) {
       scaffold.showSnackBar(
         SnackBar(
-          content: const Text('No se encontró el archivo para compartir.'),
+          content: Text(resp == 0
+              ? 'No hay maniobras guardadas para exportar.'
+              : 'No se pudo generar el archivo.'),
           backgroundColor: ThemePlatos.errorColor,
         ),
       );
       return;
     }
+    final file = await _localFile(archivoEnsayos);
 
     try {
       await Share.shareXFiles(
-        [XFile(filePath)],
-        text: 'Compartir Pesadas',
-        subject: 'Balanzas Hook, 9 platos',
+        [XFile(file.path)],
+        text: 'Compartir ensayos',
+        subject: 'Balanzas Hook, ensayo 9 platos',
       );
     } catch (e) {
       scaffold.showSnackBar(
