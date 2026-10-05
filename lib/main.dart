@@ -5,6 +5,7 @@ import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
+import 'package:nueve_platos_cestari/Pages/ensayos/ensayos_page.dart';
 import 'package:nueve_platos_cestari/Pages/inicio_ensayo/inicio_ensayo_page.dart';
 import 'package:nueve_platos_cestari/Pages/nueve_platos/nueve_platos_page.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/pesadas_page.dart';
@@ -121,6 +122,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         'home'    : (context) => const HomePage(),
         'pesadas' : (context) => PesadasPage(),
+        'ensayos' : (context) => const EnsayosPage(),
         'platos'  : (context) => NuevePlatosPage(),
         'inicioEnsayo' : (context) => const InicioEnsayoPage(),
       }

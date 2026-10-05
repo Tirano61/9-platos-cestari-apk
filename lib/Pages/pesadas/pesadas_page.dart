@@ -1,13 +1,14 @@
 
 
 import 'package:nueve_platos_cestari/BaseDeDatos/connections/db_conexion.dart';
+import 'package:nueve_platos_cestari/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
 import 'package:nueve_platos_cestari/BaseDeDatos/services/pesadas/service_pesadas.dart';
 import 'package:nueve_platos_cestari/models/pesadas/pesada_payload_model.dart';
-import 'package:nueve_platos_cestari/Pages/pesadas/widgets/dialog_borrar.dart';
 import 'package:nueve_platos_cestari/Pages/pesadas/widgets/items_pesadas.dart';
 import 'package:nueve_platos_cestari/Providers/pesadas/connections/pesadas_provider.dart';
 import 'package:nueve_platos_cestari/Providers/pesadas/services/service_provider.dart';
 import 'package:nueve_platos_cestari/Widgets/botton_bar.dart';
+import 'package:nueve_platos_cestari/Widgets/dialog_borrar.dart';
 import 'package:nueve_platos_cestari/Widgets/icon_button_bar_widget.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
@@ -130,7 +131,11 @@ class PesadasPage extends StatelessWidget {
                 await showDialog( 
                   context: context, 
                   builder: (_){                  
-                    return const DialogBorrar();
+                    return const DialogBorrar(
+                      titulo: 'Borrar Pesadas',
+                      mensaje: 'Desea eliminar todas las pesadas guardadas?',
+                      onBorrar: HelpersPesadas.borrarTodasPesadas,
+                    );
                   }
                 ).then((value) {
                   pesadasProvider.getPesadas();

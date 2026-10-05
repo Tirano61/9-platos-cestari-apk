@@ -83,8 +83,8 @@ class HomePage extends StatelessWidget {
               iconColor: ThemeApp.colorTituloPlatos, 
               iconSize: 30,
               onPressed: (){
-                // Ver las pesadas guardadas
-                Navigator.pushNamed(context, 'pesadas');  
+                // Ver los ensayos guardados
+                Navigator.pushNamed(context, 'ensayos');
               }
             ),
             IconBottonBarWidget(

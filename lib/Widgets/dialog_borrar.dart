@@ -1,7 +1,6 @@
 
 
 
-import 'package:nueve_platos_cestari/BaseDeDatos/helpers/pesadas/helpers_pesadas.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
 import 'package:nueve_platos_cestari/config/theme.dart';
@@ -9,8 +8,18 @@ import 'package:flutter/material.dart';
 
 
 
+/// Dialogo para borrar todo lo guardado. OK espera [onBorrar] y cierra con
+/// true; Cancel cierra sin borrar.
 class DialogBorrar extends StatelessWidget{
-  const DialogBorrar({super.key});
+  const DialogBorrar({
+    required this.titulo,
+    required this.mensaje,
+    required this.onBorrar,
+    super.key});
+
+  final String titulo;
+  final String mensaje;
+  final Future<void> Function() onBorrar;
 
   static final anchoBoton = SizeScreen.sc().screenWidth * 0.27;
 
@@ -32,7 +41,7 @@ class DialogBorrar extends StatelessWidget{
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.03,
               child: Text(
-                'Borrar Pesadas',
+                titulo,
                 style: TextStyle(fontSize:  SizeScreen.sc().isMinWidth ?  20 : 14),
               ),
             ),
@@ -41,7 +50,7 @@ class DialogBorrar extends StatelessWidget{
               padding: EdgeInsets.symmetric(vertical:  SizeScreen.sc().screenWidth * 0.02),
               child: SizedBox(
                 width: SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.5 :0.55 ),
-                child: Center(child: Text('Desea eliminar todas las pesadas guardadas?',style: ThemeApp.fontStandard,)),
+                child: Center(child: Text(mensaje, style: ThemeApp.fontStandard,)),
               ),
             ),
             // Fila de botones del diálogo
@@ -54,12 +63,9 @@ class DialogBorrar extends StatelessWidget{
                     width: anchoBoton,
                     child: ElevatedButton(
                       onPressed: ()async{
-                        ///
-                        /// Eliminar todas las pesadas
-                        ///
                         final navigator = Navigator.of(context);
-                        await HelpersPesadas.borrarTodasPesadas();
-                        navigator.pop();
+                        await onBorrar();
+                        navigator.pop(true);
                       },
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all<Color>(ThemeApp.colorPesoPlatos),
