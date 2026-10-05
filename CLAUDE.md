@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 02/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 27 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 3 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`, `withOpacity` deprecado en `nueve_platos_page.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 29 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -69,6 +69,8 @@ lib/main.dart                      Bootstrap: Get.put(ConfigController), un Peso
                                    puertos por defecto), arranca recibirPeso() de cada plato, rutas.
 lib/config/
   platos.dart                      cantidadPlatos = 9 y nombrePlato(n): 'ENGANCHE', 'J1 IZQ' .. 'J4 DER'.
+                                   Dibujo de la tolva: imagenTolva, proporcionTolva y posicionCelda(n)
+                                   (fracciones x/y donde va el campo de cada celda), esLadoDerecho(n).
   SizeScreen.dart                  Singleton SizeScreen.sc(): screenWidth e isMinWidth (>= 420 px,
                                    se usa como "tablet vs telefono").
   theme.dart                       ThemeApp (colores y estilos de la app).
@@ -81,6 +83,8 @@ lib/Controllers/
                                    los 5 s sin datos y reabre el socket si hace falta.
   calculos_controllers.dart        Singleton CalculosController.cn: total (setPesoTotalByList /
                                    pesoTotal), porcentajes, fecha/hora y calcularPayload9Platos(pesos).
+  ensayo_controller.dart           EnsayoController (Get.put en main.dart): tolva, capacidades (9 String,
+                                   '' = sin alarma) y umbral del ensayo en curso; iniciarEnsayo(...).
   controllers_export.dart          Barrel de calculos + peso_controller.
 lib/data/udp/udp_scale_parser.dart Parsea el datagrama "ADC = peso,estable,x,tension" -> ScaleReading.
 lib/domain/entities/scale_reading.dart  Lectura normalizada (peso, estable, tension, sourceId).
@@ -98,7 +102,7 @@ lib/helpers/
   exportar_xml.dart                A pesar del nombre exporta XLSX (pesadas.xlsx) y lo comparte.
   bateria.dart                     Bateria.porcentaje(voltios): 3.0 V = 0 %, 4.2 V = 100 %.
   preferencias_ensayo.dart         PreferenciasEnsayo: capacidad nominal de cada celda y umbral de alarma en
-                                   SharedPreferences (leerCapacidades / leerUmbral / guardar). Sin UI todavia.
+                                   SharedPreferences (leerCapacidades / leerUmbral / guardar). Los usa InicioEnsayoPage.
 lib/Providers/
   tcp_conexion.dart                Conexion.cn: socket TCP al puerto 80 de la IP del plato; manda cero
                                    (y calibracion, sin uso) por HTTP GET. No usarlo directo
@@ -113,11 +117,17 @@ lib/BaseDeDatos/
   helpers/settings/first_data.dart puertosPorDefecto (8001..8009).
 lib/Pages/
   Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato (fila del
-                                   enganche + 4 filas izq/der), boton "Iniciar Pesaje" (ruta 'platos'),
+                                   enganche + 4 filas izq/der), boton "Iniciar ensayo" (ruta 'inicioEnsayo'),
                                    engranaje -> DialogConfig, barra inferior (ver pesadas / compartir XLSX).
   Home/widgets/dialog_config.dart  Un InputTextConfig por plato (9 campos con scroll). OK ->
                                    HelpersConfig.upDateConfig los guarda y reconecta.
-  nueve_platos/                    NuevePlatosPage (ruta 'platos'): BarraEnsayo fija arriba (Cero general)
+  inicio_ensayo/                   InicioEnsayoPage (ruta 'inicioEnsayo'), con scroll: identificacion de la
+                                   tolva (obligatoria), TolvaCapacidades (tolva.png con un campo en kg por
+                                   celda, Positioned segun posicionCelda) y umbral (%). Precarga
+                                   PreferenciasEnsayo; Comenzar ensayo valida, avisa las celdas sin
+                                   capacidad, guarda, llama iniciarEnsayo y reemplaza la ruta por 'platos'.
+  nueve_platos/                    NuevePlatosPage (ruta 'platos', AppBar con la tolva del ensayo):
+                                   BarraEnsayo fija arriba (Cero general)
                                    y, con scroll, RecuadroPesoTotal, PlatoWidget del
                                    enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados.
                                    FAB Guardar -> DialogWidget (identificacion). Widgets: PlatoWidget
@@ -132,7 +142,8 @@ lib/Widgets/                       Comunes: BottonBarApp, IconBottonBarWidget, W
 lib/generated/ + lib/l10n/         intl (en/es/pt) configurado pero casi sin uso (solo la clave "titulo").
 ```
 
-Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`.
+Rutas registradas en `main.dart`: `home`, `pesadas`, `platos`, `inicioEnsayo`. Home -> `inicioEnsayo` ->
+(reemplazo) `platos`, así "atrás" desde los platos vuelve al Home.
 
 ## Estado y patrones
 
@@ -184,6 +195,7 @@ Esquema creado desde cero en `onCreate`; `onUpgrade` está vacío porque la app 
 - `test/Models/pesada_9platos_payload_test.dart`: fila y orden de columnas de `toExportRow`.
 - `test/BaseDeDatos/pesadas/services/service_pesadas_test.dart`: `ServicePesadas` contra `test/moks/db_connection_mock.dart`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
+- `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController` e `iniciarEnsayo`.
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `test/list_pesajes/list_pesaje.dart`: pesada de ejemplo (`pesada9PlatosEjemplo`) y su fila de exportación esperada (`listPesaje`), usadas por el mock y los tests.
 - `integration_test/app_test.dart` está vacío.

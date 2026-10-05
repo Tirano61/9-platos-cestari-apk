@@ -48,14 +48,15 @@ tamaño de pantalla. Valores iniciales, medidos sobre el dibujo y a ajustar en e
 
 | Plato | Dónde está en el dibujo | x | y |
 |---|---|---|---|
-| 1 ENGANCHE | recuadro chico sobre la lanza | 0,46 | 0,12 |
+| 1 ENGANCHE | a la izquierda de la lanza, a la altura del recuadro chico (que está en x 0,46) | 0,40 | 0,12 |
 | 2 / 3 J1 IZQ / DER | 1ª línea transversal del bastidor, sobre el larguero izq / der | 0,20 / 0,80 | 0,43 |
 | 4 / 5 J2 | 2ª línea transversal | 0,20 / 0,80 | 0,57 |
 | 6 / 7 J3 | 3ª línea transversal | 0,20 / 0,80 | 0,70 |
 | 8 / 9 J4 | 4ª línea transversal | 0,20 / 0,80 | 0,84 |
 
 Las fracciones van como constantes en `lib/config/platos.dart`, junto a `nombrePlato(n)`, así hay un solo lugar donde
-corregirlas.
+corregirlas. Marcan dónde se pega el campo: en el enganche y el lado izq el campo **termina** en x (queda a la
+izquierda); en el lado der **empieza** en x. En y queda centrado.
 
 ### Limitación conocida
 
@@ -93,7 +94,7 @@ duración de la maniobra dan la tasa real que hubo.
 - Test nuevo `test/helpers/preferencias_ensayo_test.dart` con `SharedPreferences.setMockInitialValues`: valores por
   defecto, guardar y volver a leer.
 
-### [ ] Paso 4 · `inicioEnsayo`: pantalla de inicio con tolva y capacidades sobre el dibujo
+### [x] Paso 4 · `inicioEnsayo`: pantalla de inicio con tolva y capacidades sobre el dibujo
 - Constantes de posición de cada celda en `lib/config/platos.dart` (ver la tabla "Dibujo de la tolva").
 - Nuevo `lib/Controllers/ensayo_controller.dart` (GetxController, `Get.put` en `main.dart`). Por ahora solo:
   `tolva`, `capacidades` (9 String), `umbral` e `iniciarEnsayo(tolva, capacidades, umbral)`. Se completa en los pasos
