@@ -67,7 +67,7 @@ duración de la maniobra dan la tasa real que hubo.
 
 ## Pasos
 
-### [ ] Paso 1 · `quitarHold`: quitar el reset hold
+### [x] Paso 1 · `quitarHold`: quitar el reset hold
 - `PlatoWidget`: quitar el botón `< H >` y que `> 0 <` quede solo (centrado o más ancho).
 - `ComandosPlato`: borrar `enviarResetHold`.
 - `Conexion` (`Providers/tcp_conexion.dart`): borrar `enviarHold`.
