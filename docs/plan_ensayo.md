@@ -233,7 +233,7 @@ duración de la maniobra dan la tasa real que hubo.
   después lo comparte; sin maniobras avisa con un SnackBar. `writeFile` (pesadas) sigue para `PesadasPage` hasta el
   paso 13. Test nuevo `test/Models/maniobra_export_test.dart`.
 
-### [ ] Paso 13 · `quitarPesadas`: borrar el código y las tablas de pesadas
+### [x] Paso 13 · `quitarPesadas`: borrar el código y las tablas de pesadas
 - Borrar:
   - `models/pesadas/*` y `tables/db_pesadas_*`;
   - interfaces, services y helpers de pesadas;

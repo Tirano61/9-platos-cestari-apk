@@ -22,12 +22,6 @@ class ThemeApp{
   /// Styles de fuentes para uso generales
   static final fontStandard = TextStyle( fontSize: SizeScreen.sc().isMinWidth ? 14 : 11);
   //static const fontStandardMin = TextStyle( fontSize: 11);
-  /// Titulos blancos para los platos de las pesadas
-  static final fontWithtitlePlatosPesadas    = TextStyle( fontSize: SizeScreen.sc().isMinWidth ? 11 : 9, color: Colors.white);
-  //static const fontWithtitlePlatosPesadasmin = TextStyle( fontSize: 9, color: Colors.white);
-  /// Fuentes para los platos de las pesadas
-  static final fontPlatosPesadas    = TextStyle( fontSize: SizeScreen.sc().isMinWidth ? 11 : 9);
-  //static const fontPlatosPesadasMin = TextStyle( fontSize: 9);
   static final fontIdentificacionPesadas    = TextStyle( fontSize: SizeScreen.sc().isMinWidth ? 16 : 14, fontWeight: FontWeight.bold);
   //static const fontIdentificacionPesadasMin = TextStyle( fontSize: 14, fontWeight: FontWeight.bold);
   /// Platos pesadas
