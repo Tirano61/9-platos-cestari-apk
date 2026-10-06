@@ -27,7 +27,7 @@ class NuevePlatosPage extends StatelessWidget {
     return Obx((){
       final pesos = [for (final c in pesoControllers) c.pesoModel.peso];
       CalculosController.cn.setPesoTotalByList(pesos);
-      final separacion = SizeScreen.sc().screenWidth * 0.025;
+      final separacion = SizeScreen.sc().screenWidth * 0.008;
       // Con una maniobra en curso, salir pide confirmacion y la descarta.
       return PopScope(
         canPop: !ensayo.registrando,
@@ -103,7 +103,7 @@ class NuevePlatosPage extends StatelessWidget {
         children: [
           // Recuadro de Peso total sumado
           Padding(
-            padding: EdgeInsets.only(top: SizeScreen.sc().screenWidth * 0.02, bottom: SizeScreen.sc().screenWidth * 0.035),
+            padding: EdgeInsets.only(top: SizeScreen.sc().screenWidth * 0.015, bottom: SizeScreen.sc().screenWidth * 0.015),
             child: RecuadroPesoTotal(
               suma: CalculosController.cn.pesoTotal
             ),
@@ -132,7 +132,10 @@ class NuevePlatosPage extends StatelessWidget {
     final controller = pesoControllers[n - 1];
     final plato = controller.pesoModel;
     final registrando = ensayo.registrando;
-    final maximo = registrando ? controller.maximo.value : '';
+    // Max / min en vivo durante la maniobra y los de la ultima al terminar;
+    // vacios si el ensayo todavia no tuvo ninguna.
+    final hayManiobra = ensayo.numeroManiobra.value > 0;
+    final maximo = hayManiobra ? controller.maximo.value : '';
     return PlatoWidget(
       numPlato: nombrePlato(n),
       pesoPlato: plato.peso,
@@ -141,10 +144,11 @@ class NuevePlatosPage extends StatelessWidget {
       batery: plato.tension,
       estable: plato.estable,
       estatico: ensayo.estatico(n),
-      // Durante la maniobra: max / min en vivo y sin cero.
       maximo: maximo,
-      minimo: registrando ? controller.minimo.value : '',
+      minimo: hayManiobra ? controller.minimo.value : '',
+      // Durante la maniobra no se puede mandar cero.
       ceroHabilitado: !registrando,
+      // alarma solo usa el maximo mientras se registra.
       nivelAlarma: ensayo.alarma(n, peso: plato.peso, maximo: maximo),
     );
   }
