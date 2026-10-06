@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.6.5
   udp: ^5.0.3
+  http: ^1.6.0
   permission_handler: null
   path_provider: ^2.0.9
   share_plus: ^7.0.2

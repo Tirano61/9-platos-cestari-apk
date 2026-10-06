@@ -81,7 +81,7 @@ Carpeta nueva `lib/models/calibracion/`:
 - Hecho: `toSaveQuery` lanza `StateError` si el modelo no está completo; `floatDesdeU64` devuelve `null` con un
   texto que no es entero o un float no finito, y lee el `u64` con `BigInt`, porque puede no entrar en un `int` de Dart.
 
-### [ ] Paso 2 · `servicioCalibracion`: lectura y envío por HTTP
+### [x] Paso 2 · `servicioCalibracion`: lectura y envío por HTTP
 - `pubspec.yaml`: `http` como dependencia directa.
 - `lib/Providers/calibracion_wifi.dart` — `CalibracionWifi` (`http.Client` inyectable, timeout de 5 s):
   - `leer(ip)` → `CalibracionModel?`: `GET http://<ip>/config?json=1`; con 200 se parsea como clásico. Si falla la
