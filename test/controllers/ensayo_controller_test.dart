@@ -180,11 +180,15 @@ void main() {
     test('Descartar corta el registro y libera el numero', () {
       ensayo.tomarEstatico();
       ensayo.iniciarManiobra();
+      platos[1].registrarLectura('5980.00');
       ensayo.descartarManiobra();
 
       expect(ensayo.estado.value, EstadoEnsayo.listo);
       expect(ensayo.numeroManiobra.value, 0);
       expect(platos.any((p) => p.registrando), false);
+      // El max / min descartado no queda en pantalla.
+      expect(platos[1].maximo.value, '');
+      expect(platos[1].minimo.value, '');
 
       ensayo.iniciarManiobra();
       expect(ensayo.numeroManiobra.value, 1);

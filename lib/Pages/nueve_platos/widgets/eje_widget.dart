@@ -29,7 +29,7 @@ class EjeWidget extends StatelessWidget {
       children: [
         Container(
           width: SizeScreen.sc().screenWidth * 0.25,
-          padding: const EdgeInsets.symmetric( vertical: 10),
+          padding: const EdgeInsets.symmetric( vertical: 4),
           decoration: BoxDecoration(
             color: ThemeApp.pesajeJuegoTitulo,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),

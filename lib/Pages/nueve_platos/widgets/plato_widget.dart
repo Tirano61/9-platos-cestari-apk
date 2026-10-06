@@ -40,7 +40,7 @@ class PlatoWidget extends StatelessWidget {
   final String estable;
   /// Peso estatico de referencia ('' si no se tomo).
   final String estatico;
-  /// Maximo y minimo de la maniobra en curso ('' si no hay maniobra).
+  /// Maximo y minimo de la maniobra en curso o de la ultima ('' si no hay).
   final String maximo;
   final String minimo;
   /// false durante la maniobra: el boton > 0 < queda deshabilitado.
@@ -93,6 +93,25 @@ class PlatoWidget extends StatelessWidget {
         _ => null,
       };
 
+  /// Minimo o maximo de la maniobra (en vivo mientras registra) con su
+  /// flecha; '-' si no hay.
+  Widget _valorMaxMin(String flecha, String valor, Color color, Alignment alineacion, TextStyle estilo) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: alineacion,
+      child: Text.rich(
+        TextSpan(
+          style: estilo.copyWith(fontWeight: FontWeight.bold),
+          children: [
+            TextSpan(text: flecha, style: TextStyle(color: color)),
+            TextSpan(text: valor.isEmpty ? '-' : valor),
+          ],
+        ),
+        maxLines: 1,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorAlarma = _colorAlarma;
@@ -100,7 +119,8 @@ class PlatoWidget extends StatelessWidget {
     final media = MediaQuery.of(context);
     final screenWidth = media.size.width;
     final isSmallPhone = media.size.height < 700 || media.size.shortestSide < 380;
-    final altoRecuadroPeso = (SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.116 : 0.14)).clamp(52.0, 120.0).toDouble();
+    // + 14 px para la fila de min / max.
+    final altoRecuadroPeso = (SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.116 : 0.14)).clamp(52.0, 120.0).toDouble() + 14;
     final estiloPeso = ThemePlatos.cn.textoPesoPlatos(context).copyWith(
       fontSize: isSmallPhone ? (screenWidth < 360 ? 14 : 16) : ThemePlatos.cn.textoPesoPlatos(context).fontSize,
     );
@@ -116,7 +136,7 @@ class PlatoWidget extends StatelessWidget {
         // Titulo de cada plato
         Container(
           width: SizeScreen.sc().screenWidth * 0.27,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
             color: colorAlarma ?? ThemeApp.pesajeTitulos,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
@@ -190,6 +210,17 @@ class PlatoWidget extends StatelessWidget {
                   style: estiloPorcentaje,
                 ),
               ),
+              // Minimo a la izquierda y maximo a la derecha
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    Expanded(child: _valorMaxMin('▼ ', minimo, Colors.blue.shade700, Alignment.centerLeft, estiloPorcentaje)),
+                    const SizedBox(width: 4),
+                    Expanded(child: _valorMaxMin('▲ ', maximo, Colors.red.shade700, Alignment.centerRight, estiloPorcentaje)),
+                  ],
+                ),
+              ),
               // Estado del estable
               Container(
                 width: SizeScreen.sc().screenWidth * 0.15,
@@ -215,7 +246,7 @@ class PlatoWidget extends StatelessWidget {
                 opacity: ceroHabilitado ? 1 : 0.4,
                 child: WidgetButton(
                   ancho: SizeScreen.sc().screenWidth * 0.22,
-                  alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
+                  alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.055 : 0.075),
                   borderRadius: 5,
                   fontSize: SizeScreen.sc().screenWidth < 520
                   ? 12 : 16,
@@ -239,19 +270,6 @@ class PlatoWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: estiloPorcentaje,
-          ),
-        ),
-
-        // Maximo / minimo en vivo durante la maniobra; vacia si no hay
-        SizedBox(
-          width: SizeScreen.sc().screenWidth * 0.27,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              maximo.isEmpty ? '' : '▲ $maximo  ▼ $minimo',
-              maxLines: 1,
-              style: estiloPorcentaje,
-            ),
           ),
         ),
 

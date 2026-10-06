@@ -48,4 +48,17 @@ void main() {
     expect(anterior.lecturas, 1);
     expect(controller.registro.maximo, 100);
   });
+
+  test('limpiarRegistro corta el registro y vacia el estado Rx', () {
+    final controller = PesoController(plato: 2)..iniciarRegistro();
+    controller.registrarLectura('3000.00');
+    controller.limpiarRegistro();
+
+    expect(controller.registrando, false);
+    expect(controller.maximo.value, '');
+    expect(controller.minimo.value, '');
+    expect(controller.lecturas.value, 0);
+    controller.registrarLectura('100.00');
+    expect(controller.registro.hayDatos, false);
+  });
 }

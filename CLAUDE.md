@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 76 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 79 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -82,7 +82,8 @@ lib/Controllers/
                                    pesoModel (RecibirPesoModel), timer de 1 s que marca desconexion a
                                    los 5 s sin datos y reabre el socket si hace falta. Registro de
                                    max/min: iniciarRegistro() / detenerRegistro() (devuelve el
-                                   RegistroMaxMin) y Rx maximo / minimo / lecturas para la UI.
+                                   RegistroMaxMin; el Rx queda con los ultimos valores), limpiarRegistro()
+                                   (maniobra descartada: vacia el Rx) y Rx maximo / minimo / lecturas para la UI.
   calculos_controllers.dart        Singleton CalculosController.cn: total (setPesoTotalByList /
                                    pesoTotal) y porcentajes en vivo de platos, juegos y lados.
   ensayo_controller.dart           EnsayoController (Get.put en main.dart): tolva, capacidades (9 String,
@@ -162,7 +163,9 @@ lib/Pages/
                                    Widgets: PlatoWidget
                                    (peso, bateria, estable, conexion, boton > 0 < a 2 px del recuadro del peso
                                    (deshabilitado mientras registra), linea 'E: <estatico>', linea
-                                   '▲ max ▼ min' durante la maniobra, nivelAlarma: borde y titulo ambar / rojo con alLimite / excede), mostrarResultadoManiobra (dialog_maniobra.dart: dialogo con la
+                                   fila '▼ min' (izq) / '▲ max' (der) dentro del recuadro del peso, siempre
+                                   visible: en vivo durante la maniobra, los de la ultima al terminar y '-'
+                                   si el ensayo no tuvo ninguna, nivelAlarma: borde y titulo ambar / rojo con alLimite / excede), mostrarResultadoManiobra (dialog_maniobra.dart: dialogo con la
                                    TablaManiobra al terminar), formatoDuracion y descripcionManiobra, EjeWidget, FilaPlatos, RecuadroPesoTotal y
                                    BateryWidget.
   ensayos/                         EnsayosPage (ruta 'ensayos', StatefulWidget; recibe ensayos para los tests):
@@ -200,7 +203,7 @@ Rutas registradas en `main.dart`: `home`, `ensayos`, `platos`, `inicioEnsayo`. H
 7. El botón **Cero general** de `BarraEnsayo` llama a `ComandosPlato.enviarCeroGeneral`, que manda `enviarCero(n)` de 1 a 9 **en secuencia** (`Conexion.cn` es un solo socket) y devuelve los platos que fallaron. El botón queda deshabilitado mientras manda, y un SnackBar avisa el resultado (los fallidos por `nombrePlato(n)`).
 8. Cualquier cero que se envió (el de un plato, o el general con al menos un plato OK) llama `EnsayoController.borrarEstatico()`; si había estático, el SnackBar agrega "Volvé a tomar el estático".
 9. **Tomar estático** (`BarraEnsayo`) guarda los 9 pesos actuales como referencia (`tomarEstatico`, 2 decimales, inválido = 0) y pasa el estado a `listo`. Si hay platos desconectados pide confirmación antes. Cero general y Tomar estático se deshabilitan en estado `registrando`.
-10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▲ máx ▼ mín` en vivo, los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()`, que guarda la maniobra en la base (la primera del ensayo inserta antes la fila de `tensayos`); `HelpersEnsayos.avisarGuardado` avisa con un SnackBar si se guardó y después se muestra el diálogo con la `TablaManiobra`.
+10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▼ mín` / `▲ máx` en vivo dentro del recuadro del peso (al terminar quedan los de la última maniobra; descartarla los borra), los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()`, que guarda la maniobra en la base (la primera del ensayo inserta antes la fila de `tensayos`); `HelpersEnsayos.avisarGuardado` avisa con un SnackBar si se guardó y después se muestra el diálogo con la `TablaManiobra`.
 11. **Alarma**: en cada `Obx`, `EnsayoController.alarma(n, ...)` compara el máximo de la maniobra (o el peso actual si no hay maniobra o todavía no llegaron lecturas) con la capacidad de la celda y el umbral (`estadoCelda`). `PlatoWidget` pinta el borde y el título en ámbar (al límite) o rojo (excede), con los colores de `TablaManiobra.colorEstado`. Sin capacidad no hay alarma.
 
 ## Base de datos (sqflite, `platos.db`, versión 3)
@@ -240,11 +243,11 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `test/Models/maniobra_export_test.dart`: orden de columnas y valores de `ManiobraModel.toExportRows` (ejemplo del documento, plato sin capacidad ni lecturas) y orden de `Exportar.filasEnsayos`.
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
 - `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController`, `iniciarEnsayo`, `tomarEstatico` (con `leerPesos` inyectado), `borrarEstatico`, iniciar / terminar / descartar maniobra (con `platos` inyectado), pantalla encendida durante la maniobra (con `pantallaEncendida` inyectado), guardado de las maniobras (con `ensayos` inyectado: un ensayo por tolva, umbral y capacidad copiados, reintento si falla) y `alarma` (peso actual, máximo durante la maniobra, sin capacidad, umbral del ensayo).
-- `test/widgets/nueve_platos/plato_widget_alarma_test.dart`: colores del título y el borde de `PlatoWidget` según `nivelAlarma`, en un teléfono chico sin desbordes.
+- `test/widgets/nueve_platos/plato_widget_alarma_test.dart`: colores del título y el borde de `PlatoWidget` según `nivelAlarma`, en un teléfono chico sin desbordes, y el mínimo (izq) y máximo (der) dentro del plato (con valores y con `-`).
 - `test/Models/maniobra_plato_test.dart`: factor de cresta, % cap y estado (ejemplo del documento, = umbral, = 100 %, > 100 %, capacidad vacía o 0, estático 0, sin lecturas, redondeo).
 - `test/widgets/nueve_platos/dialog_maniobra_test.dart`: `formatoDuracion` y el diálogo con la tabla en un teléfono angosto.
 - `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
-- `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` de `PesoController` (sin UDP).
+- `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` / `limpiarRegistro` de `PesoController` (sin UDP).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `integration_test/app_test.dart` está vacío.
 
