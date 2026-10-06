@@ -1,4 +1,5 @@
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:flutter/material.dart';
 
 class RecuadroPesoTotal extends StatefulWidget {
@@ -26,7 +27,7 @@ class _RecuadroPesoTotalState extends State<RecuadroPesoTotal> {
           width: SizeScreen.sc().screenWidth * 0.4,
           height: SizeScreen.sc().screenWidth * 0.07,
           decoration: const BoxDecoration(
-            color: Color.fromARGB(188, 5, 21, 76),
+            color: ThemeApp.pesajeTitulos,
             borderRadius:  BorderRadius.horizontal(left:  Radius.circular(10)),
           ),
           child:  Center(
@@ -40,7 +41,7 @@ class _RecuadroPesoTotalState extends State<RecuadroPesoTotal> {
           width: SizeScreen.sc().screenWidth * 0.4,
           height: SizeScreen.sc().screenWidth * 0.07,
           decoration: const BoxDecoration(
-            color: Color.fromARGB(131, 1, 40, 108),
+            color: ThemeApp.pesajeJuegoPeso,
             borderRadius:  BorderRadius.horizontal(right:  Radius.circular(10)),
           ),
           child: Center(
