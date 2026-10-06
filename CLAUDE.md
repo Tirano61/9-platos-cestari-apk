@@ -277,3 +277,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `README.md`: descripción e historial.
 - `docs/plan_9_platos.md`: plan de la reforma de 4 a 9 platos (PRs 1..10) y checklist de verificación con las balanzas.
 - `docs/plan_ensayo.md`: plan **pendiente** del modo ensayo de tolva (inicio con tolva y capacidad nominal por celda sobre `assets/tolva.png`, guardadas en SharedPreferences; estático, maniobra con máx/mín, alarma, historial de ensayos). Se implementa de a un paso por PR; leer el paso pedido antes de empezar.
+- `docs/CALIBRACION_WIFI.md`: protocolo HTTP de lectura (`/config?json=1` clásico, `/configjson?json=1` ESP32) y
+  envío (`/save`) de la calibración del indicador.
+- `docs/plan_calibracion.md`: plan de la calibración de cada plato por WiFi (modelos de parseo, servicio HTTP,
+  pantalla de calibración y botón en la configuración). Se implementa de a un paso por PR.
