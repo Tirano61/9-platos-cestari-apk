@@ -5,6 +5,7 @@ import 'package:nueve_platos_cestari/Controllers/config_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/ensayo_controller.dart';
 import 'package:nueve_platos_cestari/Controllers/peso_controller.dart';
 import 'package:nueve_platos_cestari/Pages/Home/homePage.dart';
+import 'package:nueve_platos_cestari/Pages/calibracion/calibracion_page.dart';
 import 'package:nueve_platos_cestari/Pages/ensayos/ensayos_page.dart';
 import 'package:nueve_platos_cestari/Pages/inicio_ensayo/inicio_ensayo_page.dart';
 import 'package:nueve_platos_cestari/Pages/nueve_platos/nueve_platos_page.dart';
@@ -123,6 +124,10 @@ class _MyAppState extends State<MyApp> {
         'ensayos' : (context) => const EnsayosPage(),
         'platos'  : (context) => NuevePlatosPage(),
         'inicioEnsayo' : (context) => const InicioEnsayoPage(),
+        // El numero de plato va en los arguments.
+        'calibracion' : (context) => CalibracionPage(
+          plato: ModalRoute.of(context)!.settings.arguments as int,
+        ),
       }
     );
   }
