@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import 'package:nueve_platos_cestari/config/platos.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/export_home_wigets.dart';
 import 'package:nueve_platos_cestari/Controllers/controllers_export.dart';
@@ -33,30 +34,43 @@ class NuevePlatosPage extends StatelessWidget {
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) _confirmarSalida(context);
         },
-        child: Scaffold(
-          appBar: AppBar(
-            //backgroundColor: ThemePlatos.backgroundTitulos,
-            // Nombre de la tolva del ensayo en curso.
-            title: Text(
-              ensayo.tolva.value.isEmpty ? 'Balanzas Hook' : ensayo.tolva.value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-         
-          ),
-          body: Column(
-            children: [
-              // Barra de acciones fija bajo el AppBar
-              const BarraEnsayo(),
-              Expanded(
-                child: _contenidoPlatos(pesos, separacion),
+        child: Theme(
+          data: _temaPesaje(Theme.of(context)),
+          child: Scaffold(
+            appBar: AppBar(
+              // Nombre de la tolva del ensayo en curso.
+              title: Text(
+                ensayo.tolva.value.isEmpty ? 'Balanzas Hook' : ensayo.tolva.value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
+            ),
+            body: Column(
+              children: [
+                // Barra de acciones fija bajo el AppBar
+                const BarraEnsayo(),
+                Expanded(
+                  child: _contenidoPlatos(separacion),
+                ),
+              ],
+            ),
           ),
         ),
       );
     });
   }
+
+  /// Tema verde claro de la pantalla de pesaje (fondo, AppBar y botones).
+  ThemeData _temaPesaje(ThemeData base) => base.copyWith(
+        colorScheme: ColorScheme.fromSeed(seedColor: ThemeApp.pesajeTitulos),
+        scaffoldBackgroundColor: ThemeApp.pesajeFondo,
+        appBarTheme: base.appBarTheme.copyWith(
+          backgroundColor: ThemeApp.pesajeTitulos,
+          foregroundColor: Colors.white,
+          titleTextStyle: base.appBarTheme.titleTextStyle?.copyWith(color: Colors.white),
+        ),
+        iconTheme: base.iconTheme.copyWith(color: ThemeApp.pesajeTitulos),
+      );
 
   Future<void> _confirmarSalida(BuildContext context) async {
     final salir = await showDialog<bool>(
@@ -81,8 +95,8 @@ class NuevePlatosPage extends StatelessWidget {
     Navigator.pop(context);
   }
 
-  /// Total, enganche, los 4 juegos y los lados, con scroll.
-  Widget _contenidoPlatos(List<String> pesos, double separacion) {
+  /// Total, enganche y los 4 juegos, con scroll.
+  Widget _contenidoPlatos(double separacion) {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -107,14 +121,6 @@ class NuevePlatosPage extends StatelessWidget {
                 label: 'JUEGO $juego',
               ),
             ),
-          // Lados: izq = platos 2, 4, 6, 8 y der = 3, 5, 7, 9. El enganche no suma.
-          Padding(
-            padding: EdgeInsets.only(top: separacion * 2),
-            child: SumaLados(
-              pesoIzquierdo: _sumaPesos([pesos[1], pesos[3], pesos[5], pesos[7]]),
-              pesoDerecho:   _sumaPesos([pesos[2], pesos[4], pesos[6], pesos[8]]),
-            ),
-          ),
         ],
       ),
     );
@@ -142,8 +148,4 @@ class NuevePlatosPage extends StatelessWidget {
       nivelAlarma: ensayo.alarma(n, peso: plato.peso, maximo: maximo),
     );
   }
-
-  String _sumaPesos(List<String> pesos) => pesos
-      .fold<double>(0, (sum, peso) => sum + (double.tryParse(peso) ?? 0))
-      .toStringAsFixed(2);
 }

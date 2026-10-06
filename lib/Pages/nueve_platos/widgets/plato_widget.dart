@@ -8,6 +8,7 @@ import 'package:nueve_platos_cestari/Widgets/connection_widget.dart';
 import 'package:nueve_platos_cestari/Widgets/tabla_maniobra.dart';
 import 'package:nueve_platos_cestari/Widgets/widget_button.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/helpers/comandos_plato.dart';
 import 'package:nueve_platos_cestari/models/ensayos/maniobra_plato.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +83,7 @@ class PlatoWidget extends StatelessWidget {
   Color _colorEstable() {
     final valor = int.tryParse(estable) ?? 0;
     if (valor > 1) return Colors.blue;
-    if (valor == 1) return Colors.greenAccent;
+    if (valor == 1) return Colors.green.shade700;
     return Colors.red;
   }
 
@@ -117,7 +118,7 @@ class PlatoWidget extends StatelessWidget {
           width: SizeScreen.sc().screenWidth * 0.27,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: colorAlarma ?? ThemePlatos.backgroundTitulos,
+            color: colorAlarma ?? ThemeApp.pesajeTitulos,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
             border: borde
           ),
@@ -139,7 +140,7 @@ class PlatoWidget extends StatelessWidget {
                 ),
               ),
               // Estado de la conexión
-              ConnectionWidget( connection: conexionPlato),       
+              ConnectionWidget(connection: conexionPlato, colorConectado: ThemeApp.pesajeConectado),       
             ],
           )
         ),
@@ -149,7 +150,7 @@ class PlatoWidget extends StatelessWidget {
           width: SizeScreen.sc().screenWidth * 0.27,
           height: altoRecuadroPeso,
           decoration: BoxDecoration(
-            color: ThemePlatos.backgroundPeso,
+            color: ThemeApp.pesajePeso,
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
             border: borde
           ),
@@ -202,6 +203,33 @@ class PlatoWidget extends StatelessWidget {
           )
         ),
 
+        const SizedBox(height: 2),
+
+        // Boton para enviar cero, centrado bajo el recuadro del peso
+        SizedBox(
+          width: SizeScreen.sc().screenWidth * 0.27,
+          child: Center(
+            child: IgnorePointer(
+              ignoring: !ceroHabilitado,
+              child: Opacity(
+                opacity: ceroHabilitado ? 1 : 0.4,
+                child: WidgetButton(
+                  ancho: SizeScreen.sc().screenWidth * 0.22,
+                  alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
+                  borderRadius: 5,
+                  fontSize: SizeScreen.sc().screenWidth < 520
+                  ? 12 : 16,
+                  /// Enviar cero a la balanza del plato
+                  onPress: () => _enviarCero(context),
+                  texto: '> 0 <',
+                  color1: ThemeApp.pesajeBotonCero1,
+                  color2: ThemeApp.pesajeBotonCero2,
+                ),
+              ),
+            ),
+          ),
+        ),
+
         // Estatico de referencia; la linea queda vacia si no se tomo
         SizedBox(
           width: SizeScreen.sc().screenWidth * 0.27,
@@ -227,31 +255,6 @@ class PlatoWidget extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 3),
-
-        // Boton para enviar cero, centrado bajo el plato
-        SizedBox(
-          width: SizeScreen.sc().screenWidth * 0.27,
-          child: Center(
-            child: IgnorePointer(
-              ignoring: !ceroHabilitado,
-              child: Opacity(
-                opacity: ceroHabilitado ? 1 : 0.4,
-                child: WidgetButton(
-                  ancho: SizeScreen.sc().screenWidth * 0.22,
-                  alto:  SizeScreen.sc().screenWidth * (SizeScreen.sc().isMinWidth ? 0.065 : 0.09),
-                  borderRadius: 5,
-                  fontSize: SizeScreen.sc().screenWidth < 520
-                  ? 12 : 16,
-                  /// Enviar cero a la balanza del plato
-                  onPress: () => _enviarCero(context),
-                  texto: '> 0 <'
-                ),
-              ),
-            ),
-          ),
-        ),
-        
       ],
     );
   }

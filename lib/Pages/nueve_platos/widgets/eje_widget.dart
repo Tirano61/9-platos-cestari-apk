@@ -5,6 +5,7 @@
 import 'package:nueve_platos_cestari/Controllers/calculos_controllers.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
@@ -30,7 +31,7 @@ class EjeWidget extends StatelessWidget {
           width: SizeScreen.sc().screenWidth * 0.25,
           padding: const EdgeInsets.symmetric( vertical: 10),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(188, 5, 21, 76),
+            color: ThemeApp.pesajeJuegoTitulo,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
             border: Border.all()
           ),
@@ -44,7 +45,7 @@ class EjeWidget extends StatelessWidget {
         Container(
           width: SizeScreen.sc().screenWidth * 0.25,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(147, 0, 93, 254),
+            color: ThemeApp.pesajeJuegoPeso,
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
             border: Border.all()
           ),
