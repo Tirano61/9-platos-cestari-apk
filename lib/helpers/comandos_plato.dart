@@ -29,7 +29,7 @@ class ComandosPlato {
     int plato,
     Future<bool> Function(Conexion conexion) enviar,
   ) async {
-    final ip = _ipPlato(plato);
+    final ip = ipPlato(plato);
     if (ip == null) return false;
 
     final conexion = Conexion.cn;
@@ -42,9 +42,12 @@ class ComandosPlato {
     }
   }
 
-  static String? _ipPlato(int plato) {
+  /// IP de origen de los datagramas UDP del plato. null si el plato no
+  /// existe o todavia no mando datos (`adreess` vale '0' hasta el primero).
+  static String? ipPlato(int plato) {
     final tag = 'plato$plato';
     if (!Get.isRegistered<PesoController>(tag: tag)) return null;
-    return Get.find<PesoController>(tag: tag).pesoModel.adreess;
+    final ip = Get.find<PesoController>(tag: tag).pesoModel.adreess.trim();
+    return ip.isEmpty || ip == '0' ? null : ip;
   }
 }
