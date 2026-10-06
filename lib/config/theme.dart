@@ -31,4 +31,14 @@ class ThemeApp{
   static const colorTarjetaPesaadas = Color.fromARGB(173, 239, 239, 239);
   /// Sombra de las tarjetas
   static const shadowColor = Color.fromARGB(117, 96, 96, 96);
+  /// Pantalla de pesaje (NuevePlatosPage): tema verde claro
+  static const pesajeFondo       = Color(0xFFC8E6C9);
+  static const pesajeBarra       = Color(0xFFE8F5E9);
+  static const pesajeTitulos     = Color(0xFF1B5E20);
+  static const pesajePeso        = Color(0xFFF1F8E9);
+  static const pesajeJuegoTitulo = Color(0xFF2E7D32);
+  static const pesajeJuegoPeso   = Color(0xFFA5D6A7);
+  static const pesajeBotonCero1  = Color(0xFFA5D6A7);
+  static const pesajeBotonCero2  = Color(0xFF43A047);
+  static const pesajeConectado   = Colors.lightGreenAccent;
 }

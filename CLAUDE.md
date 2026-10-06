@@ -16,7 +16,7 @@ App Flutter (Android es el único target real) para pesar una tolva de 3 ejes de
 ```
 
 - Plato 1: enganche. Platos 2..9: 4 **juegos** de celdas izq/der (J1 = 2/3 … J4 = 8/9). Los juegos no corresponden a ejes.
-- Cálculos: peso y % de cada plato, subtotal y % de cada juego, lado izq (2+4+6+8) y lado der (3+5+7+9) con su %, y total. El enganche no suma a ningún lado.
+- Cálculos: peso y % de cada plato, subtotal y % de cada juego, lado izq (2+4+6+8) y lado der (3+5+7+9) con su % (`CalculosController`; la pantalla de pesaje ya no los muestra), y total. El enganche no suma a ningún lado.
 - Conexión **solo WiFi UDP**: cada plato emite datagramas a su puerto (8001..8009 por defecto). El cero se manda por TCP a la IP del plato. No hay BLE ni reset hold.
 
 Identidad:
@@ -153,16 +153,17 @@ lib/Pages/
                                    costados, Positioned segun posicionCelda) y umbral (%). Precarga
                                    PreferenciasEnsayo; Comenzar ensayo valida, avisa las celdas sin
                                    capacidad, guarda, llama iniciarEnsayo y reemplaza la ruta por 'platos'.
-  nueve_platos/                    NuevePlatosPage (ruta 'platos', AppBar con la tolva del ensayo):
+  nueve_platos/                    NuevePlatosPage (ruta 'platos', AppBar con la tolva del ensayo; tema verde claro
+                                   con _temaPesaje y los colores ThemeApp.pesaje*):
                                    PopScope (salir con una maniobra en curso pide confirmacion y la descarta),
                                    BarraEnsayo fija arriba (Cero general, Tomar estatico, Registrar /
                                    Terminar maniobra con numero y cronometro) y, con scroll, RecuadroPesoTotal, PlatoWidget del
-                                   enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der) y SumaLados.
+                                   enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der).
                                    Widgets: PlatoWidget
-                                   (peso, bateria, estable, conexion, linea 'E: <estatico>', linea
-                                   '▲ max ▼ min' durante la maniobra, boton > 0 < deshabilitado mientras
-                                   registra, nivelAlarma: borde y titulo ambar / rojo con alLimite / excede), mostrarResultadoManiobra (dialog_maniobra.dart: dialogo con la
-                                   TablaManiobra al terminar), formatoDuracion y descripcionManiobra, EjeWidget, FilaPlatos, SumaLados, RecuadroPesoTotal y
+                                   (peso, bateria, estable, conexion, boton > 0 < a 2 px del recuadro del peso
+                                   (deshabilitado mientras registra), linea 'E: <estatico>', linea
+                                   '▲ max ▼ min' durante la maniobra, nivelAlarma: borde y titulo ambar / rojo con alLimite / excede), mostrarResultadoManiobra (dialog_maniobra.dart: dialogo con la
+                                   TablaManiobra al terminar), formatoDuracion y descripcionManiobra, EjeWidget, FilaPlatos, RecuadroPesoTotal y
                                    BateryWidget.
   ensayos/                         EnsayosPage (ruta 'ensayos', StatefulWidget; recibe ensayos para los tests):
                                    una TarjetaEnsayo por ensayo (ExpansionTile: tolva, fecha, cantidad de

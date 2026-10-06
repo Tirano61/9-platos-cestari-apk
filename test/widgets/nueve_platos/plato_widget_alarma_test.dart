@@ -1,6 +1,7 @@
 import 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/plato_widget.dart';
 import 'package:nueve_platos_cestari/Theme/theme.dart';
 import 'package:nueve_platos_cestari/config/SizeScreen.dart';
+import 'package:nueve_platos_cestari/config/theme.dart';
 import 'package:nueve_platos_cestari/models/ensayos/maniobra_plato.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,8 +19,8 @@ void main() {
   }
 
   for (final (nivel, titulo, borde) in [
-    (EstadoCelda.sinDato, ThemePlatos.backgroundTitulos, Colors.black),
-    (EstadoCelda.normal, ThemePlatos.backgroundTitulos, Colors.black),
+    (EstadoCelda.sinDato, ThemeApp.pesajeTitulos, Colors.black),
+    (EstadoCelda.normal, ThemeApp.pesajeTitulos, Colors.black),
     (EstadoCelda.alLimite, Colors.amber, Colors.amber),
     (EstadoCelda.excede, ThemePlatos.errorColor, ThemePlatos.errorColor),
   ]) {

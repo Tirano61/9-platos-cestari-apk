@@ -114,7 +114,7 @@ class _BarraEnsayoState extends State<BarraEnsayo> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: const BoxDecoration(
-        color: ThemeApp.colorTarjetaPesaadas,
+        color: ThemeApp.pesajeBarra,
         boxShadow: [
           BoxShadow(color: ThemeApp.shadowColor, offset: Offset(0, 1), blurRadius: 2),
         ],
