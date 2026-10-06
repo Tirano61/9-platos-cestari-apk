@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 79 tests en verde.
+Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 85 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -156,7 +156,9 @@ lib/Pages/
                                    capacidad, guarda, llama iniciarEnsayo y reemplaza la ruta por 'platos'.
   nueve_platos/                    NuevePlatosPage (ruta 'platos', AppBar con la tolva del ensayo; tema verde claro
                                    con _temaPesaje y los colores ThemeApp.pesaje*):
-                                   PopScope (salir con una maniobra en curso pide confirmacion y la descarta),
+                                   PopScope (salir siempre pide confirmacion con confirmarSalida de dialog_salir.dart;
+                                   mensajeSalida arma el texto segun el estado: maniobra en curso que se descarta,
+                                   maniobras guardadas, estatico que se pierde; con una maniobra en curso la descarta),
                                    BarraEnsayo fija arriba (Cero general, Tomar estatico, Registrar /
                                    Terminar maniobra con numero y cronometro) y, con scroll, RecuadroPesoTotal, PlatoWidget del
                                    enganche, 4 x FilaPlatos (izq | EjeWidget 'JUEGO N' | der).
@@ -206,11 +208,13 @@ Rutas registradas en `main.dart`: `home`, `ensayos`, `platos`, `inicioEnsayo`. H
 10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▼ mín` / `▲ máx` en vivo dentro del recuadro del peso (al terminar quedan los de la última maniobra; descartarla los borra), los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()`, que guarda la maniobra en la base (la primera del ensayo inserta antes la fila de `tensayos`); `HelpersEnsayos.avisarGuardado` avisa con un SnackBar si se guardó y después se muestra el diálogo con la `TablaManiobra`.
 11. **Alarma**: en cada `Obx`, `EnsayoController.alarma(n, ...)` compara el máximo de la maniobra (o el peso actual si no hay maniobra o todavía no llegaron lecturas) con la capacidad de la celda y el umbral (`estadoCelda`). `PlatoWidget` pinta el borde y el título en ámbar (al límite) o rojo (excede), con los colores de `TablaManiobra.colorEstado`. Sin capacidad no hay alarma.
 
-## Base de datos (sqflite, `platos.db`, versión 3)
+## Base de datos (sqflite, `platos.db`, versión 4)
 
 `onCreate` crea todo el esquema. `onUpgrade` con `oldVersion < 2` crea las tablas de ensayos (la v1 solo tenía
 `tconfig` y las pesadas) y con `oldVersion < 3` hace `DROP TABLE IF EXISTS` de `tpesadas_9platos` y `tpesadas_base`
-(las pesadas de la app vieja se pierden; `tconfig` se conserva).
+(las pesadas de la app vieja se pierden; `tconfig` se conserva). Con `oldVersion < 4` agrega a `tconfig` las columnas
+`platoN` que falten (`DBconfig.completarColumnas`, con el puerto por defecto): una base creada en v1 tenía la tabla de 4
+platos y el `UPDATE` de la configuración fallaba con "no such column: plato5".
 
 | Tabla | Contenido |
 |---|---|
@@ -236,6 +240,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 ## Tests
 
 - `test/controllers/calculos_9platos_test.dart`: total, subtotal de juego, porcentajes de plato, juego y lado, total cero y pesos inválidos.
+- `test/BaseDeDatos/settings/db_config_test.dart`: SQL de `DBconfig.completarColumnas` (tabla de 4 platos y tabla completa).
 - `test/BaseDeDatos/ensayos/service_ensayos_test.dart`: `ServiceEnsayos` contra `test/moks/db_ensayos_mock.dart` (base en memoria con ids, orden descendente, cascada y `fallar` para simular -1).
 - `test/Providers/ensayos_provider_test.dart`: `EnsayosProvider` contra `DbEnsayosMock` (emite sin oyente, borrar uno y todos, después de `dispose`).
 - `test/widgets/ensayos/ensayos_page_test.dart`: `EnsayosPage` en un teléfono angosto (tarjetas, expandir con las tablas, deslizar con cancel y OK, borrar todo).
@@ -246,6 +251,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `test/widgets/nueve_platos/plato_widget_alarma_test.dart`: colores del título y el borde de `PlatoWidget` según `nivelAlarma`, en un teléfono chico sin desbordes, y el mínimo (izq) y máximo (der) dentro del plato (con valores y con `-`).
 - `test/Models/maniobra_plato_test.dart`: factor de cresta, % cap y estado (ejemplo del documento, = umbral, = 100 %, > 100 %, capacidad vacía o 0, estático 0, sin lecturas, redondeo).
 - `test/widgets/nueve_platos/dialog_maniobra_test.dart`: `formatoDuracion` y el diálogo con la tabla en un teléfono angosto.
+- `test/widgets/nueve_platos/dialog_salir_test.dart`: `mensajeSalida` en cada situación (sin maniobras, con estático, maniobras guardadas, maniobra en curso).
 - `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
 - `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` / `limpiarRegistro` de `PesoController` (sin UDP).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).

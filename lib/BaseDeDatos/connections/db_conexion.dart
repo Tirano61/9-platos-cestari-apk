@@ -20,7 +20,7 @@ import 'package:path/path.dart' as p;
 class DBconeccion implements ConfigInterface, EnsayosInterface {
 
   static final DBconeccion db = DBconeccion._internal();
-  final int dbVersion = 3;
+  final int dbVersion = 4;
   static Database? _database;
 
   DBconeccion._internal();
@@ -56,8 +56,19 @@ class DBconeccion implements ConfigInterface, EnsayosInterface {
           await db.execute('DROP TABLE IF EXISTS tpesadas_9platos');
           await db.execute('DROP TABLE IF EXISTS tpesadas_base');
         }
+        // v4: tconfig de una base creada con 4 platos: faltan plato5..plato9.
+        if (oldVersion < 4) await _completarConfig(db);
       },
     );
+  }
+
+  /// Agrega a tconfig las columnas de plato que falten.
+  static Future<void> _completarConfig(Database db) async {
+    final columnas = await db.rawQuery('PRAGMA table_info(${DBconfig.tableNameConfig})');
+    final nombres = columnas.map((c) => c['name'] as String);
+    for (final sql in DBconfig.completarColumnas(nombres)) {
+      await db.execute(sql);
+    }
   }
 
   static Future<void> _crearTablasEnsayos(Database db) async {

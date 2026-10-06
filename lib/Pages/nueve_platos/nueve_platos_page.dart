@@ -28,9 +28,10 @@ class NuevePlatosPage extends StatelessWidget {
       final pesos = [for (final c in pesoControllers) c.pesoModel.peso];
       CalculosController.cn.setPesoTotalByList(pesos);
       final separacion = SizeScreen.sc().screenWidth * 0.008;
-      // Con una maniobra en curso, salir pide confirmacion y la descarta.
+      // Salir siempre pide confirmacion, con un mensaje segun el estado del
+      // ensayo; con una maniobra en curso, la descarta.
       return PopScope(
-        canPop: !ensayo.registrando,
+        canPop: false,
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) _confirmarSalida(context);
         },
@@ -73,24 +74,8 @@ class NuevePlatosPage extends StatelessWidget {
       );
 
   Future<void> _confirmarSalida(BuildContext context) async {
-    final salir = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Maniobra en curso'),
-        content: const Text('Si salís, la maniobra se descarta.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Seguir'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Descartar y salir'),
-          ),
-        ],
-      ),
-    );
-    if (salir != true || !context.mounted) return;
+    final salir = await confirmarSalida(context, ensayo);
+    if (!salir || !context.mounted) return;
     ensayo.descartarManiobra();
     Navigator.pop(context);
   }
