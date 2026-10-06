@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 114 tests en verde.
+Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 122 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -190,6 +190,12 @@ lib/Pages/
                                    maniobras; al expandirse, numero, descripcionManiobra y TablaManiobra de cada
                                    maniobra). Deslizar oculta el ensayo y muestra el SnackBar OK / cancel (OK o
                                    timeout lo borran, cancel lo vuelve a mostrar). Borrar todo con DialogBorrar.
+  calibracion/                     CalibracionPage(plato:) (ruta 'calibracion', el plato va en los arguments;
+                                   servicio e ipPlato inyectables): IP y firmware arriba; sin IP aviso y
+                                   Reintentar; lee al abrir (si falla, Leer de nuevo); formulario con los 10
+                                   campos (enteros solo digitos, decimales con coma o punto) y la capacidad
+                                   maxima solo lectura. Enviar calibracion valida (marca los invalidos y no
+                                   envia), confirma, deshabilita mientras envia, avisa y vuelve a leer.
 lib/Widgets/                       Comunes: BottonBarApp, IconBottonBarWidget, WidgetButton,
                                    ConnectionWidget, DialogBorrar (titulo, mensaje y onBorrar; cierra con
                                    true si borro) y TablaManiobra (plato, estatico, max, min, FC, % cap y
@@ -197,7 +203,7 @@ lib/Widgets/                       Comunes: BottonBarApp, IconBottonBarWidget, W
 lib/generated/ + lib/l10n/         intl (en/es/pt) configurado pero casi sin uso (solo la clave "titulo").
 ```
 
-Rutas registradas en `main.dart`: `home`, `ensayos`, `platos`, `inicioEnsayo`. Home -> `inicioEnsayo` ->
+Rutas registradas en `main.dart`: `home`, `ensayos`, `platos`, `inicioEnsayo`, `calibracion` (arguments = número de plato). Home -> `inicioEnsayo` ->
 (reemplazo) `platos`, así "atrás" desde los platos vuelve al Home.
 
 ## Estado y patrones
@@ -271,6 +277,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
 - `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` / `limpiarRegistro` de `PesoController` (sin UDP).
 - `test/Providers/calibracion_wifi_test.dart`: `CalibracionWifi` con `MockClient` (lectura clásica, fallback a ESP32 por excepción, 404, JSON inválido y timeout, ESP32 inválido, los dos fallan; envío con la URL del documento y el reset, reset que falla, código ≠ 200 y error de red sin reset, modelo incompleto sin peticiones).
+- `test/widgets/calibracion/calibracion_page_test.dart`: `CalibracionPage` en un teléfono angosto con servicio falso (valores leídos, campo que no vino, sin IP y Reintentar, error de lectura, campo inválido que no envía, envío del modelo editado con botones deshabilitados y relectura, envío fallido, cancelar).
 - `test/helpers/comandos_plato_test.dart`: `ComandosPlato.ipPlato` (IP conocida, `'0'` o vacío, plato no registrado).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `integration_test/app_test.dart` está vacío.

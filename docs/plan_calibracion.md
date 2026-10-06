@@ -96,7 +96,7 @@ Carpeta nueva `lib/models/calibracion/`:
   404, ESP32 inválido, los dos fallan; envío con la URL exacta del documento y el reset, código ≠ 200 sin reset,
   error de red y modelo incompleto sin peticiones.
 
-### [ ] Paso 3 · `pantallaCalibracion`: pantalla de calibración de un plato
+### [x] Paso 3 · `pantallaCalibracion`: pantalla de calibración de un plato
 - `lib/Pages/calibracion/calibracion_page.dart` — `CalibracionPage(plato:)`, ruta `'calibracion'` (el número de plato
   va en los `arguments`). Servicio e IP inyectables para los tests.
   - AppBar `Calibración <nombrePlato>`; arriba, la IP y el firmware leído.
