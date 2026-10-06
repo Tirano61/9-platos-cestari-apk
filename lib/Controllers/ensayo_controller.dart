@@ -202,7 +202,7 @@ class EnsayoController extends GetxController {
   void descartarManiobra() {
     if (!registrando) return;
     for (final plato in _platos()) {
-      plato.detenerRegistro();
+      plato.limpiarRegistro();
     }
     numeroManiobra.value--;
     inicioManiobra.value = null;

@@ -55,4 +55,46 @@ void main() {
       expect(c.borde, borde);
     });
   }
+
+  /// RichText del PlatoWidget que empieza con [flecha] (min o max).
+  Finder valor(String flecha) => find.descendant(
+        of: find.byType(PlatoWidget),
+        matching: find.byWidgetPredicate((w) => w is RichText && w.text.toPlainText().startsWith(flecha)),
+      );
+
+  for (final (maximo, minimo, textoMin, textoMax) in [
+    ('5980.00', '1800.00', '▼ 1800.00', '▲ 5980.00'),
+    ('', '', '▼ -', '▲ -'),
+  ]) {
+    testWidgets('Min / max dentro del plato: "$textoMin" "$textoMax"', (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      SizeScreen.sc().setSreenWidth(360);
+      SizeScreen.sc().setMinWidth(false);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: PlatoWidget(
+            numPlato: 'J1 IZQ',
+            pesoPlato: '2410.00',
+            buttonKeyPlato: const ValueKey('2'),
+            conexionPlato: true,
+            batery: 3,
+            estable: '1',
+            maximo: maximo,
+            minimo: minimo,
+          ),
+        ),
+      ));
+
+      expect(tester.takeException(), isNull);
+      final min = tester.widget<RichText>(valor('▼'));
+      final max = tester.widget<RichText>(valor('▲'));
+      expect(min.text.toPlainText(), textoMin);
+      expect(max.text.toPlainText(), textoMax);
+      // El minimo a la izquierda y el maximo a la derecha.
+      expect(tester.getCenter(valor('▼')).dx, lessThan(tester.getCenter(valor('▲')).dx));
+    });
+  }
 }

@@ -91,6 +91,14 @@ class PesoController extends GetxController{
     return registro;
   }
 
+  /// Corta el registro y lo vacia (maniobra descartada): la UI deja de
+  /// mostrar su max / min.
+  void limpiarRegistro() {
+    registrando = false;
+    registro = RegistroMaxMin();
+    _actualizarRxRegistro();
+  }
+
   /// Suma [peso] al registro si se esta registrando. Se llama con cada trama
   /// UDP, no solo con las que llega a dibujar la pantalla. Un peso invalido se
   /// saltea.
