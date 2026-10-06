@@ -51,7 +51,7 @@ usan la pantalla y el envío.
 ### [x] Paso 0 · `planCalibracion`: este documento
 - Crear `docs/plan_calibracion.md` y nombrarlo en `CLAUDE.md` (Documentación de referencia).
 
-### [ ] Paso 1 · `modeloCalibracion`: modelos y parseo de las dos respuestas
+### [x] Paso 1 · `modeloCalibracion`: modelos y parseo de las dos respuestas
 Carpeta nueva `lib/models/calibracion/`:
 - `calibracion_model.dart` — `CalibracionModel`, el modelo común (sección 2.4 del documento):
   - enteros (`int?`): `totalCelda`, `sensibilidad`, `conversiones`, `recortes`, `ventanaMovil`, `kgFiltro`,
@@ -78,6 +78,8 @@ Carpeta nueva `lib/models/calibracion/`:
   ESP32 del documento, tabla de decodificación (`1056964608` → 0.5, `1065353216` → 1.0, `1084227584` → 5.0,
   `1092616192` → 10.0), `type` que no es `u64`, falta `Configuracion.Balanza`, `kgFiltroMov` truncado,
   `toSaveQuery` (nombres, orden y `10.0`) y `completa` con un campo vacío.
+- Hecho: `toSaveQuery` lanza `StateError` si el modelo no está completo; `floatDesdeU64` devuelve `null` con un
+  texto que no es entero o un float no finito, y lee el `u64` con `BigInt`, porque puede no entrar en un `int` de Dart.
 
 ### [ ] Paso 2 · `servicioCalibracion`: lectura y envío por HTTP
 - `pubspec.yaml`: `http` como dependencia directa.
