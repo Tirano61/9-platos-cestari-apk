@@ -111,13 +111,15 @@ Carpeta nueva `lib/models/calibracion/`:
 - Test `test/widgets/calibracion/calibracion_page_test.dart` en un teléfono angosto con servicio falso: valores
   leídos, sin IP, error de lectura, campo inválido que no envía, envío con el modelo editado y relectura.
 
-### [ ] Paso 4 · `botonCalibracionConfig`: botón de calibrar en la configuración
+### [x] Paso 4 · `botonCalibracionConfig`: botón de calibrar en la configuración
 - `DialogConfig`: al lado del puerto de cada plato, un `IconButton` (`Icons.tune`, tooltip `Calibrar <nombrePlato>`)
   que hace `Navigator.pushNamed(context, 'calibracion', arguments: n)`. El diálogo queda abierto debajo: al volver,
   los puertos sin guardar siguen como estaban.
 - `Conexion` (`Providers/tcp_conexion.dart`): borrar `enviarCalibracion` (lo reemplaza `CalibracionWifi`) y sacarlo
   de "Pendientes conocidos" en `CLAUDE.md`. Agregar en `CLAUDE.md` el flujo de la calibración.
 - Test del diálogo: 9 botones de calibrar; tocar uno abre `'calibracion'` con su número de plato.
+- Hecho: el botón lleva la key `calibrar_N`. El test también comprueba que al volver el diálogo sigue con el puerto
+  editado y sin guardar (`test/widgets/home/dialog_config_test.dart`).
 
 ---
 

@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 122 tests en verde.
+Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 127 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -141,7 +141,7 @@ lib/helpers/
                                    SharedPreferences (leerCapacidades / leerUmbral / guardar). Los usa InicioEnsayoPage.
 lib/Providers/
   tcp_conexion.dart                Conexion.cn: socket TCP al puerto 80 de la IP del plato; manda cero
-                                   (y calibracion, sin uso) por HTTP GET. No usarlo directo
+                                   por HTTP GET. No usarlo directo
                                    desde la UI: pasar por ComandosPlato.
   calibracion_wifi.dart            CalibracionWifi (http.Client inyectable, timeout 5 s, errores de red capturados):
                                    leer(ip) prueba /config?json=1 (clasico) y, si falla o no da 200,
@@ -161,7 +161,9 @@ lib/Pages/
   Home/homePage.dart               Card con el puerto y el estado de conexion de cada plato (fila del
                                    enganche + 4 filas izq/der), boton "Iniciar ensayo" (ruta 'inicioEnsayo'),
                                    engranaje -> DialogConfig, barra inferior (ver ensayos / compartir XLSX).
-  Home/widgets/dialog_config.dart  Un InputTextConfig por plato (9 campos con scroll). OK ->
+  Home/widgets/dialog_config.dart  Un InputTextConfig por plato (9 campos con scroll), cada uno con un
+                                   IconButton de calibrar al lado (Icons.tune, key 'calibrar_N') que abre
+                                   'calibracion' con el plato, dejando el dialogo abierto debajo. OK ->
                                    HelpersConfig.upDateConfig los guarda y reconecta.
   inicio_ensayo/                   InicioEnsayoPage (ruta 'inicioEnsayo'), con scroll: identificacion de la
                                    tolva (obligatoria), TolvaCapacidades (tolva.png centrado, como mucho 55 %
@@ -229,6 +231,16 @@ Rutas registradas en `main.dart`: `home`, `ensayos`, `platos`, `inicioEnsayo`, `
 10. **Registrar maniobra** (`BarraEnsayo`, solo en estado `listo`) llama `EnsayoController.iniciarManiobra()`: los 9 platos registran máx/mín y el estado pasa a `registrando`. Mientras corre, `PlatoWidget` muestra `▼ mín` / `▲ máx` en vivo dentro del recuadro del peso (al terminar quedan los de la última maniobra; descartarla los borra), los `> 0 <` se deshabilitan y la barra muestra el número de maniobra y el tiempo. Mientras registra, la pantalla no se apaga (`wakelock_plus`). **Terminar maniobra** llama `terminarManiobra()`, que guarda la maniobra en la base (la primera del ensayo inserta antes la fila de `tensayos`); `HelpersEnsayos.avisarGuardado` avisa con un SnackBar si se guardó y después se muestra el diálogo con la `TablaManiobra`.
 11. **Alarma**: en cada `Obx`, `EnsayoController.alarma(n, ...)` compara el máximo de la maniobra (o el peso actual si no hay maniobra o todavía no llegaron lecturas) con la capacidad de la celda y el umbral (`estadoCelda`). `PlatoWidget` pinta el borde y el título en ámbar (al límite) o rojo (excede), con los colores de `TablaManiobra.colorEstado`. Sin capacidad no hay alarma.
 
+## Calibración de un plato (WiFi HTTP)
+
+Protocolo en [docs/CALIBRACION_WIFI.md](docs/CALIBRACION_WIFI.md); plan en [docs/plan_calibracion.md](docs/plan_calibracion.md).
+
+1. En `DialogConfig`, el botón de calibrar de un plato hace `Navigator.pushNamed(context, 'calibracion', arguments: n)`. El diálogo queda abierto debajo: al volver, los puertos sin guardar siguen como estaban.
+2. `CalibracionPage` toma la IP con `ComandosPlato.ipPlato(n)` (la de origen de los datagramas UDP). Sin IP (el plato todavía no mandó datos) muestra el aviso y Reintentar, y no pide nada.
+3. Lee con `CalibracionWifi.leer(ip)`: `/config?json=1` (firmware clásico) y, si falla o no da 200, `/configjson?json=1` (ESP32). Las dos respuestas se convierten al `CalibracionModel` común. Si ninguna sirve, aviso y "Leer de nuevo".
+4. **Enviar calibración** valida los 10 campos, pide confirmación (el indicador se reinicia) y llama `CalibracionWifi.enviar`: `/save?<toSaveQuery>` y, con 200, `/save?reset=1`. `capacidad_maxima` no se envía. Con éxito o con error, avisa con un SnackBar y vuelve a leer.
+5. Todas las peticiones tienen timeout de 5 s. Van con `package:http` (no por `Conexion.cn`, que queda solo para el cero).
+
 ## Base de datos (sqflite, `platos.db`, versión 4)
 
 `onCreate` crea todo el esquema. `onUpgrade` con `oldVersion < 2` crea las tablas de ensayos (la v1 solo tenía
@@ -278,6 +290,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` / `limpiarRegistro` de `PesoController` (sin UDP).
 - `test/Providers/calibracion_wifi_test.dart`: `CalibracionWifi` con `MockClient` (lectura clásica, fallback a ESP32 por excepción, 404, JSON inválido y timeout, ESP32 inválido, los dos fallan; envío con la URL del documento y el reset, reset que falla, código ≠ 200 y error de red sin reset, modelo incompleto sin peticiones).
 - `test/widgets/calibracion/calibracion_page_test.dart`: `CalibracionPage` en un teléfono angosto con servicio falso (valores leídos, campo que no vino, sin IP y Reintentar, error de lectura, campo inválido que no envía, envío del modelo editado con botones deshabilitados y relectura, envío fallido, cancelar).
+- `test/widgets/home/dialog_config_test.dart`: `DialogConfig` en un teléfono angosto (un botón de calibrar por plato con su tooltip, cada botón abre `'calibracion'` con su número, al volver el diálogo sigue con los puertos editados sin guardar).
 - `test/helpers/comandos_plato_test.dart`: `ComandosPlato.ipPlato` (IP conocida, `'0'` o vacío, plato no registrado).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `integration_test/app_test.dart` está vacío.
@@ -285,7 +298,6 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 ## Pendientes conocidos
 
 - `ConnectionWidget` muestra siempre un ícono de WiFi (solo visual, heredado de cuando había BLE).
-- `Conexion.enviarCalibracion` no tiene UI que lo use.
 - No hay pruebas automáticas de UDP ni de la base real (sqflite); se prueban con las balanzas en un teléfono (ver la verificación en `docs/plan_9_platos.md` y `docs/plan_ensayo.md`).
 
 ## Legacy y trampas
