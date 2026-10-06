@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 05/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 85 tests en verde.
+Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 99 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -119,6 +119,15 @@ lib/models/
                                    toDb / fromDb; getters factorCresta y porCapacidad, estado(umbral)). Funciones puras
                                    porcentajeCapacidad y estadoCelda (EstadoCelda normal / alLimite / excede /
                                    sinDato, con su texto), comparando el % ya redondeado a 1 decimal.
+  calibracion/calibracion_model.dart  CalibracionModel, comun a los dos firmwares (FirmwareCalibracion clasico /
+                                   esp32): 10 campos que se envian + capacidadMaxima (solo lectura), null si el
+                                   firmware no lo mando; completa, toSaveQuery() (parametros de /save en orden,
+                                   StateError si no esta completa) y copyWith.
+  calibracion/calibracion_clasica_model.dart  CalibracionClasicaModel.fromJson (respuesta plana de /config?json=1,
+                                   17 claves, numeros como num) y toCalibracion().
+  calibracion/calibracion_esp32_model.dart  CalibracionEsp32Model.fromJson (Configuracion.Balanza de
+                                   /configjson?json=1; sin ella FormatException) y toCalibracion(). floatDesdeU64:
+                                   32 bits bajos leidos como float, 2 decimales (solo con type u64).
 lib/helpers/
   comandos_plato.dart              ComandosPlato.enviarCero(plato): TCP a la IP del plato.
                                    enviarCeroGeneral(): cero a los 9 en secuencia; devuelve los que fallaron.
@@ -249,6 +258,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `test/Models/recibir_peso_model_test.dart` y `test/widgets/home/batery_widget_test.dart`: batería.
 - `test/controllers/ensayo_controller_test.dart`: valores iniciales de `EnsayoController`, `iniciarEnsayo`, `tomarEstatico` (con `leerPesos` inyectado), `borrarEstatico`, iniciar / terminar / descartar maniobra (con `platos` inyectado), pantalla encendida durante la maniobra (con `pantallaEncendida` inyectado), guardado de las maniobras (con `ensayos` inyectado: un ensayo por tolva, umbral y capacidad copiados, reintento si falla) y `alarma` (peso actual, máximo durante la maniobra, sin capacidad, umbral del ensayo).
 - `test/widgets/nueve_platos/plato_widget_alarma_test.dart`: colores del título y el borde de `PlatoWidget` según `nivelAlarma`, en un teléfono chico sin desbordes, y el mínimo (izq) y máximo (der) dentro del plato (con valores y con `-`).
+- `test/Models/calibracion_model_test.dart`: parseo clásico (ejemplo del documento con `correccion` entero) y ESP32 (ejemplo, tabla de `floatDesdeU64`, `type` que no es `u64`, `kgFiltroMov` truncado, sin `Configuracion.Balanza`), `toSaveQuery` (nombres, orden, `10.0`, sin capacidad), `completa` y `copyWith`.
 - `test/Models/maniobra_plato_test.dart`: factor de cresta, % cap y estado (ejemplo del documento, = umbral, = 100 %, > 100 %, capacidad vacía o 0, estático 0, sin lecturas, redondeo).
 - `test/widgets/nueve_platos/dialog_maniobra_test.dart`: `formatoDuracion` y el diálogo con la tabla en un teléfono angosto.
 - `test/widgets/nueve_platos/dialog_salir_test.dart`: `mensajeSalida` en cada situación (sin maniobras, con estático, maniobras guardadas, maniobra en curso).
@@ -277,3 +287,7 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `README.md`: descripción e historial.
 - `docs/plan_9_platos.md`: plan de la reforma de 4 a 9 platos (PRs 1..10) y checklist de verificación con las balanzas.
 - `docs/plan_ensayo.md`: plan **pendiente** del modo ensayo de tolva (inicio con tolva y capacidad nominal por celda sobre `assets/tolva.png`, guardadas en SharedPreferences; estático, maniobra con máx/mín, alarma, historial de ensayos). Se implementa de a un paso por PR; leer el paso pedido antes de empezar.
+- `docs/CALIBRACION_WIFI.md`: protocolo HTTP de lectura (`/config?json=1` clásico, `/configjson?json=1` ESP32) y
+  envío (`/save`) de la calibración del indicador.
+- `docs/plan_calibracion.md`: plan de la calibración de cada plato por WiFi (modelos de parseo, servicio HTTP,
+  pantalla de calibración y botón en la configuración). Se implementa de a un paso por PR.
