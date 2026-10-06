@@ -42,7 +42,7 @@ La app no va al Play Store. Nació como copia de "Cuatro Platos" y se reformó e
 - `fvm` es un `.bat` (Pub cache): funciona desde PowerShell/cmd, no desde Git Bash. Desde Git Bash usar `.fvm/flutter_sdk/bin/flutter.bat`.
 - Android: AGP 8.11.1, Kotlin 2.2.20, `minifyEnabled true` en release, firma con `android/key.properties`. Permisos: `INTERNET` y `READ/WRITE_EXTERNAL_STORAGE` (exportación).
 - `android/key.properties` y `local.properties` están versionados en git (el primero con credenciales del keystore). No los toques ni los muestres salvo que se pida.
-- Dependencias principales: `get`, `udp`, `sqflite`, `shared_preferences`, `wakelock_plus`, `excel`, `share_plus`, `path_provider`, `permission_handler`, `intl`, `flutter_native_splash`.
+- Dependencias principales: `get`, `udp`, `http`, `sqflite`, `shared_preferences`, `wakelock_plus`, `excel`, `share_plus`, `path_provider`, `permission_handler`, `intl`, `flutter_native_splash`.
 
 ```powershell
 fvm flutter pub get
@@ -57,7 +57,7 @@ fvm dart run flutter_launcher_icons         # regenerar icono (assets/icon.png)
 
 Para probar la conexión real hacen falta las balanzas físicas: UDP no se puede simular desde el emulador sin las antenas.
 
-Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 99 tests en verde.
+Estado de `flutter analyze` al 06/10/2026: 0 errores, 0 warnings, 2 `info` preexistentes (`file_names` en `homePage.dart` y `SizeScreen.dart`). No introducir nuevos; no hace falta corregir estos salvo que se pida. `flutter test`: 114 tests en verde.
 
 ## Mapa del código (`lib/`)
 
@@ -131,6 +131,8 @@ lib/models/
 lib/helpers/
   comandos_plato.dart              ComandosPlato.enviarCero(plato): TCP a la IP del plato.
                                    enviarCeroGeneral(): cero a los 9 en secuencia; devuelve los que fallaron.
+                                   ipPlato(n): IP de origen de los datagramas del plato (null si no hay:
+                                   adreess '0' o vacio); la usan el cero y la calibracion.
   exportar_xml.dart                A pesar del nombre exporta XLSX: writeFileEnsayos (ensayos.xlsx, hoja
                                    maniobras; filas de filasEnsayos) y compartirArchivo (lo genera y lo
                                    comparte).
@@ -141,6 +143,10 @@ lib/Providers/
   tcp_conexion.dart                Conexion.cn: socket TCP al puerto 80 de la IP del plato; manda cero
                                    (y calibracion, sin uso) por HTTP GET. No usarlo directo
                                    desde la UI: pasar por ComandosPlato.
+  calibracion_wifi.dart            CalibracionWifi (http.Client inyectable, timeout 5 s, errores de red capturados):
+                                   leer(ip) prueba /config?json=1 (clasico) y, si falla o no da 200,
+                                   /configjson?json=1 (ESP32); null si ninguno. enviar(ip, calibracion): nada si
+                                   no esta completa; /save?<toSaveQuery> y con 200 /save?reset=1 -> true.
   ensayos/ensayos_provider.dart    EnsayosProvider(ServiceEnsayos): stream (sin broadcast) de
                                    List<EnsayoModel> para EnsayosPage; getEnsayos / borrarEnsayo /
                                    borrarEnsayos vuelven a emitir la lista; despues de dispose no emite.
@@ -264,6 +270,8 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 - `test/widgets/nueve_platos/dialog_salir_test.dart`: `mensajeSalida` en cada situación (sin maniobras, con estático, maniobras guardadas, maniobra en curso).
 - `test/domain/registro_max_min_test.dart`: secuencia de pesos, primera lectura, negativos y reinicio.
 - `test/controllers/peso_controller_registro_test.dart`: `iniciarRegistro` / `registrarLectura` / `detenerRegistro` / `limpiarRegistro` de `PesoController` (sin UDP).
+- `test/Providers/calibracion_wifi_test.dart`: `CalibracionWifi` con `MockClient` (lectura clásica, fallback a ESP32 por excepción, 404, JSON inválido y timeout, ESP32 inválido, los dos fallan; envío con la URL del documento y el reset, reset que falla, código ≠ 200 y error de red sin reset, modelo incompleto sin peticiones).
+- `test/helpers/comandos_plato_test.dart`: `ComandosPlato.ipPlato` (IP conocida, `'0'` o vacío, plato no registrado).
 - `test/helpers/preferencias_ensayo_test.dart`: `PreferenciasEnsayo` con `SharedPreferences.setMockInitialValues` (valores por defecto, guardar y leer, claves).
 - `integration_test/app_test.dart` está vacío.
 
