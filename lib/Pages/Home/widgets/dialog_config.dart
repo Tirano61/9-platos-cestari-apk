@@ -101,9 +101,28 @@ class _DialogConfigState extends State<DialogConfig> {
                   children: [
                     for (var n = 1; n <= cantidadPlatos; n++) ...[
                       if (n > 1) const SizedBox(height: 12),
-                      InputTextConfig(
-                        label: 'Puerto Plato $n-${nombrePlato(n)}',
-                        controller: _platoControllers[n - 1],
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InputTextConfig(
+                              label: 'Puerto Plato $n-${nombrePlato(n)}',
+                              controller: _platoControllers[n - 1],
+                            ),
+                          ),
+                          // El dialogo queda abierto debajo: al volver, los
+                          // puertos sin guardar siguen como estaban.
+                          IconButton(
+                            key: ValueKey('calibrar_$n'),
+                            icon: const Icon(Icons.tune),
+                            color: ThemeApp.colorPesoPlatos,
+                            tooltip: 'Calibrar ${nombrePlato(n)}',
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              'calibracion',
+                              arguments: n,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ],

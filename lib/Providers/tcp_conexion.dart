@@ -36,17 +36,6 @@ class Conexion {
     }
   }
 
-  Future<bool> enviarCalibracion(String celdas, String sensibilidad, String division, String conversiones, String recortes, String ventana, String kgfiltro, String tiempoestable)async{
-    try {
-      socket!.write(
-        'GET /save?celdas=$celdas&sensibilidad=$sensibilidad&division=$division&conversiones=$conversiones&recortes=$recortes&ventanam=$ventana&gkfiltro=$kgfiltro&tiempoestable=$tiempoestable HTTP/1.1\r\n\r\n',
-      );
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
 }
 
   
