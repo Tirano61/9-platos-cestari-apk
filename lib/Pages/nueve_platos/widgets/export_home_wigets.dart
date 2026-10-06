@@ -4,6 +4,7 @@
 export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/barra_ensayo.dart';
 export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/batery_widget.dart';
 export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/dialog_maniobra.dart';
+export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/dialog_salir.dart';
 export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/eje_widget.dart';
 export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/fila_platos.dart';
 export 'package:nueve_platos_cestari/Pages/nueve_platos/widgets/plato_widget.dart';
