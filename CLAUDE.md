@@ -23,7 +23,7 @@ Identidad:
 
 - package Dart `nueve_platos_cestari`;
 - `applicationId` / namespace `com.dramirez.nueveplatoscestari` (se instala junto a la app vieja "Platos" sin pisarla);
-- label Android y título: "Platos Cestari";
+- label Android (`android:label` del AndroidManifest): "Platos Tester"; el manual de usuario usa ese nombre;
 - versión en `pubspec.yaml`: `1.0.1+1`.
 
 La app no va al Play Store. Nació como copia de "Cuatro Platos" y se reformó en 10 PRs ([docs/plan_9_platos.md](docs/plan_9_platos.md), todos hechos).

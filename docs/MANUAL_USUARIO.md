@@ -1,6 +1,6 @@
-# Manual de usuario · Platos Cestari
+# Manual de usuario · Platos Tester
 
-**Balanzas Hook** · Ensayo de tolva Cestari con 9 balanzas inalámbricas · Versión de la app 1.0.1
+**Balanzas Hook** · Ensayo de tolva con 9 balanzas inalámbricas · Versión de la app 1.0.1
 
 ---
 
@@ -24,7 +24,7 @@
 
 ## 1. Qué hace la app
 
-La app mide, en una tablet Android, el peso de cada una de las **9 celdas de carga** de una tolva Cestari de 3 ejes. Cada
+La app mide, en una tablet Android, el peso de cada una de las **9 celdas de carga** de una tolva de 3 ejes. Cada
 celda tiene su propia balanza inalámbrica (un **plato**) que manda el peso por WiFi.
 
 ```
