@@ -2,6 +2,8 @@
 
 App Android de Balanzas Hook para pesar con 9 balanzas ("platos") por WiFi UDP. La usa una tolva grande de 3 ejes que tiene 9 celdas: 4 juegos de celdas izquierda/derecha y 1 celda en el enganche.
 
+Manual de usuario con capturas: [docs/MANUAL_USUARIO.md](docs/MANUAL_USUARIO.md) (también en [PDF](docs/MANUAL_USUARIO.pdf)).
+
 ## Ramas
 
 `main` es la rama principal (`origin/main`). Los cambios llegan en ramas cortas, cada una con su PR a `main`.
