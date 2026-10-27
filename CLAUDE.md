@@ -23,7 +23,7 @@ Identidad:
 
 - package Dart `nueve_platos_cestari`;
 - `applicationId` / namespace `com.dramirez.nueveplatoscestari` (se instala junto a la app vieja "Platos" sin pisarla);
-- label Android y título: "Platos Cestari";
+- label Android (`android:label` del AndroidManifest): "Platos Tester"; el manual de usuario usa ese nombre;
 - versión en `pubspec.yaml`: `1.0.1+1`.
 
 La app no va al Play Store. Nació como copia de "Cuatro Platos" y se reformó en 10 PRs ([docs/plan_9_platos.md](docs/plan_9_platos.md), todos hechos).
@@ -312,6 +312,9 @@ Ya no hay pesadas (se quitaron en el paso 13 del plan de ensayo): solo se guarda
 ## Documentación de referencia
 
 - `README.md`: descripción e historial.
+- `docs/MANUAL_USUARIO.md` (y `docs/MANUAL_USUARIO.pdf`): manual del operador con capturas reales de la tablet en
+  `docs/manual/img/`. Si cambia la UI, actualizar el texto y la captura; el PDF se regenera desde el Markdown
+  (markdown-it + Edge headless `--print-to-pdf`).
 - `docs/plan_9_platos.md`: plan de la reforma de 4 a 9 platos (PRs 1..10) y checklist de verificación con las balanzas.
 - `docs/plan_ensayo.md`: plan **pendiente** del modo ensayo de tolva (inicio con tolva y capacidad nominal por celda sobre `assets/tolva.png`, guardadas en SharedPreferences; estático, maniobra con máx/mín, alarma, historial de ensayos). Se implementa de a un paso por PR; leer el paso pedido antes de empezar.
 - `docs/CALIBRACION_WIFI.md`: protocolo HTTP de lectura (`/config?json=1` clásico, `/configjson?json=1` ESP32) y
